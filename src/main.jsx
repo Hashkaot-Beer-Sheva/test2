@@ -113,10 +113,47 @@ const seed = {
   ],
 };
 const money = (n) => `₪${Number(n || 0).toLocaleString('en-US')}`;
+const mockExpansion = {
+  buildings: [
+    { id: 'b5', name: 'Gimel 28', area: 'Shechuna Gimel', units: 16, floors: 5, zone: 'Residential A', color: 'coral', x: 18, y: 45 },
+    { id: 'b6', name: 'Gimel 33', area: 'Shechuna Gimel', units: 20, floors: 7, zone: 'Residential B', color: 'blue', x: 63, y: 60 },
+    { id: 'b7', name: 'Gimel 41', area: 'Shechuna Gimel', units: 14, floors: 4, zone: 'Residential A', color: 'mint', x: 82, y: 42 },
+  ],
+  apartments: [
+    { id: 'a5', buildingId: 'b1', number: 'A-05', ownerName: 'Shira Ben-David', tenantName: 'Lior Katz', resident: 'Lior Katz', status: 'Leased', rent: 4950, leaseStart: '2025-02-01', leaseEnd: '2026-01-31', contractUrl: '' },
+    { id: 'a6', buildingId: 'b2', number: 'B-01', ownerName: 'Eli Mizrahi', tenantName: 'Yael Peretz', resident: 'Yael Peretz', status: 'Leased', rent: 5600, leaseStart: '2024-09-01', leaseEnd: '2026-08-31', contractUrl: '' },
+    { id: 'a7', buildingId: 'b2', number: 'B-02', ownerName: 'Eli Mizrahi', tenantName: '', resident: '', status: 'Vacant', rent: 5400, leaseStart: '', leaseEnd: '', contractUrl: '' },
+    { id: 'a8', buildingId: 'b3', number: '2', ownerName: 'Tal Shachar', tenantName: 'Roni Gil', resident: 'Roni Gil', status: 'Leased', rent: 6100, leaseStart: '2025-04-15', leaseEnd: '2026-04-14', contractUrl: '' },
+    { id: 'a9', buildingId: 'b3', number: '3', ownerName: 'Tal Shachar', tenantName: '', resident: '', status: 'On market', rent: 6250, leaseStart: '', leaseEnd: '', contractUrl: '' },
+    { id: 'a10', buildingId: 'b4', number: '1', ownerName: 'Nir Avital', tenantName: 'Ofir Cohen', resident: 'Ofir Cohen', status: 'Leased', rent: 4700, leaseStart: '2024-12-01', leaseEnd: '2025-11-30', contractUrl: '' },
+    { id: 'a11', buildingId: 'b4', number: '2', ownerName: 'Nir Avital', tenantName: '', resident: '', status: 'Vacant', rent: 4650, leaseStart: '', leaseEnd: '', contractUrl: '' },
+    { id: 'a12', buildingId: 'b5', number: '1', ownerName: 'Michal Azulay', tenantName: 'Amit Ronen', resident: 'Amit Ronen', status: 'Leased', rent: 4550, leaseStart: '2025-01-15', leaseEnd: '2026-01-14', contractUrl: '' },
+    { id: 'a13', buildingId: 'b5', number: '2', ownerName: 'Michal Azulay', tenantName: '', resident: '', status: 'Vacant', rent: 4500, leaseStart: '', leaseEnd: '', contractUrl: '' },
+    { id: 'a14', buildingId: 'b6', number: '1', ownerName: 'Gadi Fried', tenantName: 'Hila Naveh', resident: 'Hila Naveh', status: 'Leased', rent: 5750, leaseStart: '2025-06-01', leaseEnd: '2026-05-31', contractUrl: '' },
+    { id: 'a15', buildingId: 'b6', number: '2', ownerName: 'Gadi Fried', tenantName: 'Matan Bar', resident: 'Matan Bar', status: 'Leased', rent: 5800, leaseStart: '2024-11-01', leaseEnd: '2025-10-31', contractUrl: '' },
+    { id: 'a16', buildingId: 'b6', number: '3', ownerName: 'Gadi Fried', tenantName: '', resident: '', status: 'On market', rent: 5900, leaseStart: '', leaseEnd: '', contractUrl: '' },
+    { id: 'a17', buildingId: 'b7', number: '1', ownerName: 'Anat Levi', tenantName: 'Shani Dahan', resident: 'Shani Dahan', status: 'Leased', rent: 5100, leaseStart: '2025-03-01', leaseEnd: '2026-02-28', contractUrl: '' },
+    { id: 'a18', buildingId: 'b7', number: '2', ownerName: 'Anat Levi', tenantName: '', resident: '', status: 'Vacant', rent: 5000, leaseStart: '', leaseEnd: '', contractUrl: '' },
+    { id: 'a19', buildingId: 'b7', number: '3', ownerName: 'Anat Levi', tenantName: 'Yarden Shalev', resident: 'Yarden Shalev', status: 'Leased', rent: 5150, leaseStart: '2024-08-01', leaseEnd: '2025-07-31', contractUrl: '' },
+  ],
+  people: [
+    { id: 'p7', name: 'Shira Ben-David', role: 'Owner', phone: '050-555-6111', apartmentIds: ['a5'] }, { id: 'p8', name: 'Lior Katz', role: 'Tenant', phone: '052-555-6222', apartmentIds: ['a5'] },
+    { id: 'p9', name: 'Eli Mizrahi', role: 'Owner', phone: '050-555-6333', apartmentIds: ['a6', 'a7'] }, { id: 'p10', name: 'Yael Peretz', role: 'Tenant', phone: '054-555-6444', apartmentIds: ['a6'] },
+    { id: 'p11', name: 'Tal Shachar', role: 'Owner', phone: '052-555-6555', apartmentIds: ['a8', 'a9'] }, { id: 'p12', name: 'Roni Gil', role: 'Tenant', phone: '050-555-6666', apartmentIds: ['a8'] },
+    { id: 'p13', name: 'Nir Avital', role: 'Owner', phone: '054-555-6777', apartmentIds: ['a10', 'a11'] }, { id: 'p14', name: 'Ofir Cohen', role: 'Tenant', phone: '052-555-6888', apartmentIds: ['a10'] },
+    { id: 'p15', name: 'Michal Azulay', role: 'Owner', phone: '050-555-6999', apartmentIds: ['a12', 'a13'] }, { id: 'p16', name: 'Amit Ronen', role: 'Tenant', phone: '054-555-7000', apartmentIds: ['a12'] },
+    { id: 'p17', name: 'Gadi Fried', role: 'Owner', phone: '052-555-7111', apartmentIds: ['a14', 'a15', 'a16'] }, { id: 'p18', name: 'Hila Naveh', role: 'Tenant', phone: '050-555-7222', apartmentIds: ['a14'] },
+    { id: 'p19', name: 'Matan Bar', role: 'Tenant', phone: '054-555-7333', apartmentIds: ['a15'] }, { id: 'p20', name: 'Anat Levi', role: 'Owner', phone: '052-555-7444', apartmentIds: ['a17', 'a18', 'a19'] },
+    { id: 'p21', name: 'Shani Dahan', role: 'Tenant', phone: '050-555-7555', apartmentIds: ['a17'] }, { id: 'p22', name: 'Yarden Shalev', role: 'Tenant', phone: '054-555-7666', apartmentIds: ['a19'] },
+  ],
+};
+const hydrateData = () => {
+  const saved = JSON.parse(localStorage.getItem('blockwise-data') || 'null');
+  if (!saved) return { ...seed, buildings: [...seed.buildings, ...mockExpansion.buildings], apartments: [...seed.apartments, ...mockExpansion.apartments], people: [...seed.people, ...mockExpansion.people] };
+  return { ...saved, buildings: [...(saved.buildings || []), ...mockExpansion.buildings.filter((b) => !(saved.buildings || []).some((item) => item.id === b.id))], apartments: [...(saved.apartments || []), ...mockExpansion.apartments.filter((a) => !(saved.apartments || []).some((item) => item.id === a.id))], people: [...(saved.people || []), ...mockExpansion.people.filter((p) => !(saved.people || []).some((item) => item.id === p.id))] };
+};
 function App() {
-  const [data, setData] = useState(() =>
-    JSON.parse(localStorage.getItem('blockwise-data') || JSON.stringify(seed))
-  );
+  const [data, setData] = useState(hydrateData);
   const [tab, setTab] = useState('Overview');
   const [selected, setSelected] = useState(data.buildings[0]);
   const [modal, setModal] = useState(null);
