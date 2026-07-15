@@ -8,6 +8,7 @@ import './finance.css';
 import '../maintenance.css';
 import './finance-dashboard.css';
 import './leasing.css';
+import './renewal.css';
 import RealMap from './RealMap';
 
 const seed = {
@@ -280,6 +281,7 @@ function App() {
             ['Maintenance', '⚒'],
             ['Reports', '◒'],
             ['People', '◉'],
+            ['Pinui-Binui', '↗'],
           ].map(([label, icon]) => (
             <button
               className={tab === label ? 'active' : ''}
@@ -371,6 +373,8 @@ function App() {
               <Activity data={data} onAdd={() => setModal('maintenance')} />
             </section>
           </>
+        ) : tab === 'Pinui-Binui' ? (
+          <RenewalView data={data} />
         ) : tab === 'Finance' ? (
           <FinanceView data={data} />
         ) : tab === 'Maintenance' ? (
@@ -568,6 +572,11 @@ function Activity({ data, onAdd }) {
       {!data.maintenance.length && <p className="muted">No maintenance records yet.</p>}
     </div>
   );
+}
+function RenewalView({ data }) {
+  const reps = { b1: { name: 'Maya Cohen', status: 'Confirmed' }, b2: { name: 'Needed', status: 'Find representative' }, b3: { name: 'Roni Gil', status: 'Confirmed' }, b4: { name: 'Needed', status: 'Contact owners' }, b5: { name: 'Amit Ronen', status: 'Confirmed' }, b6: { name: 'Needed', status: 'Waiting for nomination' }, b7: { name: 'Needed', status: 'Contact owners' }, b8: { name: 'Needed', status: 'Find representative' } };
+  const getStats = (building) => { const apartments = data.apartments.filter((apartment) => apartment.buildingId === building.id); const signed = apartments.filter((apartment) => ['Amidar', 'HD'].includes(apartment.ownerName)).length; const no = apartments.filter((apartment) => apartment.ownerName === 'MR').length; const pending = Math.max(0, apartments.length - signed - no); const owners = [...new Set(apartments.filter((apartment) => !['Amidar', 'HD'].includes(apartment.ownerName)).map((apartment) => apartment.ownerName || 'Individual owner'))]; return { apartments, signed, no, pending, owners, percent: apartments.length ? Math.round(signed / apartments.length * 100) : 0 }; };
+  return <section className="renewal-view"><div className="renewal-header"><div><div className="eyebrow">URBAN RENEWAL TRACKER</div><h2>Pinui-Binui readiness</h2><p>Track owner signatures and representatives across the portfolio.</p></div><div className="renewal-summary"><b>{data.buildings.reduce((sum, building) => sum + getStats(building).signed, 0)}</b><span>signed apartments</span></div></div><div className="renewal-legend"><span><i className="signed-key" />Signed</span><span><i className="no-key" />Said no</span><span><i className="pending-key" />Still needed</span></div><div className="renewal-grid">{data.buildings.map((building) => { const stats = getStats(building); const rep = reps[building.id] || { name: 'Needed', status: 'Find representative' }; return <article className="renewal-card" key={building.id}><div className="renewal-card-head"><div><h3>{building.name}</h3><p>{building.address || building.area} · {building.units} apartments</p></div><strong>{stats.percent}%</strong></div><div className="signature-bar"><i className="signed-bar" style={{ width: `${stats.signed / Math.max(building.units, 1) * 100}%` }} /><i className="no-bar" style={{ width: `${stats.no / Math.max(building.units, 1) * 100}%` }} /></div><div className="signature-counts"><span><b>{stats.signed}</b> signed</span><span><b>{stats.no}</b> said no</span><span><b>{stats.pending}</b> pending</span></div><div className={`representative ${rep.name === 'Needed' ? 'needed' : 'ready'}`}><span>Representative</span><b>{rep.name}</b><small>{rep.status}</small></div><div className="outreach"><b>Owner outreach</b>{stats.owners.slice(0, 4).map((owner) => <span key={owner}>{owner} · {['Amidar', 'HD'].includes(owner) ? 'signed' : 'contact needed'}</span>)}</div></article>; })}</div></section>;
 }
 function LegacyFinanceView({ data }) {
   const [range, setRange] = useState('6 months'); const [group, setGroup] = useState('Building'); const [chart, setChart] = useState('Net cash flow');
