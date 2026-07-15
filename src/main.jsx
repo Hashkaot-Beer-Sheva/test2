@@ -3,6 +3,8 @@ import { createRoot } from 'react-dom/client';
 import './styles.css';
 import './enhancements.css';
 import './people.css';
+import './drawer.css';
+import './finance.css';
 import RealMap from './RealMap';
 
 const seed = {
@@ -10,6 +12,7 @@ const seed = {
     {
       id: 'b1',
       name: 'Gimel 4',
+      street: 'חנה סנש', address: 'חנה סנש 4, שכונה ג׳, באר שבע', lat: 31.26410, lng: 34.79860,
       area: 'Shechuna Gimel',
       units: 18,
       floors: 6,
@@ -21,6 +24,7 @@ const seed = {
     {
       id: 'b2',
       name: 'Gimel 15',
+      street: 'השלום', address: 'השלום 15, שכונה ג׳, באר שבע', lat: 31.26455, lng: 34.79940,
       area: 'Shechuna Gimel',
       units: 24,
       floors: 8,
@@ -32,6 +36,7 @@ const seed = {
     {
       id: 'b3',
       name: 'HaKaf Gimel 4',
+      street: 'גוש עציון', address: 'גוש עציון 4, שכונה ג׳, באר שבע', lat: 31.26345, lng: 34.80020,
       area: 'Shechuna Gimel',
       units: 12,
       floors: 4,
@@ -43,6 +48,7 @@ const seed = {
     {
       id: 'b4',
       name: 'Gimel 22',
+      street: 'רוטנברג', address: 'רוטנברג 22, שכונה ג׳, באר שבע', lat: 31.26290, lng: 34.79910,
       area: 'Shechuna Gimel',
       units: 30,
       floors: 10,
@@ -115,9 +121,10 @@ const seed = {
 const money = (n) => `₪${Number(n || 0).toLocaleString('en-US')}`;
 const mockExpansion = {
   buildings: [
-    { id: 'b5', name: 'Gimel 28', area: 'Shechuna Gimel', units: 16, floors: 5, zone: 'Residential A', color: 'coral', x: 18, y: 45 },
-    { id: 'b6', name: 'Gimel 33', area: 'Shechuna Gimel', units: 20, floors: 7, zone: 'Residential B', color: 'blue', x: 63, y: 60 },
-    { id: 'b7', name: 'Gimel 41', area: 'Shechuna Gimel', units: 14, floors: 4, zone: 'Residential A', color: 'mint', x: 82, y: 42 },
+    { id: 'b5', name: 'Gimel 28', street: 'נילי', address: 'נילי 28, שכונה ג׳, באר שבע', lat: 31.26375, lng: 34.80110, area: 'Shechuna Gimel', units: 16, floors: 5, zone: 'Residential A', color: 'coral', x: 18, y: 45 },
+    { id: 'b6', name: 'Gimel 33', street: 'וינגייט', address: 'וינגייט 33, שכונה ג׳, באר שבע', lat: 31.26260, lng: 34.80055, area: 'Shechuna Gimel', units: 20, floors: 7, zone: 'Residential B', color: 'blue', x: 63, y: 60 },
+    { id: 'b7', name: 'Gimel 41', street: 'בן גוריון', address: 'בן גוריון 41, שכונה ג׳, באר שבע', lat: 31.26485, lng: 34.80125, area: 'Shechuna Gimel', units: 14, floors: 4, zone: 'Residential A', color: 'mint', x: 82, y: 42 },
+    { id: 'b8', name: 'Gimel 48', street: 'רזיאל', address: 'רזיאל 48, שכונה ג׳, באר שבע', lat: 31.26320, lng: 34.80185, area: 'Shechuna Gimel', units: 12, floors: 4, zone: 'Residential A', color: 'gold', x: 76, y: 72 },
   ],
   apartments: [
     { id: 'a5', buildingId: 'b1', number: 'A-05', ownerName: 'Shira Ben-David', tenantName: 'Lior Katz', resident: 'Lior Katz', status: 'Leased', rent: 4950, leaseStart: '2025-02-01', leaseEnd: '2026-01-31', contractUrl: '' },
@@ -147,10 +154,30 @@ const mockExpansion = {
     { id: 'p21', name: 'Shani Dahan', role: 'Tenant', phone: '050-555-7555', apartmentIds: ['a17'] }, { id: 'p22', name: 'Yarden Shalev', role: 'Tenant', phone: '054-555-7666', apartmentIds: ['a19'] },
   ],
 };
+const bulkApartments = Array.from({ length: 8 }, (_, index) => ({
+  id: `bulk-${index}`,
+  buildingId: `b${index + 1}`,
+  number: `G-${index + 1}`,
+  ownerName: ['Amidar', 'Amidar', 'Amidar', 'HD', 'HD', 'MR', 'Individual owner', 'Amidar'][index],
+  tenantName: index % 3 === 1 ? '' : `Sample tenant ${index + 1}`,
+  resident: index % 3 === 1 ? '' : `Sample tenant ${index + 1}`,
+  status: index % 3 === 1 ? 'Vacant' : index === 5 ? 'On market' : 'Leased',
+  rent: 4300 + index * 175,
+  leaseStart: index % 3 === 1 ? '' : `2025-0${(index % 8) + 1}-01`,
+  leaseEnd: index % 3 === 1 ? '' : `2026-0${(index % 8) + 1}-01`,
+  contractUrl: '',
+}));
+const bulkEvents = bulkApartments.flatMap((apartment, index) => [
+  { id: `event-${index}-1`, apartmentId: apartment.id, type: 'Maintenance', title: index % 2 ? 'Furniture replacement' : 'Kitchen leak repair', date: '2025-06-12', cost: 180 + index * 35, notes: 'Mock maintenance record' },
+  { id: `event-${index}-2`, apartmentId: apartment.id, type: 'Inspection', title: 'Annual apartment inspection', date: '2025-05-04', cost: 0, notes: 'Routine visit completed' },
+]);
+const bulkBills = bulkApartments.flatMap((apartment, index) => ['Water', 'Electricity', 'Vaad', 'Arnona', 'Gas'].map((category, billIndex) => ({
+  id: `bill-${index}-${billIndex}`, apartmentId: apartment.id, category, amount: 90 + index * 17 + billIndex * 23, period: '2025-06-01 to 2025-06-30', dueDate: '2025-07-15', status: billIndex === 2 && index % 2 === 0 ? 'Unpaid' : 'Paid',
+})));
 const hydrateData = () => {
   const saved = JSON.parse(localStorage.getItem('blockwise-data') || 'null');
-  if (!saved) return { ...seed, buildings: [...seed.buildings, ...mockExpansion.buildings], apartments: [...seed.apartments, ...mockExpansion.apartments], people: [...seed.people, ...mockExpansion.people] };
-  return { ...saved, buildings: [...(saved.buildings || []), ...mockExpansion.buildings.filter((b) => !(saved.buildings || []).some((item) => item.id === b.id))], apartments: [...(saved.apartments || []), ...mockExpansion.apartments.filter((a) => !(saved.apartments || []).some((item) => item.id === a.id))], people: [...(saved.people || []), ...mockExpansion.people.filter((p) => !(saved.people || []).some((item) => item.id === p.id))] };
+  const base = saved || { ...seed, buildings: [...seed.buildings, ...mockExpansion.buildings], apartments: [...seed.apartments, ...mockExpansion.apartments], people: [...seed.people, ...mockExpansion.people] };
+  return { ...base, buildings: [...(base.buildings || []), ...mockExpansion.buildings.filter((b) => !(base.buildings || []).some((item) => item.id === b.id))], apartments: [...(base.apartments || []), ...mockExpansion.apartments.filter((a) => !(base.apartments || []).some((item) => item.id === a.id)), ...bulkApartments.filter((a) => !(base.apartments || []).some((item) => item.id === a.id))], people: [...(base.people || []), ...mockExpansion.people.filter((p) => !(base.people || []).some((item) => item.id === p.id))], events: [...(base.events || []), ...bulkEvents.filter((event) => !(base.events || []).some((item) => item.id === event.id))], bills: [...(base.bills || []), ...bulkBills.filter((bill) => !(base.bills || []).some((item) => item.id === bill.id))] };
 };
 function App() {
   const [data, setData] = useState(hydrateData);
@@ -523,6 +550,7 @@ function Activity({ data, onAdd }) {
 function ListView({ tab, data, selected, setSelected, onAdd, exportData, importData }) {
   const [selectedApartment, setSelectedApartment] = useState(null);
   const [selectedPerson, setSelectedPerson] = useState(null);
+  const [selectedBuilding, setSelectedBuilding] = useState(null);
   const people = data.people || [];
   const [peopleRole, setPeopleRole] = useState('All');
   const rows =
@@ -558,12 +586,12 @@ function ListView({ tab, data, selected, setSelected, onAdd, exportData, importD
           )}
         </div>
       </div>
-      <div className="record-grid">
-        {rows.map((r) => (
+      <div className={tab === 'Apartments' ? 'building-groups' : 'record-grid'}>
+        {tab === 'Apartments' ? data.buildings.map((building) => <section className="building-group" key={building.id}><div className="group-heading"><h3>{building.name}</h3><span>{data.apartments.filter((apartment) => apartment.buildingId === building.id).length} apartments</span></div><div className="record-grid">{data.apartments.filter((apartment) => apartment.buildingId === building.id).map((r) => <button className={`record-card owner-${String(r.ownerName || '').toLowerCase().replaceAll(' ', '-')}`} key={r.id} onClick={() => setSelectedApartment(r)}><b>{r.number}</b><span>{r.ownerName || 'Individual owner'} · {r.status}</span><small>{r.tenantName || 'No tenant'} · {money(r.rent)}</small></button>)}</div></section>) : rows.map((r) => (
           <button
             className="record-card"
             key={r.id}
-            onClick={() => { if (tab === 'Buildings') setSelected(r); if (tab === 'Apartments') setSelectedApartment(r); if (tab === 'People') setSelectedPerson(r); }}
+            onClick={() => { if (tab === 'Buildings') { setSelected(r); setSelectedBuilding(r); } if (tab === 'Apartments') setSelectedApartment(r); if (tab === 'People') setSelectedPerson(r); }}
           >
             <b>{r.name || r.number || r.title}</b>
             <span>{tab === 'People' ? r.role : r.area || r.status || 'Maintenance record'}</span>
@@ -579,10 +607,33 @@ function ListView({ tab, data, selected, setSelected, onAdd, exportData, importD
         ))}
       </div>
       {!rows.length && <p className="empty">No records yet. Use Add to create your first one.</p>}
-      {selectedApartment && <ApartmentDetails apartment={selectedApartment} buildings={data.buildings} people={data.people} onClose={() => setSelectedApartment(null)} />}
+      {selectedApartment && <div className="drawer-backdrop" onClick={() => setSelectedApartment(null)}><div onClick={(event) => event.stopPropagation()}><ApartmentSidePanel apartment={selectedApartment} buildings={data.buildings} people={data.people} data={data} onClose={() => setSelectedApartment(null)} /></div></div>}
+      {selectedBuilding && !selectedApartment && <div className="drawer-backdrop" onClick={() => setSelectedBuilding(null)}><div onClick={(event) => event.stopPropagation()}><BuildingDrawer building={selectedBuilding} apartments={data.apartments} onApartment={setSelectedApartment} onClose={() => setSelectedBuilding(null)} /></div></div>}
       {selectedPerson && <PersonDetails person={selectedPerson} apartments={data.apartments} buildings={data.buildings} onClose={() => setSelectedPerson(null)} />}
     </section>
   );
+}
+function BuildingDrawer({ building, apartments, onApartment, onClose }) {
+  const items = apartments.filter((apartment) => apartment.buildingId === building.id);
+  return <aside className="side-drawer building-drawer"><button className="close" onClick={onClose}>×</button><div className="eyebrow">BUILDING</div><h2>{building.name}</h2><p className="muted">{building.area} · {building.units} apartments · {building.floors} floors</p><div className="drawer-summary"><b>{items.length}</b><span>loaded apartments</span></div><h3>Apartment register</h3>{items.map((apartment) => <button className={`drawer-apartment owner-${String(apartment.ownerName || '').toLowerCase().replaceAll(' ', '-')}`} key={apartment.id} onClick={() => onApartment(apartment)}><span><b>{apartment.number}</b><small>{apartment.ownerName || 'Individual owner'}</small></span><span><b>{apartment.status}</b><small>{apartment.tenantName || 'No tenant'}</small></span><strong>{money(apartment.rent)}</strong></button>)}</aside>;
+}
+function LegacyApartmentSidePanel({ apartment, buildings, people = [], data, onClose }) {
+  const building = buildings.find((item) => item.id === apartment.buildingId);
+  const related = people.filter((person) => person.apartmentIds?.includes(apartment.id));
+  const events = (data.events || []).filter((event) => event.apartmentId === apartment.id);
+  const bills = (data.bills || []).filter((bill) => bill.apartmentId === apartment.id);
+  const monthlyTotal = events.reduce((sum, event) => sum + Number(event.cost || 0), 0) + bills.reduce((sum, bill) => sum + Number(bill.amount || 0), 0);
+  return <aside className="side-drawer apartment-drawer"><button className="close" onClick={onClose}>×</button><div className="eyebrow">APARTMENT DETAILS</div><h2>{apartment.number} · {building?.name}</h2><p className="muted">{apartment.status} · {money(apartment.rent)} per month</p><div className="detail-grid"><div><span>Owner</span><b>{apartment.ownerName || related.find((p) => p.role === 'Owner')?.name || 'Not added'}</b></div><div><span>Tenant</span><b>{apartment.tenantName || related.find((p) => p.role === 'Tenant')?.name || 'Not added'}</b></div><div><span>Rental period</span><b>{apartment.leaseStart || '—'} to {apartment.leaseEnd || '—'}</b></div><div><span>Contract</span><b><a href={apartment.contractUrl || '#'} onClick={(event) => !apartment.contractUrl && event.preventDefault()}>{apartment.contractUrl ? 'Open PDF' : 'PDF to be added'}</a></b></div></div><div className="cost-total"><span>June total costs</span><b>{money(monthlyTotal)}</b><small>Annual view: {money(monthlyTotal * 12)}</small></div><h3>Recent events</h3>{events.map((event) => <div className="event-row" key={event.id}><div><b>{event.title}</b><small>{event.type} · {event.date}</small></div><strong>{money(event.cost)}</strong></div>)}{!events.length && <p className="muted">No events recorded yet.</p>}<h3>Bills</h3>{bills.map((bill) => <div className="event-row" key={bill.id}><div><b>{bill.category}</b><small>{bill.period} · due {bill.dueDate} · {bill.status}</small></div><strong>{money(bill.amount)}</strong></div>)}</aside>;
+}
+function FinancialSummary({ rent, bills, events }) {
+  const expenses = bills.reduce((sum, bill) => sum + Number(bill.amount || 0), 0) + events.reduce((sum, event) => sum + Number(event.cost || 0), 0);
+  const history = [0.91, 0.96, 1.03, 0.98, 1.08, 1].map((factor, index) => ({ month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'][index], income: Math.round(rent * factor), expense: Math.round(expenses * (0.88 + index * 0.03)) }));
+  const current = history[history.length - 1]; const previous = history[history.length - 2]; const change = Math.round(((current.income - previous.income) / previous.income) * 100); const annualIncome = history.reduce((sum, month) => sum + month.income, 0); const annualExpense = history.reduce((sum, month) => sum + month.expense, 0);
+  return <div className="financial-summary"><div className="finance-head"><h3>Monthly cash flow</h3><span>{change >= 0 ? '↑' : '↓'} {Math.abs(change)}% vs May</span></div><div className="finance-cards"><div className="income"><small>Rent coming in</small><b>{money(current.income)}</b></div><div className="expense"><small>Costs going out</small><b>{money(current.expense)}</b></div></div><div className="finance-history">{history.map((month) => <div key={month.month}><span>{month.month}</span><i style={{ height: `${Math.max(8, month.income / rent * 30)}px` }} /><em style={{ height: `${Math.max(6, month.expense / Math.max(expenses, 1) * 30)}px` }} /></div>)}</div><div className="finance-totals"><span>6-month income <b>{money(annualIncome)}</b></span><span>6-month costs <b>{money(annualExpense)}</b></span><span>Net ratio <b>{Math.round(((annualIncome - annualExpense) / annualIncome) * 100)}%</b></span></div></div>;
+}
+function ApartmentSidePanel({ apartment, buildings, people = [], data, onClose }) {
+  const building = buildings.find((item) => item.id === apartment.buildingId); const related = people.filter((person) => person.apartmentIds?.includes(apartment.id)); const events = (data.events || []).filter((event) => event.apartmentId === apartment.id); const bills = (data.bills || []).filter((bill) => bill.apartmentId === apartment.id);
+  return <aside className="side-drawer apartment-drawer"><button className="close" onClick={onClose}>×</button><div className="eyebrow">APARTMENT DETAILS</div><h2>{apartment.number} · {building?.name}</h2><p className="muted">{apartment.status} · {money(apartment.rent)} per month</p><div className="detail-grid"><div><span>Owner</span><b>{apartment.ownerName || related.find((p) => p.role === 'Owner')?.name || 'Not added'}</b></div><div><span>Tenant</span><b>{apartment.tenantName || related.find((p) => p.role === 'Tenant')?.name || 'Not added'}</b></div><div><span>Rental period</span><b>{apartment.leaseStart || '—'} to {apartment.leaseEnd || '—'}</b></div><div><span>Contract</span><b><a href={apartment.contractUrl || '#'} onClick={(event) => !apartment.contractUrl && event.preventDefault()}>{apartment.contractUrl ? 'Open PDF' : 'PDF to be added'}</a></b></div></div><FinancialSummary rent={apartment.rent} bills={bills} events={events} /><h3>Recent events</h3>{events.map((event) => <div className="event-row" key={event.id}><div><b>{event.title}</b><small>{event.type} · {event.date}</small></div><strong>{money(event.cost)}</strong></div>)}{!events.length && <p className="muted">No events recorded yet.</p>}<h3>Bills</h3>{bills.map((bill) => <div className="event-row" key={bill.id}><div><b>{bill.category}</b><small>{bill.period} · due {bill.dueDate} · {bill.status}</small></div><strong>{money(bill.amount)}</strong></div>)}</aside>;
 }
 function ApartmentDetails({ apartment, buildings, people = [], onClose }) {
   const building = buildings.find((item) => item.id === apartment.buildingId);
@@ -622,8 +673,8 @@ function Modal({ type, buildings, onClose, onSubmit }) {
     ],
   };
   return (
-    <div className="modal-backdrop">
-      <form className="modal" onSubmit={onSubmit}>
+    <div className="modal-backdrop" onClick={onClose}>
+      <form className="modal" onClick={(event) => event.stopPropagation()} onSubmit={onSubmit}>
         <div className="panel-head">
           <div>
             <h2>Add {type}</h2>

@@ -13,7 +13,7 @@ export default function RealMap({ buildings, selected, setSelected }) {
   useEffect(() => {
     const map = leafletRef.current; if (!map || !window.L) return; const L = window.L;
     map.eachLayer((layer) => { if (!layer._url) map.removeLayer(layer); });
-    const points = buildings.map((_, index) => [31.2634 + index * 0.0011, 34.7981 + index * 0.0015]);
+    const points = buildings.map((building, index) => [building.lat || 31.2634 + index * 0.0011, building.lng || 34.7981 + index * 0.0015]);
     const bounds = points.length ? L.latLngBounds(points) : L.latLngBounds([[31.262, 34.796], [31.266, 34.804]]);
     L.rectangle(bounds.pad(0.45), { color: '#ec806d', weight: 2, dashArray: '7 6', fillColor: '#f8c9b5', fillOpacity: 0.16 }).addTo(map).bindTooltip('Your Shechuna Gimel property area');
     buildings.forEach((building, index) => { const icon = L.divIcon({ className: `real-map-pin ${building.color} ${selected?.id === building.id ? 'chosen' : ''}`, html: `<span>⌂</span><b>${building.name}</b><small>${building.units} apartments</small>`, iconSize: [130, 48], iconAnchor: [65, 24] }); L.marker(points[index], { icon }).addTo(map).on('click', () => setSelected(building)); });
