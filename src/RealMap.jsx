@@ -1,12 +1,20 @@
 import React, { useEffect, useRef } from 'react';
 import './map.css';
 
-export default function RealMap({ buildings, selected, setSelected }) {
+export default function RealMap({ buildings = [], selected, setSelected } = {}) {
   const mapRef = useRef(null); const leafletRef = useRef(null);
   useEffect(() => {
     if (!window.L || !mapRef.current || leafletRef.current) return undefined;
     const map = window.L.map(mapRef.current, { zoomControl: false }).setView([31.2639, 34.7998], 15);
-    window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
+    window.L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 19,
+      attribution: 'Imagery &copy; Esri, Maxar, Earthstar Geographics and the GIS User Community',
+    }).addTo(map);
+    window.L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+      pane: 'overlayPane',
+    }).addTo(map);
     window.L.control.zoom({ position: 'topright' }).addTo(map); leafletRef.current = map;
     return () => { map.remove(); leafletRef.current = null; };
   }, []);
@@ -19,5 +27,5 @@ export default function RealMap({ buildings, selected, setSelected }) {
     buildings.forEach((building, index) => { const icon = L.divIcon({ className: `real-map-pin ${building.color} ${selected?.id === building.id ? 'chosen' : ''}`, html: `<span>⌂</span><b>${building.name}</b><small>${building.units} apartments</small>`, iconSize: [130, 48], iconAnchor: [65, 24] }); L.marker(points[index], { icon }).addTo(map).on('click', () => setSelected(building)); });
     if (selected) { const index = buildings.findIndex((building) => building.id === selected.id); if (index >= 0) map.panTo(points[index], { animate: true, duration: 0.4 }); }
   }, [buildings, selected, setSelected]);
-  return <div className="panel map-panel"><div className="panel-head"><div><h2>Shechuna Gimel property map</h2><p>OpenStreetMap · Be'er Sheva</p></div><span className="filter">Drag to pan · Scroll to zoom</span></div><div className="map real-map" ref={mapRef}><div className="map-loading">Loading Be'er Sheva map...</div></div><div className="map-legend"><span><i className="legend coral" />Managed buildings</span><span><i className="zone-key" />Shechuna Gimel area</span><span>Click a building to select it</span></div></div>;
+  return <div className="panel map-panel"><div className="panel-head"><div><h2>Shechuna Gimel aerial map</h2><p>Satellite imagery · Be'er Sheva</p></div><span className="filter">Drag to pan · Scroll to zoom</span></div><div className="map real-map" ref={mapRef}><div className="map-loading">Loading Be'er Sheva aerial map...</div></div><div className="map-legend"><span><i className="legend coral" />Managed buildings</span><span><i className="zone-key" />Shechuna Gimel area</span><span>Click a building to select it</span></div></div>;
 }

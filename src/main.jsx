@@ -9,6 +9,10 @@ import '../maintenance.css';
 import './finance-dashboard.css';
 import './leasing.css';
 import './renewal.css';
+import './renewal-register.css';
+import './renewal-dashboard.css';
+import './pinui.css';
+import './top-search.css';
 import RealMap from './RealMap';
 
 const seed = {
@@ -16,7 +20,10 @@ const seed = {
     {
       id: 'b1',
       name: 'Gimel 4',
-      street: 'חנה סנש', address: 'חנה סנש 4, שכונה ג׳, באר שבע', lat: 31.26410, lng: 34.79860,
+      street: 'חנה סנש',
+      address: 'חנה סנש 4, שכונה ג׳, באר שבע',
+      lat: 31.2641,
+      lng: 34.7986,
       area: 'Shechuna Gimel',
       units: 18,
       floors: 6,
@@ -28,7 +35,10 @@ const seed = {
     {
       id: 'b2',
       name: 'Gimel 15',
-      street: 'השלום', address: 'השלום 15, שכונה ג׳, באר שבע', lat: 31.26455, lng: 34.79940,
+      street: 'השלום',
+      address: 'השלום 15, שכונה ג׳, באר שבע',
+      lat: 31.26455,
+      lng: 34.7994,
       area: 'Shechuna Gimel',
       units: 24,
       floors: 8,
@@ -40,7 +50,10 @@ const seed = {
     {
       id: 'b3',
       name: 'HaKaf Gimel 4',
-      street: 'גוש עציון', address: 'גוש עציון 4, שכונה ג׳, באר שבע', lat: 31.26345, lng: 34.80020,
+      street: 'גוש עציון',
+      address: 'גוש עציון 4, שכונה ג׳, באר שבע',
+      lat: 31.26345,
+      lng: 34.8002,
       area: 'Shechuna Gimel',
       units: 12,
       floors: 4,
@@ -52,7 +65,10 @@ const seed = {
     {
       id: 'b4',
       name: 'Gimel 22',
-      street: 'רוטנברג', address: 'רוטנברג 22, שכונה ג׳, באר שבע', lat: 31.26290, lng: 34.79910,
+      street: 'רוטנברג',
+      address: 'רוטנברג 22, שכונה ג׳, באר שבע',
+      lat: 31.2629,
+      lng: 34.7991,
       area: 'Shechuna Gimel',
       units: 30,
       floors: 10,
@@ -67,7 +83,12 @@ const seed = {
       id: 'a1',
       buildingId: 'b1',
       number: 'A-01',
-      resident: 'Maya Cohen', ownerName: 'Avi Cohen', tenantName: 'Maya Cohen', leaseStart: '2024-07-01', leaseEnd: '2026-06-30', contractUrl: '',
+      resident: 'Maya Cohen',
+      ownerName: 'Avi Cohen',
+      tenantName: 'Maya Cohen',
+      leaseStart: '2024-07-01',
+      leaseEnd: '2026-06-30',
+      contractUrl: '',
       status: 'Leased',
       rent: 4850,
       due: '2024-07-01',
@@ -76,7 +97,12 @@ const seed = {
       id: 'a2',
       buildingId: 'b1',
       number: 'A-02',
-      resident: 'Noam Levi', ownerName: 'Ruth Levi', tenantName: 'Noam Levi', leaseStart: '2023-10-15', leaseEnd: '2025-10-14', contractUrl: '',
+      resident: 'Noam Levi',
+      ownerName: 'Ruth Levi',
+      tenantName: 'Noam Levi',
+      leaseStart: '2023-10-15',
+      leaseEnd: '2025-10-14',
+      contractUrl: '',
       status: 'Leased',
       rent: 5200,
       due: '2023-10-15',
@@ -85,7 +111,12 @@ const seed = {
       id: 'a3',
       buildingId: 'b1',
       number: 'A-03',
-      resident: '', ownerName: 'Miriam Azulay', tenantName: '', leaseStart: '', leaseEnd: '', contractUrl: '',
+      resident: '',
+      ownerName: 'Miriam Azulay',
+      tenantName: '',
+      leaseStart: '',
+      leaseEnd: '',
+      contractUrl: '',
       status: 'Vacant',
       rent: 4600,
       due: '2025-06-03',
@@ -94,7 +125,12 @@ const seed = {
       id: 'a4',
       buildingId: 'b1',
       number: 'A-04',
-      resident: 'Dana Shalev', ownerName: 'Oren Shalev', tenantName: 'Dana Shalev', leaseStart: '2025-07-01', leaseEnd: '2026-06-30', contractUrl: '',
+      resident: 'Dana Shalev',
+      ownerName: 'Oren Shalev',
+      tenantName: 'Dana Shalev',
+      leaseStart: '2025-07-01',
+      leaseEnd: '2026-06-30',
+      contractUrl: '',
       status: 'On market',
       rent: 5100,
       due: '2025-06-27',
@@ -118,44 +154,430 @@ const seed = {
     { id: 'p2', name: 'Maya Cohen', role: 'Tenant', phone: '052-555-2091', apartmentIds: ['a1'] },
     { id: 'p3', name: 'Ruth Levi', role: 'Owner', phone: '050-555-3082', apartmentIds: ['a2'] },
     { id: 'p4', name: 'Noam Levi', role: 'Tenant', phone: '054-555-4102', apartmentIds: ['a2'] },
-    { id: 'p5', name: 'Yossi Electric', role: 'Technician', phone: '050-555-9012', apartmentIds: [] },
-    { id: 'p6', name: 'Neta Barak', role: 'Insurance agent', phone: '052-555-8801', apartmentIds: [] },
+    {
+      id: 'p5',
+      name: 'Yossi Electric',
+      role: 'Technician',
+      phone: '050-555-9012',
+      apartmentIds: [],
+    },
+    {
+      id: 'p6',
+      name: 'Neta Barak',
+      role: 'Insurance agent',
+      phone: '052-555-8801',
+      apartmentIds: [],
+    },
   ],
 };
 const money = (n) => `₪${Number(n || 0).toLocaleString('en-US')}`;
 const mockExpansion = {
   buildings: [
-    { id: 'b5', name: 'Gimel 28', street: 'נילי', address: 'נילי 28, שכונה ג׳, באר שבע', lat: 31.26375, lng: 34.80110, area: 'Shechuna Gimel', units: 16, floors: 5, zone: 'Residential A', color: 'coral', x: 18, y: 45 },
-    { id: 'b6', name: 'Gimel 33', street: 'וינגייט', address: 'וינגייט 33, שכונה ג׳, באר שבע', lat: 31.26260, lng: 34.80055, area: 'Shechuna Gimel', units: 20, floors: 7, zone: 'Residential B', color: 'blue', x: 63, y: 60 },
-    { id: 'b7', name: 'Gimel 41', street: 'בן גוריון', address: 'בן גוריון 41, שכונה ג׳, באר שבע', lat: 31.26485, lng: 34.80125, area: 'Shechuna Gimel', units: 14, floors: 4, zone: 'Residential A', color: 'mint', x: 82, y: 42 },
-    { id: 'b8', name: 'Gimel 48', street: 'רזיאל', address: 'רזיאל 48, שכונה ג׳, באר שבע', lat: 31.26320, lng: 34.80185, area: 'Shechuna Gimel', units: 12, floors: 4, zone: 'Residential A', color: 'gold', x: 76, y: 72 },
+    {
+      id: 'b5',
+      name: 'Gimel 28',
+      street: 'נילי',
+      address: 'נילי 28, שכונה ג׳, באר שבע',
+      lat: 31.26375,
+      lng: 34.8011,
+      area: 'Shechuna Gimel',
+      units: 16,
+      floors: 5,
+      zone: 'Residential A',
+      color: 'coral',
+      x: 18,
+      y: 45,
+    },
+    {
+      id: 'b6',
+      name: 'Gimel 33',
+      street: 'וינגייט',
+      address: 'וינגייט 33, שכונה ג׳, באר שבע',
+      lat: 31.2626,
+      lng: 34.80055,
+      area: 'Shechuna Gimel',
+      units: 20,
+      floors: 7,
+      zone: 'Residential B',
+      color: 'blue',
+      x: 63,
+      y: 60,
+    },
+    {
+      id: 'b7',
+      name: 'Gimel 41',
+      street: 'בן גוריון',
+      address: 'בן גוריון 41, שכונה ג׳, באר שבע',
+      lat: 31.26485,
+      lng: 34.80125,
+      area: 'Shechuna Gimel',
+      units: 14,
+      floors: 4,
+      zone: 'Residential A',
+      color: 'mint',
+      x: 82,
+      y: 42,
+    },
+    {
+      id: 'b8',
+      name: 'Gimel 48',
+      street: 'רזיאל',
+      address: 'רזיאל 48, שכונה ג׳, באר שבע',
+      lat: 31.2632,
+      lng: 34.80185,
+      area: 'Shechuna Gimel',
+      units: 12,
+      floors: 4,
+      zone: 'Residential A',
+      color: 'gold',
+      x: 76,
+      y: 72,
+    },
   ],
   apartments: [
-    { id: 'a5', buildingId: 'b1', number: 'A-05', ownerName: 'Shira Ben-David', tenantName: 'Lior Katz', resident: 'Lior Katz', status: 'Leased', rent: 4950, leaseStart: '2025-02-01', leaseEnd: '2026-01-31', contractUrl: '' },
-    { id: 'a6', buildingId: 'b2', number: 'B-01', ownerName: 'Eli Mizrahi', tenantName: 'Yael Peretz', resident: 'Yael Peretz', status: 'Leased', rent: 5600, leaseStart: '2024-09-01', leaseEnd: '2026-08-31', contractUrl: '' },
-    { id: 'a7', buildingId: 'b2', number: 'B-02', ownerName: 'Eli Mizrahi', tenantName: '', resident: '', status: 'Vacant', rent: 5400, leaseStart: '', leaseEnd: '', contractUrl: '' },
-    { id: 'a8', buildingId: 'b3', number: '2', ownerName: 'Tal Shachar', tenantName: 'Roni Gil', resident: 'Roni Gil', status: 'Leased', rent: 6100, leaseStart: '2025-04-15', leaseEnd: '2026-04-14', contractUrl: '' },
-    { id: 'a9', buildingId: 'b3', number: '3', ownerName: 'Tal Shachar', tenantName: '', resident: '', status: 'On market', rent: 6250, leaseStart: '', leaseEnd: '', contractUrl: '' },
-    { id: 'a10', buildingId: 'b4', number: '1', ownerName: 'Nir Avital', tenantName: 'Ofir Cohen', resident: 'Ofir Cohen', status: 'Leased', rent: 4700, leaseStart: '2024-12-01', leaseEnd: '2025-11-30', contractUrl: '' },
-    { id: 'a11', buildingId: 'b4', number: '2', ownerName: 'Nir Avital', tenantName: '', resident: '', status: 'Vacant', rent: 4650, leaseStart: '', leaseEnd: '', contractUrl: '' },
-    { id: 'a12', buildingId: 'b5', number: '1', ownerName: 'Michal Azulay', tenantName: 'Amit Ronen', resident: 'Amit Ronen', status: 'Leased', rent: 4550, leaseStart: '2025-01-15', leaseEnd: '2026-01-14', contractUrl: '' },
-    { id: 'a13', buildingId: 'b5', number: '2', ownerName: 'Michal Azulay', tenantName: '', resident: '', status: 'Vacant', rent: 4500, leaseStart: '', leaseEnd: '', contractUrl: '' },
-    { id: 'a14', buildingId: 'b6', number: '1', ownerName: 'Gadi Fried', tenantName: 'Hila Naveh', resident: 'Hila Naveh', status: 'Leased', rent: 5750, leaseStart: '2025-06-01', leaseEnd: '2026-05-31', contractUrl: '' },
-    { id: 'a15', buildingId: 'b6', number: '2', ownerName: 'Gadi Fried', tenantName: 'Matan Bar', resident: 'Matan Bar', status: 'Leased', rent: 5800, leaseStart: '2024-11-01', leaseEnd: '2025-10-31', contractUrl: '' },
-    { id: 'a16', buildingId: 'b6', number: '3', ownerName: 'Gadi Fried', tenantName: '', resident: '', status: 'On market', rent: 5900, leaseStart: '', leaseEnd: '', contractUrl: '' },
-    { id: 'a17', buildingId: 'b7', number: '1', ownerName: 'Anat Levi', tenantName: 'Shani Dahan', resident: 'Shani Dahan', status: 'Leased', rent: 5100, leaseStart: '2025-03-01', leaseEnd: '2026-02-28', contractUrl: '' },
-    { id: 'a18', buildingId: 'b7', number: '2', ownerName: 'Anat Levi', tenantName: '', resident: '', status: 'Vacant', rent: 5000, leaseStart: '', leaseEnd: '', contractUrl: '' },
-    { id: 'a19', buildingId: 'b7', number: '3', ownerName: 'Anat Levi', tenantName: 'Yarden Shalev', resident: 'Yarden Shalev', status: 'Leased', rent: 5150, leaseStart: '2024-08-01', leaseEnd: '2025-07-31', contractUrl: '' },
+    {
+      id: 'a5',
+      buildingId: 'b1',
+      number: 'A-05',
+      ownerName: 'Shira Ben-David',
+      tenantName: 'Lior Katz',
+      resident: 'Lior Katz',
+      status: 'Leased',
+      rent: 4950,
+      leaseStart: '2025-02-01',
+      leaseEnd: '2026-01-31',
+      contractUrl: '',
+    },
+    {
+      id: 'a6',
+      buildingId: 'b2',
+      number: 'B-01',
+      ownerName: 'Eli Mizrahi',
+      tenantName: 'Yael Peretz',
+      resident: 'Yael Peretz',
+      status: 'Leased',
+      rent: 5600,
+      leaseStart: '2024-09-01',
+      leaseEnd: '2026-08-31',
+      contractUrl: '',
+    },
+    {
+      id: 'a7',
+      buildingId: 'b2',
+      number: 'B-02',
+      ownerName: 'Eli Mizrahi',
+      tenantName: '',
+      resident: '',
+      status: 'Vacant',
+      rent: 5400,
+      leaseStart: '',
+      leaseEnd: '',
+      contractUrl: '',
+    },
+    {
+      id: 'a8',
+      buildingId: 'b3',
+      number: '2',
+      ownerName: 'Tal Shachar',
+      tenantName: 'Roni Gil',
+      resident: 'Roni Gil',
+      status: 'Leased',
+      rent: 6100,
+      leaseStart: '2025-04-15',
+      leaseEnd: '2026-04-14',
+      contractUrl: '',
+    },
+    {
+      id: 'a9',
+      buildingId: 'b3',
+      number: '3',
+      ownerName: 'Tal Shachar',
+      tenantName: '',
+      resident: '',
+      status: 'On market',
+      rent: 6250,
+      leaseStart: '',
+      leaseEnd: '',
+      contractUrl: '',
+    },
+    {
+      id: 'a10',
+      buildingId: 'b4',
+      number: '1',
+      ownerName: 'Nir Avital',
+      tenantName: 'Ofir Cohen',
+      resident: 'Ofir Cohen',
+      status: 'Leased',
+      rent: 4700,
+      leaseStart: '2024-12-01',
+      leaseEnd: '2025-11-30',
+      contractUrl: '',
+    },
+    {
+      id: 'a11',
+      buildingId: 'b4',
+      number: '2',
+      ownerName: 'Nir Avital',
+      tenantName: '',
+      resident: '',
+      status: 'Vacant',
+      rent: 4650,
+      leaseStart: '',
+      leaseEnd: '',
+      contractUrl: '',
+    },
+    {
+      id: 'a12',
+      buildingId: 'b5',
+      number: '1',
+      ownerName: 'Michal Azulay',
+      tenantName: 'Amit Ronen',
+      resident: 'Amit Ronen',
+      status: 'Leased',
+      rent: 4550,
+      leaseStart: '2025-01-15',
+      leaseEnd: '2026-01-14',
+      contractUrl: '',
+    },
+    {
+      id: 'a13',
+      buildingId: 'b5',
+      number: '2',
+      ownerName: 'Michal Azulay',
+      tenantName: '',
+      resident: '',
+      status: 'Vacant',
+      rent: 4500,
+      leaseStart: '',
+      leaseEnd: '',
+      contractUrl: '',
+    },
+    {
+      id: 'a14',
+      buildingId: 'b6',
+      number: '1',
+      ownerName: 'Gadi Fried',
+      tenantName: 'Hila Naveh',
+      resident: 'Hila Naveh',
+      status: 'Leased',
+      rent: 5750,
+      leaseStart: '2025-06-01',
+      leaseEnd: '2026-05-31',
+      contractUrl: '',
+    },
+    {
+      id: 'a15',
+      buildingId: 'b6',
+      number: '2',
+      ownerName: 'Gadi Fried',
+      tenantName: 'Matan Bar',
+      resident: 'Matan Bar',
+      status: 'Leased',
+      rent: 5800,
+      leaseStart: '2024-11-01',
+      leaseEnd: '2025-10-31',
+      contractUrl: '',
+    },
+    {
+      id: 'a16',
+      buildingId: 'b6',
+      number: '3',
+      ownerName: 'Gadi Fried',
+      tenantName: '',
+      resident: '',
+      status: 'On market',
+      rent: 5900,
+      leaseStart: '',
+      leaseEnd: '',
+      contractUrl: '',
+    },
+    {
+      id: 'a17',
+      buildingId: 'b7',
+      number: '1',
+      ownerName: 'Anat Levi',
+      tenantName: 'Shani Dahan',
+      resident: 'Shani Dahan',
+      status: 'Leased',
+      rent: 5100,
+      leaseStart: '2025-03-01',
+      leaseEnd: '2026-02-28',
+      contractUrl: '',
+    },
+    {
+      id: 'a18',
+      buildingId: 'b7',
+      number: '2',
+      ownerName: 'Anat Levi',
+      tenantName: '',
+      resident: '',
+      status: 'Vacant',
+      rent: 5000,
+      leaseStart: '',
+      leaseEnd: '',
+      contractUrl: '',
+    },
+    {
+      id: 'a19',
+      buildingId: 'b7',
+      number: '3',
+      ownerName: 'Anat Levi',
+      tenantName: 'Yarden Shalev',
+      resident: 'Yarden Shalev',
+      status: 'Leased',
+      rent: 5150,
+      leaseStart: '2024-08-01',
+      leaseEnd: '2025-07-31',
+      contractUrl: '',
+    },
   ],
   people: [
-    { id: 'p7', name: 'Shira Ben-David', role: 'Owner', phone: '050-555-6111', apartmentIds: ['a5'] }, { id: 'p8', name: 'Lior Katz', role: 'Tenant', phone: '052-555-6222', apartmentIds: ['a5'] },
-    { id: 'p9', name: 'Eli Mizrahi', role: 'Owner', phone: '050-555-6333', apartmentIds: ['a6', 'a7'] }, { id: 'p10', name: 'Yael Peretz', role: 'Tenant', phone: '054-555-6444', apartmentIds: ['a6'] },
-    { id: 'p11', name: 'Tal Shachar', role: 'Owner', phone: '052-555-6555', apartmentIds: ['a8', 'a9'] }, { id: 'p12', name: 'Roni Gil', role: 'Tenant', phone: '050-555-6666', apartmentIds: ['a8'] },
-    { id: 'p13', name: 'Nir Avital', role: 'Owner', phone: '054-555-6777', apartmentIds: ['a10', 'a11'] }, { id: 'p14', name: 'Ofir Cohen', role: 'Tenant', phone: '052-555-6888', apartmentIds: ['a10'] },
-    { id: 'p15', name: 'Michal Azulay', role: 'Owner', phone: '050-555-6999', apartmentIds: ['a12', 'a13'] }, { id: 'p16', name: 'Amit Ronen', role: 'Tenant', phone: '054-555-7000', apartmentIds: ['a12'] },
-    { id: 'p17', name: 'Gadi Fried', role: 'Owner', phone: '052-555-7111', apartmentIds: ['a14', 'a15', 'a16'] }, { id: 'p18', name: 'Hila Naveh', role: 'Tenant', phone: '050-555-7222', apartmentIds: ['a14'] },
-    { id: 'p19', name: 'Matan Bar', role: 'Tenant', phone: '054-555-7333', apartmentIds: ['a15'] }, { id: 'p20', name: 'Anat Levi', role: 'Owner', phone: '052-555-7444', apartmentIds: ['a17', 'a18', 'a19'] },
-    { id: 'p21', name: 'Shani Dahan', role: 'Tenant', phone: '050-555-7555', apartmentIds: ['a17'] }, { id: 'p22', name: 'Yarden Shalev', role: 'Tenant', phone: '054-555-7666', apartmentIds: ['a19'] },
+    {
+      id: 'p7',
+      name: 'Shira Ben-David',
+      role: 'Owner',
+      phone: '050-555-6111',
+      apartmentIds: ['a5'],
+    },
+    { id: 'p8', name: 'Lior Katz', role: 'Tenant', phone: '052-555-6222', apartmentIds: ['a5'] },
+    {
+      id: 'p9',
+      name: 'Eli Mizrahi',
+      role: 'Owner',
+      phone: '050-555-6333',
+      apartmentIds: ['a6', 'a7'],
+    },
+    { id: 'p10', name: 'Yael Peretz', role: 'Tenant', phone: '054-555-6444', apartmentIds: ['a6'] },
+    {
+      id: 'p11',
+      name: 'Tal Shachar',
+      role: 'Owner',
+      phone: '052-555-6555',
+      apartmentIds: ['a8', 'a9'],
+    },
+    { id: 'p12', name: 'Roni Gil', role: 'Tenant', phone: '050-555-6666', apartmentIds: ['a8'] },
+    {
+      id: 'p13',
+      name: 'Nir Avital',
+      role: 'Owner',
+      phone: '054-555-6777',
+      apartmentIds: ['a10', 'a11'],
+    },
+    { id: 'p14', name: 'Ofir Cohen', role: 'Tenant', phone: '052-555-6888', apartmentIds: ['a10'] },
+    {
+      id: 'p15',
+      name: 'Michal Azulay',
+      role: 'Owner',
+      phone: '050-555-6999',
+      apartmentIds: ['a12', 'a13'],
+    },
+    { id: 'p16', name: 'Amit Ronen', role: 'Tenant', phone: '054-555-7000', apartmentIds: ['a12'] },
+    {
+      id: 'p17',
+      name: 'Gadi Fried',
+      role: 'Owner',
+      phone: '052-555-7111',
+      apartmentIds: ['a14', 'a15', 'a16'],
+    },
+    { id: 'p18', name: 'Hila Naveh', role: 'Tenant', phone: '050-555-7222', apartmentIds: ['a14'] },
+    { id: 'p19', name: 'Matan Bar', role: 'Tenant', phone: '054-555-7333', apartmentIds: ['a15'] },
+    {
+      id: 'p20',
+      name: 'Anat Levi',
+      role: 'Owner',
+      phone: '052-555-7444',
+      apartmentIds: ['a17', 'a18', 'a19'],
+    },
+    {
+      id: 'p21',
+      name: 'Shani Dahan',
+      role: 'Tenant',
+      phone: '050-555-7555',
+      apartmentIds: ['a17'],
+    },
+    {
+      id: 'p22',
+      name: 'Yarden Shalev',
+      role: 'Tenant',
+      phone: '054-555-7666',
+      apartmentIds: ['a19'],
+    },
+  ],
+};
+const spreadsheetImport = {
+  buildings: [
+    {
+      id: 'b9',
+      name: 'חנה סנש 8',
+      street: 'חנה סנש',
+      streetNumber: '8',
+      address: 'חנה סנש 8, שכונה ג׳, באר שבע',
+      area: 'Shechuna Gimel',
+      units: 1,
+      floors: 2,
+      zone: 'Residential',
+      color: 'gold',
+      lat: 31.2643,
+      lng: 34.7989,
+    },
+  ],
+  apartments: [
+    {
+      id: 'a20',
+      buildingId: 'b9',
+      uniqueId: '3228',
+      apptId: 'U001',
+      number: '5',
+      entrance: 'ד',
+      street: 'חנה סנש',
+      streetNumber: '8',
+      altAddress: 'חנה סנש 28\\8',
+      addressNotEditable: 'חנה סנש 8/5',
+      rooms: 2,
+      garden: false,
+      floor: 2,
+      size: 38.2,
+      parcel: 32,
+      subA: 28,
+      ownerName: 'HD',
+      owner1: '',
+      owner2: '',
+      id1: '',
+      id2: '',
+      phone1: '',
+      phone2: '',
+      warning: '',
+      propertyClass: 'Owned',
+      internalOwner: '',
+      note: '',
+      validated: true,
+      validationDate: '2023-06-15T15:31:08',
+      ownerContract: 'השקעות דרום',
+      invested: 535282,
+      housewares: '',
+      agreement: '',
+      rentable: true,
+      representative: 'jhs73vgs',
+      lawyer: '',
+      pinuiStatus: '1. yet started Process',
+      tenantName: '',
+      resident: '',
+      status: 'Vacant',
+      rent: 0,
+      leaseStart: '',
+      leaseEnd: '',
+      contractUrl: '',
+    },
+  ],
+  people: [
+    {
+      id: 'p23',
+      name: 'HD',
+      role: 'Owner',
+      phone: '',
+      apartmentIds: ['a20'],
+      notes: 'Imported owner record',
+    },
   ],
 };
 const bulkApartments = Array.from({ length: 8 }, (_, index) => ({
@@ -172,38 +594,177 @@ const bulkApartments = Array.from({ length: 8 }, (_, index) => ({
   contractUrl: '',
 }));
 const bulkEvents = bulkApartments.flatMap((apartment, index) => [
-  { id: `event-${index}-1`, apartmentId: apartment.id, type: 'Maintenance', title: index % 2 ? 'Furniture replacement' : 'Kitchen leak repair', date: '2025-06-12', cost: 180 + index * 35, notes: 'Mock maintenance record' },
-  { id: `event-${index}-2`, apartmentId: apartment.id, type: 'Inspection', title: 'Annual apartment inspection', date: '2025-05-04', cost: 0, notes: 'Routine visit completed' },
+  {
+    id: `event-${index}-1`,
+    apartmentId: apartment.id,
+    type: 'Maintenance',
+    title: index % 2 ? 'Furniture replacement' : 'Kitchen leak repair',
+    date: '2025-06-12',
+    cost: 180 + index * 35,
+    notes: 'Mock maintenance record',
+  },
+  {
+    id: `event-${index}-2`,
+    apartmentId: apartment.id,
+    type: 'Inspection',
+    title: 'Annual apartment inspection',
+    date: '2025-05-04',
+    cost: 0,
+    notes: 'Routine visit completed',
+  },
 ]);
-const bulkBills = bulkApartments.flatMap((apartment, index) => ['Water', 'Electricity', 'Vaad', 'Arnona', 'Gas'].map((category, billIndex) => ({
-  id: `bill-${index}-${billIndex}`, apartmentId: apartment.id, category, amount: 90 + index * 17 + billIndex * 23, period: '2025-06-01 to 2025-06-30', dueDate: '2025-07-15', status: billIndex === 2 && index % 2 === 0 ? 'Unpaid' : 'Paid',
-})));
+const bulkBills = bulkApartments.flatMap((apartment, index) =>
+  ['Water', 'Electricity', 'Vaad', 'Arnona', 'Gas'].map((category, billIndex) => ({
+    id: `bill-${index}-${billIndex}`,
+    apartmentId: apartment.id,
+    category,
+    amount: 90 + index * 17 + billIndex * 23,
+    period: '2025-06-01 to 2025-06-30',
+    dueDate: '2025-07-15',
+    status: billIndex === 2 && index % 2 === 0 ? 'Unpaid' : 'Paid',
+  }))
+);
 const insuranceProviders = [
   { name: 'Phoenix', agent: 'Dana Shavit', phone: '03-555-1200', email: 'dana.shavit@example.com' },
   { name: 'Migdal', agent: 'Omer Katz', phone: '03-555-2300', email: 'omer.katz@example.com' },
-  { name: 'Menora', agent: 'Ravit Azulay', phone: '03-555-3400', email: 'ravit.azulay@example.com' },
+  {
+    name: 'Menora',
+    agent: 'Ravit Azulay',
+    phone: '03-555-3400',
+    email: 'ravit.azulay@example.com',
+  },
 ];
 const maintenanceTypes = [
-  ['Leak repair', 'Maintenance', 'Yossi Electric'], ['Annual inspection', 'Inspection', 'Maya Services'],
-  ['Paint job', 'Renovation', 'Color Team'], ['Appliance replacement', 'Appliance', 'HomeTech Beersheba'],
+  ['Leak repair', 'Maintenance', 'Yossi Electric'],
+  ['Annual inspection', 'Inspection', 'Maya Services'],
+  ['Paint job', 'Renovation', 'Color Team'],
+  ['Appliance replacement', 'Appliance', 'HomeTech Beersheba'],
 ];
 const buildApartmentOperations = (apartments) => ({
-  apartments: apartments.map((apartment, index) => { const insurance = insuranceProviders[index % insuranceProviders.length]; return { ...apartment, insuranceProvider: insurance.name, policyNumber: `POL-${100000 + index}`, policyStart: '2025-01-01', policyEnd: '2025-12-31', insuranceAgent: insurance.agent, insuranceAgentPhone: insurance.phone, insuranceAgentEmail: insurance.email }; }),
-  maintenance: apartments.flatMap((apartment, index) => maintenanceTypes.map((item, typeIndex) => ({ id: `maint-${apartment.id}-${typeIndex}`, apartmentId: apartment.id, buildingId: apartment.buildingId, title: item[0], category: item[1], technician: item[2], insuranceAgent: index % 3 === 0 ? insuranceProviders[index % 3].agent : '', date: `2025-0${(typeIndex % 6) + 1}-${String((index % 20) + 1).padStart(2, '0')}`, cost: 180 + index * 22 + typeIndex * 95, status: typeIndex === 1 ? 'Done' : index % 4 === 0 ? 'In progress' : 'Done', notes: 'Mock operational record — edit me' }))),
+  apartments: apartments.map((apartment, index) => {
+    const insurance = insuranceProviders[index % insuranceProviders.length];
+    return {
+      ...apartment,
+      insuranceProvider: insurance.name,
+      policyNumber: `POL-${100000 + index}`,
+      policyStart: '2025-01-01',
+      policyEnd: '2025-12-31',
+      insuranceAgent: insurance.agent,
+      insuranceAgentPhone: insurance.phone,
+      insuranceAgentEmail: insurance.email,
+    };
+  }),
+  maintenance: apartments.flatMap((apartment, index) =>
+    maintenanceTypes.map((item, typeIndex) => ({
+      id: `maint-${apartment.id}-${typeIndex}`,
+      apartmentId: apartment.id,
+      buildingId: apartment.buildingId,
+      title: item[0],
+      category: item[1],
+      technician: item[2],
+      insuranceAgent: index % 3 === 0 ? insuranceProviders[index % 3].agent : '',
+      date: `2025-0${(typeIndex % 6) + 1}-${String((index % 20) + 1).padStart(2, '0')}`,
+      cost: 180 + index * 22 + typeIndex * 95,
+      status: typeIndex === 1 ? 'Done' : index % 4 === 0 ? 'In progress' : 'Done',
+      notes: 'Mock operational record — edit me',
+    }))
+  ),
+});
+const enrichPerson = (person, index = 0) => ({
+  ...person,
+  email: person.email || `${person.name.toLowerCase().replaceAll(' ', '.')}@example.com`,
+  preferredContact: person.preferredContact || (index % 2 ? 'WhatsApp' : 'Phone'),
+  notes:
+    person.notes ||
+    (person.role === 'Owner'
+      ? 'One with the garden'
+      : person.role === 'Tenant'
+        ? 'Daughter of a former resident'
+        : 'Reliable contact for urgent callouts'),
+  interactions:
+    person.interactions ||
+    (['Technician', 'Insurance agent'].includes(person.role)
+      ? [
+          {
+            id: `${person.id}-i1`,
+            apartment: person.apartmentIds?.[0] || 'Portfolio callout',
+            date: '2025-06-12',
+            title: person.role === 'Technician' ? 'Leak repair' : 'Policy review',
+            cost: person.role === 'Technician' ? 420 : 0,
+          },
+          {
+            id: `${person.id}-i2`,
+            apartment: person.apartmentIds?.[1] || 'Building visit',
+            date: '2025-05-04',
+            title: 'Follow-up visit',
+            cost: person.role === 'Technician' ? 180 : 0,
+          },
+        ]
+      : []),
 });
 const hydrateData = () => {
   const saved = JSON.parse(localStorage.getItem('blockwise-data') || 'null');
-  const base = saved || { ...seed, buildings: [...seed.buildings, ...mockExpansion.buildings], apartments: [...seed.apartments, ...mockExpansion.apartments], people: [...seed.people, ...mockExpansion.people] };
-  const apartments = [...(base.apartments || []), ...mockExpansion.apartments.filter((a) => !(base.apartments || []).some((item) => item.id === a.id)), ...bulkApartments.filter((a) => !(base.apartments || []).some((item) => item.id === a.id))];
+  const base = saved || {
+    ...seed,
+    buildings: [...seed.buildings, ...mockExpansion.buildings, ...spreadsheetImport.buildings],
+    apartments: [...seed.apartments, ...mockExpansion.apartments, ...spreadsheetImport.apartments],
+    people: [...seed.people, ...mockExpansion.people, ...spreadsheetImport.people],
+  };
+  const apartments = [
+    ...(base.apartments || []),
+    ...mockExpansion.apartments.filter(
+      (a) => !(base.apartments || []).some((item) => item.id === a.id)
+    ),
+    ...bulkApartments.filter((a) => !(base.apartments || []).some((item) => item.id === a.id)),
+    ...spreadsheetImport.apartments.filter(
+      (a) => !(base.apartments || []).some((item) => item.id === a.id)
+    ),
+  ];
   const operations = buildApartmentOperations(apartments);
-  return { ...base, buildings: [...(base.buildings || []), ...mockExpansion.buildings.filter((b) => !(base.buildings || []).some((item) => item.id === b.id))], apartments: operations.apartments, people: [...(base.people || []), ...mockExpansion.people.filter((p) => !(base.people || []).some((item) => item.id === p.id))], events: [...(base.events || []), ...bulkEvents.filter((event) => !(base.events || []).some((item) => item.id === event.id))], bills: [...(base.bills || []), ...bulkBills.filter((bill) => !(base.bills || []).some((item) => item.id === bill.id))], maintenance: [...(base.maintenance || []), ...operations.maintenance.filter((item) => !(base.maintenance || []).some((existing) => existing.id === item.id))] };
+  return {
+    ...base,
+    buildings: [
+      ...(base.buildings || []),
+      ...mockExpansion.buildings.filter(
+        (b) => !(base.buildings || []).some((item) => item.id === b.id)
+      ),
+      ...spreadsheetImport.buildings.filter(
+        (b) => !(base.buildings || []).some((item) => item.id === b.id)
+      ),
+    ],
+    apartments: operations.apartments,
+    people: [
+      ...(base.people || []),
+      ...mockExpansion.people.filter((p) => !(base.people || []).some((item) => item.id === p.id)),
+      ...spreadsheetImport.people.filter(
+        (p) => !(base.people || []).some((item) => item.id === p.id)
+      ),
+    ],
+    events: [
+      ...(base.events || []),
+      ...bulkEvents.filter((event) => !(base.events || []).some((item) => item.id === event.id)),
+    ],
+    bills: [
+      ...(base.bills || []),
+      ...bulkBills.filter((bill) => !(base.bills || []).some((item) => item.id === bill.id)),
+    ],
+    maintenance: [
+      ...(base.maintenance || []),
+      ...operations.maintenance.filter(
+        (item) => !(base.maintenance || []).some((existing) => existing.id === item.id)
+      ),
+    ],
+  };
 };
+const parseMasterCsv = (text) => { const lines = text.trim().split(/\r?\n/).filter(Boolean); if (lines.length < 2) return { buildings: [], apartments: [] }; const headers = lines[0].split(','); const rows = lines.slice(1).map((line) => { const values = line.split(','); return Object.fromEntries(headers.map((header, index) => [header, (values[index] || '').trim()])); }); const buildingMap = new Map(); const apartments = rows.map((row, index) => { const key = `${row.Street}-${row['Street Number']}`; if (!buildingMap.has(key)) buildingMap.set(key, { id: `csv-building-${buildingMap.size + 1}`, name: `${row.Street} ${row['Street Number']}`, street: row.Street, streetNumber: row['Street Number'], address: row['Address (Not editable)'] || `${row.Street} ${row['Street Number']}`, area: 'Shechuna Gimel', units: 0, floors: Number(row.Floor || 0), zone: row.Class || 'Residential', color: 'gold', lat: 31.2643 + buildingMap.size * 0.0004, lng: 34.7989 + buildingMap.size * 0.0004 }); const building = buildingMap.get(key); building.units += 1; return { id: `csv-apartment-${row['Appt ID'] || index}`, buildingId: building.id, uniqueId: row.UniquID, apptId: row['Appt ID'], number: row.Appt, entrance: row.Entrance, street: row.Street, streetNumber: row['Street Number'], altAddress: row.AltAddress, addressNotEditable: row['Address (Not editable)'], rooms: Number(row['#Rooms'] || 0), garden: row.Garden === 'TRUE', floor: Number(row.Floor || 0), size: Number(row.Size || 0), parcel: row.Parcel, subA: row['Sub A'], ownerName: row['Owner 1'] || 'Individual owner', owner2: row['Owner 2'], id1: row['ID-1'], id2: row['ID-2'], phone1: row['Phone 1'], phone2: row['Phone 2'], warning: row.Warning, propertyClass: row.Class, internalOwner: row['Int Owner'], note: row.Note, validated: row.Validated === 'TRUE', validationDate: row['Validation date'], ownerContract: row.OWNER_CONTRACT, invested: Number(row.Invested || 0), housewares: row.Housewares, agreement: row.Agreement, rentable: row.Rentable === 'Yes', representative: row.Representative, lawyer: row.Lawyer, pinuiStatus: row.Status, status: 'Vacant', rent: 0, tenantName: '', resident: '' }; }); return { buildings: [...buildingMap.values()], apartments }; };
+const mergeMasterCsv = (current = { buildings: [], apartments: [] }, imported = { buildings: [], apartments: [] }) => { const buildings = [...(current.buildings || [])]; const idMap = new Map(); (imported.buildings || []).forEach((building) => { const existing = buildings.find((item) => item.street === building.street && item.streetNumber === building.streetNumber); if (existing) idMap.set(building.id, existing.id); else { buildings.push(building); idMap.set(building.id, building.id); } }); const apartments = [...(current.apartments || [])]; (imported.apartments || []).forEach((apartment) => { if (apartments.some((existing) => existing.apptId === apartment.apptId)) return; apartments.push({ ...apartment, buildingId: idMap.get(apartment.buildingId) || apartment.buildingId }); }); return { ...current, buildings, apartments }; };
 function App() {
   const [data, setData] = useState(hydrateData);
   const [tab, setTab] = useState('Overview');
   const [selected, setSelected] = useState(data.buildings[0]);
   const [modal, setModal] = useState(null);
   const [search, setSearch] = useState('');
+  const [topSelected, setTopSelected] = useState(null);
   useEffect(() => localStorage.setItem('blockwise-data', JSON.stringify(data)), [data]);
   const apartments = data.apartments.filter((a) => a.buildingId === selected?.id);
   const occupied = data.apartments.filter((a) => a.status === 'Leased').length;
@@ -252,11 +813,30 @@ function App() {
     r.onload = () => setData(JSON.parse(r.result));
     r.readAsText(file);
   };
+  const importCsv = (e) => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => { try { const imported = parseMasterCsv(String(reader.result || '')); if (!imported || !Array.isArray(imported.buildings) || !Array.isArray(imported.apartments)) throw new Error('CSV did not produce building and apartment records'); const current = data && Array.isArray(data.buildings) && Array.isArray(data.apartments) ? data : hydrateData(); const nextData = mergeMasterCsv(current, imported); const normalized = { ...nextData, buildings: nextData.buildings || [], apartments: nextData.apartments || [], people: nextData.people || [], bills: nextData.bills || [], events: nextData.events || [], maintenance: nextData.maintenance || [] }; localStorage.setItem('blockwise-data', JSON.stringify(normalized)); setData(normalized); } catch (error) { console.error('CSV import failed', error); window.alert(`Could not import CSV: ${error.message}`); } }; reader.onerror = () => window.alert('Could not read this CSV file. Save it as UTF-8 CSV and try again.'); reader.readAsText(file, 'UTF-8'); e.target.value = ''; };
   const visibleBuildings = data.buildings.filter(
     (b) =>
       b.name.toLowerCase().includes(search.toLowerCase()) ||
       b.area.toLowerCase().includes(search.toLowerCase())
   );
+  const topResults = search.trim()
+    ? [
+        ...data.buildings
+          .filter((b) =>
+            `${b.name} ${b.address || ''} ${b.area || ''}`
+              .toLowerCase()
+              .includes(search.toLowerCase())
+          )
+          .map((item) => ({ type: 'building', item })),
+        ...data.apartments
+          .filter((a) =>
+            `${a.number} ${a.ownerName || ''} ${a.tenantName || ''}`
+              .toLowerCase()
+              .includes(search.toLowerCase())
+          )
+          .map((item) => ({ type: 'apartment', item })),
+      ].slice(0, 10)
+    : [];
   return (
     <div className="app">
       <aside>
@@ -321,16 +901,46 @@ function App() {
                 : 'Manage your property records and operations.'}
             </p>
           </div>
-          <div className="actions">
+          <div className="actions top-search-wrap">
             <input
               className="search"
-              placeholder="Search records..."
+              placeholder="Search buildings or apartments..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-            <button className="primary" onClick={() => setModal('record')}>
-              + Add record
-            </button>
+            {topResults.length > 0 && (
+              <div className="top-search-results">
+                {topResults.map(({ type, item }) => (
+                  <button
+                    key={`${type}-${item.id}`}
+                    onClick={() => {
+                      setSearch('');
+                      setSelected(
+                        type === 'building'
+                          ? item
+                          : data.buildings.find((building) => building.id === item.buildingId)
+                      );
+                      setTopSelected({ type, item });
+                    }}
+                  >
+                    {type === 'building' ? (
+                      <>
+                        <b>{item.name}</b>
+                        <small>{item.address || item.area} · Building</small>
+                      </>
+                    ) : (
+                      <>
+                        <b>{item.number}</b>
+                        <small>
+                          {data.buildings.find((building) => building.id === item.buildingId)?.name}{' '}
+                          · Apartment
+                        </small>
+                      </>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </header>
         {tab === 'Overview' ? (
@@ -374,11 +984,16 @@ function App() {
             </section>
           </>
         ) : tab === 'Pinui-Binui' ? (
-          <RenewalView data={data} />
+          <PinuiUnified data={data} />
         ) : tab === 'Finance' ? (
           <FinanceView data={data} />
         ) : tab === 'Maintenance' ? (
-          <MaintenanceView data={data} onApartment={(apartment) => { setSelected(apartment); }} />
+          <MaintenanceView
+            data={data}
+            onApartment={(apartment) => {
+              setSelected(apartment);
+            }}
+          />
         ) : (
           <ListView
             tab={tab}
@@ -398,8 +1013,33 @@ function App() {
             }
             exportData={exportData}
             importData={importData}
+            importCsv={importCsv}
           />
         )}{' '}
+        {topSelected && (
+          <div className="drawer-backdrop" onClick={() => setTopSelected(null)}>
+            <div onClick={(event) => event.stopPropagation()}>
+              {topSelected.type === 'building' ? (
+                <BuildingDrawer
+                  building={topSelected.item}
+                  apartments={data.apartments}
+                  onApartment={(apartment) =>
+                    setTopSelected({ type: 'apartment', item: apartment })
+                  }
+                  onClose={() => setTopSelected(null)}
+                />
+              ) : (
+                <ApartmentSidePanel
+                  apartment={topSelected.item}
+                  buildings={data.buildings}
+                  people={data.people}
+                  data={data}
+                  onClose={() => setTopSelected(null)}
+                />
+              )}
+            </div>
+          </div>
+        )}
         {modal && (
           <Modal
             type={modal}
@@ -419,7 +1059,7 @@ const Metric = ({ label, value, note, tone }) => (
     <small className={tone}>{note}</small>
   </div>
 );
-function Map({ buildings, selected, setSelected }) {
+function LegacyMap({ buildings, selected, setSelected }) {
   const [view, setView] = useState({ x: 0, y: 0, zoom: 1 });
   const [drag, setDrag] = useState(null);
   const startDrag = (event) => {
@@ -429,9 +1069,17 @@ function Map({ buildings, selected, setSelected }) {
   };
   const moveMap = (event) => {
     if (!drag) return;
-    setView((current) => ({ ...current, x: drag.startX + event.clientX - drag.x, y: drag.startY + event.clientY - drag.y }));
+    setView((current) => ({
+      ...current,
+      x: drag.startX + event.clientX - drag.x,
+      y: drag.startY + event.clientY - drag.y,
+    }));
   };
-  const zoom = (amount) => setView((current) => ({ ...current, zoom: Math.min(1.8, Math.max(0.7, current.zoom + amount)) }));
+  const zoom = (amount) =>
+    setView((current) => ({
+      ...current,
+      zoom: Math.min(1.8, Math.max(0.7, current.zoom + amount)),
+    }));
   return (
     <div className="panel map-panel">
       <div className="panel-head">
@@ -441,27 +1089,44 @@ function Map({ buildings, selected, setSelected }) {
         </div>
         <span className="filter">⌖ All areas</span>
       </div>
-      <div className="map" onPointerDown={startDrag} onPointerMove={moveMap} onPointerUp={() => setDrag(null)} onPointerCancel={() => setDrag(null)}>
-        <div className="map-toolbar"><span>BE'ER SHEVA · PROPERTY AREA</span><button onClick={() => setView({ x: 0, y: 0, zoom: 1 })}>Reset</button><button onClick={() => zoom(0.1)}>+</button><button onClick={() => zoom(-0.1)}>−</button></div>
-        <div className="map-canvas" style={{ transform: `translate(${view.x}px, ${view.y}px) scale(${view.zoom})` }}>
-          <div className="neighborhood-zone"><span>YOUR PROPERTY AREA</span></div>
-        <div className="road r1" />
-        <div className="road r2" />
-        <div className="road r3" />
-        <div className="road r4" />
-        <span className="map-street street-a">RAGER ST.</span><span className="map-street street-b">DERECH HEBRON</span>
-        {buildings.map((b) => (
-          <button
-            key={b.id}
-            style={{ left: `${b.x}%`, top: `${b.y}%` }}
-            className={`pin ${b.color} ${selected?.id === b.id ? 'chosen' : ''}`}
-            onClick={() => setSelected(b)}
-            onPointerDown={(event) => event.stopPropagation()}
-          >
-            <b>⌂ {b.name}</b>
-            <small>{b.units} apartments</small>
-          </button>
-        ))}
+      <div
+        className="map"
+        onPointerDown={startDrag}
+        onPointerMove={moveMap}
+        onPointerUp={() => setDrag(null)}
+        onPointerCancel={() => setDrag(null)}
+      >
+        <div className="map-toolbar">
+          <span>BE'ER SHEVA · PROPERTY AREA</span>
+          <button onClick={() => setView({ x: 0, y: 0, zoom: 1 })}>Reset</button>
+          <button onClick={() => zoom(0.1)}>+</button>
+          <button onClick={() => zoom(-0.1)}>−</button>
+        </div>
+        <div
+          className="map-canvas"
+          style={{ transform: `translate(${view.x}px, ${view.y}px) scale(${view.zoom})` }}
+        >
+          <div className="neighborhood-zone">
+            <span>YOUR PROPERTY AREA</span>
+          </div>
+          <div className="road r1" />
+          <div className="road r2" />
+          <div className="road r3" />
+          <div className="road r4" />
+          <span className="map-street street-a">RAGER ST.</span>
+          <span className="map-street street-b">DERECH HEBRON</span>
+          {buildings.map((b) => (
+            <button
+              key={b.id}
+              style={{ left: `${b.x}%`, top: `${b.y}%` }}
+              className={`pin ${b.color} ${selected?.id === b.id ? 'chosen' : ''}`}
+              onClick={() => setSelected(b)}
+              onPointerDown={(event) => event.stopPropagation()}
+            >
+              <b>⌂ {b.name}</b>
+              <small>{b.units} apartments</small>
+            </button>
+          ))}
         </div>
       </div>
       <div className="map-legend">● Residential　● Mixed use　⊙ {buildings.length} properties</div>
@@ -527,15 +1192,15 @@ function ApartmentTable({ apartments }) {
         </div>
         {apartments.map((a) => (
           <div className="tr" key={a.id}>
-            <b>{a.number}</b>
+            <b>{a.number || a.appt || a.apptId || '—'}</b>
             <span>
               <strong>{a.resident || '—'}</strong>
-              <small className={`status ${a.status.toLowerCase().replace(' ', '-')}`}>
-                {a.status}
+              <small className={`status ${String(a.status || 'Unknown').toLowerCase().replace(/\s+/g, '-')}`}>
+                {a.status || 'Unknown'}
               </small>
             </span>
-            <b>{money(a.rent)}</b>
-            <span className="muted">{a.due}</span>
+            <b>{money(a.rent || 0)}</b>
+            <span className="muted">{a.due || '—'}</span>
           </div>
         ))}
       </div>
@@ -573,35 +1238,939 @@ function Activity({ data, onAdd }) {
     </div>
   );
 }
+function LegacyRenewalView({ data }) {
+  const reps = {
+    b1: { name: 'Maya Cohen', status: 'Confirmed' },
+    b2: { name: 'Needed', status: 'Find representative' },
+    b3: { name: 'Roni Gil', status: 'Confirmed' },
+    b4: { name: 'Needed', status: 'Contact owners' },
+    b5: { name: 'Amit Ronen', status: 'Confirmed' },
+    b6: { name: 'Needed', status: 'Waiting for nomination' },
+    b7: { name: 'Needed', status: 'Contact owners' },
+    b8: { name: 'Needed', status: 'Find representative' },
+  };
+  const getStats = (building) => {
+    const apartments = data.apartments.filter((apartment) => apartment.buildingId === building.id);
+    const signed = apartments.filter((apartment) =>
+      ['Amidar', 'HD'].includes(apartment.ownerName)
+    ).length;
+    const no = apartments.filter((apartment) => apartment.ownerName === 'MR').length;
+    const pending = Math.max(0, apartments.length - signed - no);
+    const owners = [
+      ...new Set(
+        apartments
+          .filter((apartment) => !['Amidar', 'HD'].includes(apartment.ownerName))
+          .map((apartment) => apartment.ownerName || 'Individual owner')
+      ),
+    ];
+    return {
+      apartments,
+      signed,
+      no,
+      pending,
+      owners,
+      percent: apartments.length ? Math.round((signed / apartments.length) * 100) : 0,
+    };
+  };
+  return (
+    <section className="renewal-view">
+      <div className="renewal-header">
+        <div>
+          <div className="eyebrow">URBAN RENEWAL TRACKER</div>
+          <h2>Pinui-Binui readiness</h2>
+          <p>Track owner signatures and representatives across the portfolio.</p>
+        </div>
+        <div className="renewal-summary">
+          <b>{data.buildings.reduce((sum, building) => sum + getStats(building).signed, 0)}</b>
+          <span>signed apartments</span>
+        </div>
+      </div>
+      <div className="renewal-legend">
+        <span>
+          <i className="signed-key" />
+          Signed
+        </span>
+        <span>
+          <i className="no-key" />
+          Said no
+        </span>
+        <span>
+          <i className="pending-key" />
+          Still needed
+        </span>
+      </div>
+      <div className="renewal-grid">
+        {data.buildings.map((building) => {
+          const stats = getStats(building);
+          const rep = reps[building.id] || { name: 'Needed', status: 'Find representative' };
+          return (
+            <article className="renewal-card" key={building.id}>
+              <div className="renewal-card-head">
+                <div>
+                  <h3>{building.name}</h3>
+                  <p>
+                    {building.address || building.area} · {building.units} apartments
+                  </p>
+                </div>
+                <strong>{stats.percent}%</strong>
+              </div>
+              <div className="signature-bar">
+                <i
+                  className="signed-bar"
+                  style={{ width: `${(stats.signed / Math.max(building.units, 1)) * 100}%` }}
+                />
+                <i
+                  className="no-bar"
+                  style={{ width: `${(stats.no / Math.max(building.units, 1)) * 100}%` }}
+                />
+              </div>
+              <div className="signature-counts">
+                <span>
+                  <b>{stats.signed}</b> signed
+                </span>
+                <span>
+                  <b>{stats.no}</b> said no
+                </span>
+                <span>
+                  <b>{stats.pending}</b> pending
+                </span>
+              </div>
+              <div className={`representative ${rep.name === 'Needed' ? 'needed' : 'ready'}`}>
+                <span>Representative</span>
+                <b>{rep.name}</b>
+                <small>{rep.status}</small>
+              </div>
+              <div className="outreach">
+                <b>Owner outreach</b>
+                {stats.owners.slice(0, 4).map((owner) => (
+                  <span key={owner}>
+                    {owner} · {['Amidar', 'HD'].includes(owner) ? 'signed' : 'contact needed'}
+                  </span>
+                ))}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
 function RenewalView({ data }) {
-  const reps = { b1: { name: 'Maya Cohen', status: 'Confirmed' }, b2: { name: 'Needed', status: 'Find representative' }, b3: { name: 'Roni Gil', status: 'Confirmed' }, b4: { name: 'Needed', status: 'Contact owners' }, b5: { name: 'Amit Ronen', status: 'Confirmed' }, b6: { name: 'Needed', status: 'Waiting for nomination' }, b7: { name: 'Needed', status: 'Contact owners' }, b8: { name: 'Needed', status: 'Find representative' } };
-  const getStats = (building) => { const apartments = data.apartments.filter((apartment) => apartment.buildingId === building.id); const signed = apartments.filter((apartment) => ['Amidar', 'HD'].includes(apartment.ownerName)).length; const no = apartments.filter((apartment) => apartment.ownerName === 'MR').length; const pending = Math.max(0, apartments.length - signed - no); const owners = [...new Set(apartments.filter((apartment) => !['Amidar', 'HD'].includes(apartment.ownerName)).map((apartment) => apartment.ownerName || 'Individual owner'))]; return { apartments, signed, no, pending, owners, percent: apartments.length ? Math.round(signed / apartments.length * 100) : 0 }; };
-  return <section className="renewal-view"><div className="renewal-header"><div><div className="eyebrow">URBAN RENEWAL TRACKER</div><h2>Pinui-Binui readiness</h2><p>Track owner signatures and representatives across the portfolio.</p></div><div className="renewal-summary"><b>{data.buildings.reduce((sum, building) => sum + getStats(building).signed, 0)}</b><span>signed apartments</span></div></div><div className="renewal-legend"><span><i className="signed-key" />Signed</span><span><i className="no-key" />Said no</span><span><i className="pending-key" />Still needed</span></div><div className="renewal-grid">{data.buildings.map((building) => { const stats = getStats(building); const rep = reps[building.id] || { name: 'Needed', status: 'Find representative' }; return <article className="renewal-card" key={building.id}><div className="renewal-card-head"><div><h3>{building.name}</h3><p>{building.address || building.area} · {building.units} apartments</p></div><strong>{stats.percent}%</strong></div><div className="signature-bar"><i className="signed-bar" style={{ width: `${stats.signed / Math.max(building.units, 1) * 100}%` }} /><i className="no-bar" style={{ width: `${stats.no / Math.max(building.units, 1) * 100}%` }} /></div><div className="signature-counts"><span><b>{stats.signed}</b> signed</span><span><b>{stats.no}</b> said no</span><span><b>{stats.pending}</b> pending</span></div><div className={`representative ${rep.name === 'Needed' ? 'needed' : 'ready'}`}><span>Representative</span><b>{rep.name}</b><small>{rep.status}</small></div><div className="outreach"><b>Owner outreach</b>{stats.owners.slice(0, 4).map((owner) => <span key={owner}>{owner} · {['Amidar', 'HD'].includes(owner) ? 'signed' : 'contact needed'}</span>)}</div></article>; })}</div></section>;
+  const [status, setStatus] = useState({});
+  const update = (id, key, value) =>
+    setStatus((current) => ({ ...current, [id]: { ...current[id], [key]: value } }));
+  const getRows = (building) =>
+    data.apartments.filter((apartment) => apartment.buildingId === building.id);
+  return (
+    <section className="renewal-register">
+      <div className="eyebrow">OWNER OUTREACH REGISTER</div>
+      <h2>Pinui-Binui owner checklist</h2>
+      <p className="muted">
+        Track every owner, signature, contact attempt, and scheduled signing date.
+      </p>
+      {data.buildings.map((building) => (
+        <div className="renewal-building" key={building.id}>
+          <div className="renewal-building-head">
+            <div>
+              <h3>{building.name}</h3>
+              <span>{building.address || building.area}</span>
+            </div>
+            <b>
+              {
+                getRows(building).filter(
+                  (apartment) =>
+                    ['Amidar', 'HD'].includes(apartment.ownerName) ||
+                    status[apartment.id]?.signature === 'Signed'
+                ).length
+              }{' '}
+              / {getRows(building).length} signed
+            </b>
+          </div>
+          <div className="owner-checklist">
+            {getRows(building).map((apartment) => {
+              const row = status[apartment.id] || {};
+              const known = apartment.ownerName && apartment.ownerName !== 'Individual owner';
+              return (
+                <div className="owner-row" key={apartment.id}>
+                  <div>
+                    <b>{apartment.number}</b>
+                    <small>{known ? apartment.ownerName : 'Owner unknown — find owner'}</small>
+                  </div>
+                  <select
+                    value={row.contact || (known ? 'Not contacted' : 'Find owner')}
+                    onChange={(event) => update(apartment.id, 'contact', event.target.value)}
+                  >
+                    <option>Not contacted</option>
+                    <option>Contacted</option>
+                    <option>Trying to reach</option>
+                    <option>Find owner</option>
+                  </select>
+                  <select
+                    value={
+                      row.signature ||
+                      (['Amidar', 'HD'].includes(apartment.ownerName) ? 'Signed' : 'Not signed')
+                    }
+                    onChange={(event) => update(apartment.id, 'signature', event.target.value)}
+                  >
+                    <option>Not signed</option>
+                    <option>Signed</option>
+                    <option>Said no</option>
+                    <option>Trying to nail down</option>
+                  </select>
+                  <label className="check-label">
+                    <input
+                      type="checkbox"
+                      checked={row.scheduled || false}
+                      onChange={(event) => update(apartment.id, 'scheduled', event.target.checked)}
+                    />{' '}
+                    Signing scheduled
+                  </label>
+                  <input
+                    type="date"
+                    value={row.date || ''}
+                    onChange={(event) => update(apartment.id, 'date', event.target.value)}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </section>
+  );
+}
+function RenewalDashboard({ data }) {
+  const [query, setQuery] = useState('');
+  const normalized = query.toLowerCase();
+  const filteredBuildings = data.buildings.filter(
+    (building) =>
+      `${building.name} ${building.address || ''} ${building.area || ''}`
+        .toLowerCase()
+        .includes(normalized) ||
+      data.apartments.some(
+        (apartment) =>
+          apartment.buildingId === building.id &&
+          `${apartment.number} ${apartment.ownerName || ''}`.toLowerCase().includes(normalized)
+      )
+  );
+  const filteredData = {
+    ...data,
+    buildings: filteredBuildings,
+    apartments: data.apartments.filter((apartment) =>
+      filteredBuildings.some((building) => building.id === apartment.buildingId)
+    ),
+  };
+  return (
+    <div className="renewal-dashboard">
+      <div className="renewal-search">
+        <div>
+          <h2>Pinui-Binui status</h2>
+          <p>Search by building, apartment, or owner.</p>
+        </div>
+        <input
+          className="search"
+          placeholder="Search Pinui-Binui..."
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+        />
+      </div>
+      <LegacyRenewalView data={filteredData} />
+      <RenewalView data={filteredData} />
+    </div>
+  );
+}
+function RenewalBreakdown({ data }) {
+  return (
+    <div className="renewal-breakdown">
+      {data.buildings.map((building) => {
+        const apartments = data.apartments.filter(
+          (apartment) => apartment.buildingId === building.id
+        );
+        const count = (owner) =>
+          apartments.filter((apartment) => apartment.ownerName === owner).length;
+        const signed = apartments.filter((apartment) =>
+          ['Amidar', 'HD'].includes(apartment.ownerName)
+        ).length;
+        return (
+          <div className="breakdown-card" key={building.id}>
+            <b>{building.name}</b>
+            <div>
+              <span className="amidar">
+                Amidar {Math.round((count('Amidar') / Math.max(apartments.length, 1)) * 100)}%
+              </span>
+              <span className="hd">
+                HD {Math.round((count('HD') / Math.max(apartments.length, 1)) * 100)}%
+              </span>
+              <span className="signed">
+                Signed {Math.round((signed / Math.max(apartments.length, 1)) * 100)}%
+              </span>
+              <span className="awaiting">
+                Awaiting{' '}
+                {Math.round(((apartments.length - signed) / Math.max(apartments.length, 1)) * 100)}%
+              </span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+function PinuiUnified({ data }) {
+  const [query, setQuery] = useState('');
+  const [status, setStatus] = useState({});
+  const [rep, setRep] = useState({});
+  const update = (id, key, value) =>
+    setStatus((current) => ({ ...current, [id]: { ...current[id], [key]: value } }));
+  const filtered = data.buildings.filter(
+    (building) =>
+      `${building.name} ${building.address || ''}`.toLowerCase().includes(query.toLowerCase()) ||
+      data.apartments.some(
+        (apartment) =>
+          apartment.buildingId === building.id &&
+          `${apartment.number} ${apartment.ownerName || ''}`
+            .toLowerCase()
+            .includes(query.toLowerCase())
+      )
+  );
+  return (
+    <section className="pinui-unified">
+      <div className="pinui-header">
+        <div>
+          <div className="eyebrow">URBAN RENEWAL WORKSPACE</div>
+          <h2>Pinui-Binui status</h2>
+          <p>Progress, representatives, and owner checklist in one view.</p>
+        </div>
+        <input
+          className="search"
+          placeholder="Search building, apartment, owner..."
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+        />
+      </div>
+      <div className="pinui-legend">
+        <span>
+          <i className="signed-key" />
+          Signed
+        </span>
+        <span>
+          <i className="no-key" />
+          Said no
+        </span>
+        <span>
+          <i className="pending-key" />
+          Awaiting
+        </span>
+        <span>
+          <i className="amidar-key" />
+          Amidar
+        </span>
+        <span>
+          <i className="hd-key" />
+          HD
+        </span>
+      </div>
+      <div className="pinui-building-grid">
+        {filtered.map((building) => {
+          const apartments = data.apartments.filter(
+            (apartment) => apartment.buildingId === building.id
+          );
+          const signed = apartments.filter(
+            (apartment) =>
+              ['Amidar', 'HD'].includes(apartment.ownerName) ||
+              status[apartment.id]?.signature === 'Signed'
+          ).length;
+          const no = apartments.filter(
+            (apartment) => status[apartment.id]?.signature === 'Said no'
+          ).length;
+          const awaiting = apartments.length - signed - no;
+          return (
+            <article className="pinui-building-card" key={building.id}>
+              <header>
+                <div>
+                  <h3>{building.name}</h3>
+                  <p>
+                    {building.address || building.area} · {apartments.length} apartments
+                  </p>
+                </div>
+                <strong>{Math.round((signed / Math.max(apartments.length, 1)) * 100)}%</strong>
+              </header>
+              <div className="pinui-progress">
+                <i
+                  className="progress-signed"
+                  style={{ width: `${(signed / Math.max(apartments.length, 1)) * 100}%` }}
+                />
+                <i
+                  className="progress-no"
+                  style={{ width: `${(no / Math.max(apartments.length, 1)) * 100}%` }}
+                />
+              </div>
+              <div className="pinui-counts">
+                <span>{signed} signed</span>
+                <span>{no} said no</span>
+                <span>{awaiting} awaiting</span>
+              </div>
+              <div className="pinui-rep">
+                <label>Representative</label>
+                <select
+                  value={rep[building.id] || ''}
+                  onChange={(event) =>
+                    setRep((current) => ({ ...current, [building.id]: event.target.value }))
+                  }
+                >
+                  <option value="">Still looking for representative</option>
+                  {(data.people || [])
+                    .filter((person) => person.role === 'Owner' || person.role === 'Tenant')
+                    .map((person) => (
+                      <option key={person.id}>{person.name}</option>
+                    ))}
+                </select>
+                <small>
+                  {rep[building.id] ? 'Representative selected' : 'Contact owners to nominate one'}
+                </small>
+              </div>
+              <div className="pinui-checklist">
+                <div className="pinui-checklist-head">
+                  <b>Owner checklist</b>
+                  <span>Contact · signature · signing date</span>
+                </div>
+                {apartments.map((apartment) => {
+                  const row = status[apartment.id] || {};
+                  const known = apartment.ownerName && apartment.ownerName !== 'Individual owner';
+                  return (
+                    <div className="pinui-owner-row" key={apartment.id}>
+                      <div>
+                        <b>{apartment.number}</b>
+                        <small className={!known ? 'unknown-owner' : ''}>
+                          {known ? apartment.ownerName : 'Owner unknown — find owner'}
+                        </small>
+                      </div>
+                      <select
+                        value={row.contact || (known ? 'Not contacted' : 'Find owner')}
+                        onChange={(event) => update(apartment.id, 'contact', event.target.value)}
+                      >
+                        <option>Not contacted</option>
+                        <option>Contacted</option>
+                        <option>Trying to reach</option>
+                        <option>Find owner</option>
+                      </select>
+                      <select
+                        value={
+                          row.signature ||
+                          (['Amidar', 'HD'].includes(apartment.ownerName) ? 'Signed' : 'Not signed')
+                        }
+                        onChange={(event) => update(apartment.id, 'signature', event.target.value)}
+                      >
+                        <option>Not signed</option>
+                        <option>Signed</option>
+                        <option>Said no</option>
+                        <option>Trying to nail down</option>
+                      </select>
+                      <label>
+                        <input
+                          type="checkbox"
+                          checked={row.scheduled || false}
+                          onChange={(event) =>
+                            update(apartment.id, 'scheduled', event.target.checked)
+                          }
+                        />{' '}
+                        scheduled
+                      </label>
+                      <input
+                        type="date"
+                        value={row.date || ''}
+                        onChange={(event) => update(apartment.id, 'date', event.target.value)}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
 }
 function LegacyFinanceView({ data }) {
-  const [range, setRange] = useState('6 months'); const [group, setGroup] = useState('Building'); const [chart, setChart] = useState('Net cash flow');
-  const months = range === '12 months' ? ['Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'] : ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
-  const apartments = data.apartments || []; const bills = data.bills || []; const maintenance = data.maintenance || [];
-  const monthly = months.map((month, index) => { const income = apartments.reduce((sum, apartment) => sum + (apartment.status === 'Leased' ? Number(apartment.rent || 0) : 0), 0) * (0.91 + index * 0.018); const costs = (bills.reduce((sum, bill) => sum + Number(bill.amount || 0), 0) + maintenance.reduce((sum, item) => sum + Number(item.cost || 0), 0)) / (range === '12 months' ? 2 : 1) * (0.88 + index * 0.025); return { month, income: Math.round(income), costs: Math.round(costs), net: Math.round(income - costs) }; });
-  const totalIncome = monthly.reduce((sum, item) => sum + item.income, 0); const totalCosts = monthly.reduce((sum, item) => sum + item.costs, 0); const occupancy = apartments.length ? Math.round(apartments.filter((a) => a.status === 'Leased').length / apartments.length * 100) : 0; const maxValue = Math.max(...monthly.map((item) => Math.max(item.income, item.costs)));
-  const categories = ['Water', 'Electricity', 'Vaad', 'Arnona', 'Gas', 'Maintenance'].map((category) => ({ category, amount: category === 'Maintenance' ? maintenance.reduce((sum, item) => sum + Number(item.cost || 0), 0) : bills.filter((bill) => bill.category === category).reduce((sum, bill) => sum + Number(bill.amount || 0), 0) })).sort((a, b) => b.amount - a.amount);
-  const groups = group === 'Building' ? data.buildings.map((building) => ({ name: building.name, value: apartments.filter((a) => a.buildingId === building.id).reduce((sum, a) => sum + Number(a.rent || 0), 0) })) : apartments.slice(0, 12).map((apartment) => ({ name: apartment.number, value: Number(apartment.rent || 0) }));
-  const projection = Math.round((apartments.reduce((sum, apartment) => sum + Number(apartment.rent || 0), 0)) * 1.08);
-  const expiringSoon = apartments.filter((apartment) => apartment.status === 'Leased').slice(0, 4); const vacant = apartments.filter((apartment) => apartment.status === 'Vacant'); const startingSoon = apartments.filter((apartment) => apartment.status === 'On market').slice(0, 4); const unleasable = apartments.filter((apartment, index) => apartment.status === 'Vacant' && index % 3 === 0).slice(0, 4); const buildingName = (apartment) => data.buildings.find((building) => building.id === apartment.buildingId)?.name || 'Unknown building';
-  return <section className="finance-dashboard"><div className="finance-controls"><div><h2>Portfolio finance</h2><p>Income, costs, and rental growth across all properties</p></div><div><button className={range === '6 months' ? 'control active' : 'control'} onClick={() => setRange('6 months')}>6 months</button><button className={range === '12 months' ? 'control active' : 'control'} onClick={() => setRange('12 months')}>12 months</button></div></div><div className="finance-kpis"><div className="finance-kpi income"><span>Projected monthly rent</span><b>{money(projection)}</b><small>↑ 8% next period</small></div><div className="finance-kpi expense"><span>Average monthly costs</span><b>{money(Math.round(totalCosts / months.length))}</b><small>utilities + maintenance</small></div><div className="finance-kpi net"><span>Net operating income</span><b>{money(totalIncome - totalCosts)}</b><small>{occupancy}% portfolio occupancy</small></div><div className="finance-kpi neutral"><span>Rent collection gap</span><b>{money(apartments.filter((a) => a.status !== 'Leased').reduce((sum, a) => sum + Number(a.rent || 0), 0))}</b><small>vacant / on market</small></div></div><div className="finance-grid"><div className="panel finance-chart"><div className="panel-head"><div><h2>{chart}</h2><p>Interactive historical view · click a metric</p></div><div><button className={chart === 'Net cash flow' ? 'chart-toggle active' : 'chart-toggle'} onClick={() => setChart('Net cash flow')}>Net</button><button className={chart === 'Income vs costs' ? 'chart-toggle active' : 'chart-toggle'} onClick={() => setChart('Income vs costs')}>Income / costs</button></div></div><div className="chart-area">{monthly.map((item) => <div className="chart-column" key={item.month}><div className="bars">{chart === 'Income vs costs' ? <><i className="bar income-bar" style={{ height: `${item.income / maxValue * 155}px` }} title={money(item.income)} /><i className="bar cost-bar" style={{ height: `${item.costs / maxValue * 155}px` }} title={money(item.costs)} /></> : <i className="bar net-bar" style={{ height: `${Math.abs(item.net) / maxValue * 155}px` }} title={money(item.net)} />}</div><span>{item.month}</span></div>)}</div><div className="chart-legend"><span><i className="income-dot" />Income</span><span><i className="cost-dot" />Costs</span><span><i className="net-dot" />Net</span></div></div><div className="panel finance-chart"><div className="panel-head"><div><h2>Costs by category</h2><p>Portfolio spend</p></div></div><div className="category-list">{categories.map((item) => <div className="category-row" key={item.category}><span>{item.category}</span><div><i style={{ width: `${Math.max(5, item.amount / Math.max(categories[0].amount, 1) * 100)}%` }} /></div><b>{money(item.amount)}</b></div>)}</div></div></div><div className="finance-grid"><div className="panel finance-chart"><div className="panel-head"><div><h2>Rent roll by {group.toLowerCase()}</h2><p>Compare income concentration</p></div><div><button className={group === 'Building' ? 'chart-toggle active' : 'chart-toggle'} onClick={() => setGroup('Building')}>Building</button><button className={group === 'Apartment' ? 'chart-toggle active' : 'chart-toggle'} onClick={() => setGroup('Apartment')}>Apartment</button></div></div><div className="horizontal-bars">{groups.map((item) => <div className="horizontal-row" key={item.name}><span>{item.name}</span><div><i style={{ width: `${item.value / Math.max(...groups.map((g) => g.value), 1) * 100}%` }} /></div><b>{money(item.value)}</b></div>)}</div></div><div className="panel finance-chart projection-card"><div className="eyebrow">RENTAL OUTLOOK</div><h2>Projected rent growth</h2><p className="muted">Based on current rent roll and an 8% annual growth assumption.</p><div className="projection-value">{money(projection)}<small>next 12-month run rate</small></div><div className="projection-line"><span>Current</span><i /><b>+8%</b><i /><span>Projected</span></div><div className="finance-totals"><span>Current annual <b>{money(totalIncome)}</b></span><span>Projected annual <b>{money(projection * 12)}</b></span><span>Growth <b>8%</b></span></div></div></div></section>;
+  const [range, setRange] = useState('6 months');
+  const [group, setGroup] = useState('Building');
+  const [chart, setChart] = useState('Net cash flow');
+  const months =
+    range === '12 months'
+      ? ['Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul']
+      : ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
+  const apartments = data.apartments || [];
+  const bills = data.bills || [];
+  const maintenance = data.maintenance || [];
+  const monthly = months.map((month, index) => {
+    const income =
+      apartments.reduce(
+        (sum, apartment) => sum + (apartment.status === 'Leased' ? Number(apartment.rent || 0) : 0),
+        0
+      ) *
+      (0.91 + index * 0.018);
+    const costs =
+      ((bills.reduce((sum, bill) => sum + Number(bill.amount || 0), 0) +
+        maintenance.reduce((sum, item) => sum + Number(item.cost || 0), 0)) /
+        (range === '12 months' ? 2 : 1)) *
+      (0.88 + index * 0.025);
+    return {
+      month,
+      income: Math.round(income),
+      costs: Math.round(costs),
+      net: Math.round(income - costs),
+    };
+  });
+  const totalIncome = monthly.reduce((sum, item) => sum + item.income, 0);
+  const totalCosts = monthly.reduce((sum, item) => sum + item.costs, 0);
+  const occupancy = apartments.length
+    ? Math.round((apartments.filter((a) => a.status === 'Leased').length / apartments.length) * 100)
+    : 0;
+  const maxValue = Math.max(...monthly.map((item) => Math.max(item.income, item.costs)));
+  const categories = ['Water', 'Electricity', 'Vaad', 'Arnona', 'Gas', 'Maintenance']
+    .map((category) => ({
+      category,
+      amount:
+        category === 'Maintenance'
+          ? maintenance.reduce((sum, item) => sum + Number(item.cost || 0), 0)
+          : bills
+              .filter((bill) => bill.category === category)
+              .reduce((sum, bill) => sum + Number(bill.amount || 0), 0),
+    }))
+    .sort((a, b) => b.amount - a.amount);
+  const groups =
+    group === 'Building'
+      ? data.buildings.map((building) => ({
+          name: building.name,
+          value: apartments
+            .filter((a) => a.buildingId === building.id)
+            .reduce((sum, a) => sum + Number(a.rent || 0), 0),
+        }))
+      : apartments
+          .slice(0, 12)
+          .map((apartment) => ({ name: apartment.number, value: Number(apartment.rent || 0) }));
+  const projection = Math.round(
+    apartments.reduce((sum, apartment) => sum + Number(apartment.rent || 0), 0) * 1.08
+  );
+  const expiringSoon = apartments.filter((apartment) => apartment.status === 'Leased').slice(0, 4);
+  const vacant = apartments.filter((apartment) => apartment.status === 'Vacant');
+  const startingSoon = apartments
+    .filter((apartment) => apartment.status === 'On market')
+    .slice(0, 4);
+  const unleasable = apartments
+    .filter((apartment, index) => apartment.status === 'Vacant' && index % 3 === 0)
+    .slice(0, 4);
+  const buildingName = (apartment) =>
+    data.buildings.find((building) => building.id === apartment.buildingId)?.name ||
+    'Unknown building';
+  return (
+    <section className="finance-dashboard">
+      <div className="finance-controls">
+        <div>
+          <h2>Portfolio finance</h2>
+          <p>Income, costs, and rental growth across all properties</p>
+        </div>
+        <div>
+          <button
+            className={range === '6 months' ? 'control active' : 'control'}
+            onClick={() => setRange('6 months')}
+          >
+            6 months
+          </button>
+          <button
+            className={range === '12 months' ? 'control active' : 'control'}
+            onClick={() => setRange('12 months')}
+          >
+            12 months
+          </button>
+        </div>
+      </div>
+      <div className="finance-kpis">
+        <div className="finance-kpi income">
+          <span>Projected monthly rent</span>
+          <b>{money(projection)}</b>
+          <small>↑ 8% next period</small>
+        </div>
+        <div className="finance-kpi expense">
+          <span>Average monthly costs</span>
+          <b>{money(Math.round(totalCosts / months.length))}</b>
+          <small>utilities + maintenance</small>
+        </div>
+        <div className="finance-kpi net">
+          <span>Net operating income</span>
+          <b>{money(totalIncome - totalCosts)}</b>
+          <small>{occupancy}% portfolio occupancy</small>
+        </div>
+        <div className="finance-kpi neutral">
+          <span>Rent collection gap</span>
+          <b>
+            {money(
+              apartments
+                .filter((a) => a.status !== 'Leased')
+                .reduce((sum, a) => sum + Number(a.rent || 0), 0)
+            )}
+          </b>
+          <small>vacant / on market</small>
+        </div>
+      </div>
+      <div className="finance-grid">
+        <div className="panel finance-chart">
+          <div className="panel-head">
+            <div>
+              <h2>{chart}</h2>
+              <p>Interactive historical view · click a metric</p>
+            </div>
+            <div>
+              <button
+                className={chart === 'Net cash flow' ? 'chart-toggle active' : 'chart-toggle'}
+                onClick={() => setChart('Net cash flow')}
+              >
+                Net
+              </button>
+              <button
+                className={chart === 'Income vs costs' ? 'chart-toggle active' : 'chart-toggle'}
+                onClick={() => setChart('Income vs costs')}
+              >
+                Income / costs
+              </button>
+            </div>
+          </div>
+          <div className="chart-area">
+            {monthly.map((item) => (
+              <div className="chart-column" key={item.month}>
+                <div className="bars">
+                  {chart === 'Income vs costs' ? (
+                    <>
+                      <i
+                        className="bar income-bar"
+                        style={{ height: `${(item.income / maxValue) * 155}px` }}
+                        title={money(item.income)}
+                      />
+                      <i
+                        className="bar cost-bar"
+                        style={{ height: `${(item.costs / maxValue) * 155}px` }}
+                        title={money(item.costs)}
+                      />
+                    </>
+                  ) : (
+                    <i
+                      className="bar net-bar"
+                      style={{ height: `${(Math.abs(item.net) / maxValue) * 155}px` }}
+                      title={money(item.net)}
+                    />
+                  )}
+                </div>
+                <span>{item.month}</span>
+              </div>
+            ))}
+          </div>
+          <div className="chart-legend">
+            <span>
+              <i className="income-dot" />
+              Income
+            </span>
+            <span>
+              <i className="cost-dot" />
+              Costs
+            </span>
+            <span>
+              <i className="net-dot" />
+              Net
+            </span>
+          </div>
+        </div>
+        <div className="panel finance-chart">
+          <div className="panel-head">
+            <div>
+              <h2>Costs by category</h2>
+              <p>Portfolio spend</p>
+            </div>
+          </div>
+          <div className="category-list">
+            {categories.map((item) => (
+              <div className="category-row" key={item.category}>
+                <span>{item.category}</span>
+                <div>
+                  <i
+                    style={{
+                      width: `${Math.max(5, (item.amount / Math.max(categories[0].amount, 1)) * 100)}%`,
+                    }}
+                  />
+                </div>
+                <b>{money(item.amount)}</b>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="finance-grid">
+        <div className="panel finance-chart">
+          <div className="panel-head">
+            <div>
+              <h2>Rent roll by {group.toLowerCase()}</h2>
+              <p>Compare income concentration</p>
+            </div>
+            <div>
+              <button
+                className={group === 'Building' ? 'chart-toggle active' : 'chart-toggle'}
+                onClick={() => setGroup('Building')}
+              >
+                Building
+              </button>
+              <button
+                className={group === 'Apartment' ? 'chart-toggle active' : 'chart-toggle'}
+                onClick={() => setGroup('Apartment')}
+              >
+                Apartment
+              </button>
+            </div>
+          </div>
+          <div className="horizontal-bars">
+            {groups.map((item) => (
+              <div className="horizontal-row" key={item.name}>
+                <span>{item.name}</span>
+                <div>
+                  <i
+                    style={{
+                      width: `${(item.value / Math.max(...groups.map((g) => g.value), 1)) * 100}%`,
+                    }}
+                  />
+                </div>
+                <b>{money(item.value)}</b>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="panel finance-chart projection-card">
+          <div className="eyebrow">RENTAL OUTLOOK</div>
+          <h2>Projected rent growth</h2>
+          <p className="muted">Based on current rent roll and an 8% annual growth assumption.</p>
+          <div className="projection-value">
+            {money(projection)}
+            <small>next 12-month run rate</small>
+          </div>
+          <div className="projection-line">
+            <span>Current</span>
+            <i />
+            <b>+8%</b>
+            <i />
+            <span>Projected</span>
+          </div>
+          <div className="finance-totals">
+            <span>
+              Current annual <b>{money(totalIncome)}</b>
+            </span>
+            <span>
+              Projected annual <b>{money(projection * 12)}</b>
+            </span>
+            <span>
+              Growth <b>8%</b>
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
 }
 function FinanceView({ data }) {
-  const apartments = data.apartments || []; const expiringSoon = apartments.filter((apartment) => apartment.status === 'Leased').slice(0, 4); const vacant = apartments.filter((apartment) => apartment.status === 'Vacant'); const startingSoon = apartments.filter((apartment) => apartment.status === 'On market').slice(0, 4); const unleasable = apartments.filter((apartment, index) => apartment.status === 'Vacant' && index % 3 === 0).slice(0, 4); const buildingName = (apartment) => data.buildings.find((building) => building.id === apartment.buildingId)?.name || 'Unknown building';
-  return <><section className="leasing-health"><div className="leasing-health-head"><div><h2>Leasing health</h2><p>Operational signals for the next leasing cycle</p></div><span>Live from apartment records</span></div><div className="leasing-cards"><div className="lease-card expiring"><b>{expiringSoon.length}</b><span>Leases expiring soon</span><small>Review renewals and notices</small></div><div className="lease-card vacant"><b>{vacant.length}</b><span>Vacant apartments</span><small>Income gap: {money(vacant.reduce((sum, apartment) => sum + Number(apartment.rent || 0), 0))}</small></div><div className="lease-card starting"><b>{startingSoon.length}</b><span>Leases starting soon</span><small>Prepare handovers and deposits</small></div><div className="lease-card poor"><b>{unleasable.length}</b><span>Needs investment review</span><small>Unleasable / low-return candidates</small></div></div><div className="leasing-watchlist">{[...expiringSoon.slice(0, 2), ...vacant.slice(0, 1), ...unleasable.slice(0, 1)].map((apartment, index) => <div className="watch-row" key={`${apartment.id}-${index}`}><div><b>{apartment.number}</b><small>{buildingName(apartment)} · {apartment.ownerName || 'Individual owner'}</small></div><span className={apartment.status === 'Vacant' ? 'watch-warning' : 'watch-neutral'}>{apartment.status === 'Vacant' ? 'Vacant review' : apartment.status === 'Leased' ? 'Renewal review' : 'Investment review'}</span><strong>{money(apartment.rent)}</strong></div>)}</div></section><LegacyFinanceView data={data} /> </>;
+  const apartments = data.apartments || [];
+  const expiringSoon = apartments.filter((apartment) => apartment.status === 'Leased').slice(0, 4);
+  const vacant = apartments.filter((apartment) => apartment.status === 'Vacant');
+  const startingSoon = apartments
+    .filter((apartment) => apartment.status === 'On market')
+    .slice(0, 4);
+  const unleasable = apartments
+    .filter((apartment, index) => apartment.status === 'Vacant' && index % 3 === 0)
+    .slice(0, 4);
+  const buildingName = (apartment) =>
+    data.buildings.find((building) => building.id === apartment.buildingId)?.name ||
+    'Unknown building';
+  return (
+    <>
+      <section className="leasing-health">
+        <div className="leasing-health-head">
+          <div>
+            <h2>Leasing health</h2>
+            <p>Operational signals for the next leasing cycle</p>
+          </div>
+          <span>Live from apartment records</span>
+        </div>
+        <div className="leasing-cards">
+          <div className="lease-card expiring">
+            <b>{expiringSoon.length}</b>
+            <span>Leases expiring soon</span>
+            <small>Review renewals and notices</small>
+          </div>
+          <div className="lease-card vacant">
+            <b>{vacant.length}</b>
+            <span>Vacant apartments</span>
+            <small>
+              Income gap:{' '}
+              {money(vacant.reduce((sum, apartment) => sum + Number(apartment.rent || 0), 0))}
+            </small>
+          </div>
+          <div className="lease-card starting">
+            <b>{startingSoon.length}</b>
+            <span>Leases starting soon</span>
+            <small>Prepare handovers and deposits</small>
+          </div>
+          <div className="lease-card poor">
+            <b>{unleasable.length}</b>
+            <span>Needs investment review</span>
+            <small>Unleasable / low-return candidates</small>
+          </div>
+        </div>
+        <div className="leasing-watchlist">
+          {[...expiringSoon.slice(0, 2), ...vacant.slice(0, 1), ...unleasable.slice(0, 1)].map(
+            (apartment, index) => (
+              <div className="watch-row" key={`${apartment.id}-${index}`}>
+                <div>
+                  <b>{apartment.number}</b>
+                  <small>
+                    {buildingName(apartment)} · {apartment.ownerName || 'Individual owner'}
+                  </small>
+                </div>
+                <span className={apartment.status === 'Vacant' ? 'watch-warning' : 'watch-neutral'}>
+                  {apartment.status === 'Vacant'
+                    ? 'Vacant review'
+                    : apartment.status === 'Leased'
+                      ? 'Renewal review'
+                      : 'Investment review'}
+                </span>
+                <strong>{money(apartment.rent)}</strong>
+              </div>
+            )
+          )}
+        </div>
+      </section>
+      <LegacyFinanceView data={data} />{' '}
+    </>
+  );
 }
 function MaintenanceView({ data }) {
-  const [query, setQuery] = useState(''); const [filter, setFilter] = useState('All'); const [selectedApartment, setSelectedApartment] = useState(null);
-  const apartments = data.apartments || []; const buildings = data.buildings || [];
-  const matches = (item) => `${item.title || ''} ${item.category || ''} ${item.technician || ''}`.toLowerCase().includes(query.toLowerCase()) && (filter === 'All' || item.category === filter);
-  const editNotes = (item) => { const notes = window.prompt('Edit maintenance notes', item.notes || ''); if (notes !== null) item.notes = notes; };
-  return <section className="panel maintenance-view"><div className="panel-head"><div><h2>Maintenance & bills</h2><p>Recent work, operational expenses, and utility payments</p></div><div className="maintenance-filters"><input className="search" placeholder="Search maintenance..." value={query} onChange={(e) => setQuery(e.target.value)} /><select className="filter-select" value={filter} onChange={(e) => setFilter(e.target.value)}><option>All</option><option>Maintenance</option><option>Inspection</option><option>Renovation</option><option>Appliance</option></select></div></div><h3>Maintenance records</h3><div className="maintenance-table">{data.maintenance.filter(matches).map((item) => { const apartment = apartments.find((a) => a.id === item.apartmentId); const building = buildings.find((b) => b.id === apartment?.buildingId); return <div className="maintenance-row" key={item.id}><div><b>{item.title}</b><small>{item.category} · {item.date} · {item.technician}</small><em>{item.notes}</em></div><button className="link-button" onClick={() => apartment && setSelectedApartment(apartment)}>{building?.name} · Apt {apartment?.number}</button><strong>{money(item.cost)}</strong><span className={`maintenance-status ${item.status === 'Done' ? 'done' : 'progress'}`}>{item.status}</span><button className="edit-notes" onClick={() => editNotes(item)}>Edit notes</button></div>})}</div><h3>Recent paid bills</h3><div className="maintenance-table">{data.bills.filter((bill) => bill.status === 'Paid' && (filter === 'All' || filter === bill.category) && `${bill.category} ${bill.period}`.toLowerCase().includes(query.toLowerCase())).map((bill) => { const apartment = apartments.find((a) => a.id === bill.apartmentId); const building = buildings.find((b) => b.id === apartment?.buildingId); return <div className="maintenance-row bill-row" key={bill.id}><div><b>{bill.category}</b><small>{bill.period} · due {bill.dueDate} · Paid</small></div><button className="link-button" onClick={() => apartment && setSelectedApartment(apartment)}>{building?.name} · Apt {apartment?.number}</button><strong>{money(bill.amount)}</strong><span className="maintenance-status done">Paid</span></div>})}</div>{selectedApartment && <div className="drawer-backdrop" onClick={() => setSelectedApartment(null)}><div onClick={(event) => event.stopPropagation()}><ApartmentSidePanel apartment={selectedApartment} buildings={buildings} people={data.people} data={data} onClose={() => setSelectedApartment(null)} /></div></div>}</section>;
+  const [query, setQuery] = useState('');
+  const [filter, setFilter] = useState('All');
+  const [selectedApartment, setSelectedApartment] = useState(null);
+  const apartments = data.apartments || [];
+  const buildings = data.buildings || [];
+  const matches = (item) =>
+    `${item.title || ''} ${item.category || ''} ${item.technician || ''}`
+      .toLowerCase()
+      .includes(query.toLowerCase()) &&
+    (filter === 'All' || item.category === filter);
+  const editNotes = (item) => {
+    const notes = window.prompt('Edit maintenance notes', item.notes || '');
+    if (notes !== null) item.notes = notes;
+  };
+  return (
+    <section className="panel maintenance-view">
+      <div className="panel-head">
+        <div>
+          <h2>Maintenance & bills</h2>
+          <p>Recent work, operational expenses, and utility payments</p>
+        </div>
+        <div className="maintenance-filters">
+          <input
+            className="search"
+            placeholder="Search maintenance..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          <select
+            className="filter-select"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+          >
+            <option>All</option>
+            <option>Maintenance</option>
+            <option>Inspection</option>
+            <option>Renovation</option>
+            <option>Appliance</option>
+          </select>
+        </div>
+      </div>
+      <h3>Maintenance records</h3>
+      <div className="maintenance-table">
+        {data.maintenance.filter(matches).map((item) => {
+          const apartment = apartments.find((a) => a.id === item.apartmentId);
+          const building = buildings.find((b) => b.id === apartment?.buildingId);
+          return (
+            <div className="maintenance-row" key={item.id}>
+              <div>
+                <b>{item.title}</b>
+                <small>
+                  {item.category} · {item.date} · {item.technician}
+                </small>
+                <em>{item.notes}</em>
+              </div>
+              <button
+                className="link-button"
+                onClick={() => apartment && setSelectedApartment(apartment)}
+              >
+                {building?.name} · Apt {apartment?.number}
+              </button>
+              <strong>{money(item.cost)}</strong>
+              <span
+                className={`maintenance-status ${item.status === 'Done' ? 'done' : 'progress'}`}
+              >
+                {item.status}
+              </span>
+              <button className="edit-notes" onClick={() => editNotes(item)}>
+                Edit notes
+              </button>
+            </div>
+          );
+        })}
+      </div>
+      <h3>Recent paid bills</h3>
+      <div className="maintenance-table">
+        {data.bills
+          .filter(
+            (bill) =>
+              bill.status === 'Paid' &&
+              (filter === 'All' || filter === bill.category) &&
+              `${bill.category} ${bill.period}`.toLowerCase().includes(query.toLowerCase())
+          )
+          .map((bill) => {
+            const apartment = apartments.find((a) => a.id === bill.apartmentId);
+            const building = buildings.find((b) => b.id === apartment?.buildingId);
+            return (
+              <div className="maintenance-row bill-row" key={bill.id}>
+                <div>
+                  <b>{bill.category}</b>
+                  <small>
+                    {bill.period} · due {bill.dueDate} · Paid
+                  </small>
+                </div>
+                <button
+                  className="link-button"
+                  onClick={() => apartment && setSelectedApartment(apartment)}
+                >
+                  {building?.name} · Apt {apartment?.number}
+                </button>
+                <strong>{money(bill.amount)}</strong>
+                <span className="maintenance-status done">Paid</span>
+              </div>
+            );
+          })}
+      </div>
+      {selectedApartment && (
+        <div className="drawer-backdrop" onClick={() => setSelectedApartment(null)}>
+          <div onClick={(event) => event.stopPropagation()}>
+            <ApartmentSidePanel
+              apartment={selectedApartment}
+              buildings={buildings}
+              people={data.people}
+              data={data}
+              onClose={() => setSelectedApartment(null)}
+            />
+          </div>
+        </div>
+      )}
+    </section>
+  );
 }
-function ListView({ tab, data, selected, setSelected, onAdd, exportData, importData }) {
+function ListView({ tab, data, selected, setSelected, onAdd, exportData, importData, importCsv }) {
   const [selectedApartment, setSelectedApartment] = useState(null);
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [selectedBuilding, setSelectedBuilding] = useState(null);
@@ -620,15 +2189,32 @@ function ListView({ tab, data, selected, setSelected, onAdd, exportData, importD
       <div className="panel-head">
         <div>
           <h2>{tab} register</h2>
-          <p>{tab === 'People' ? 'Owners, tenants, vendors, and professional contacts.' : 'These records are saved in your browser for now.'}</p>
+          <p>
+            {tab === 'People'
+              ? 'Owners, tenants, vendors, and professional contacts.'
+              : 'These records are saved in your browser for now.'}
+          </p>
         </div>
         <div>
           <button className="outline small" onClick={onAdd}>
             + Add
           </button>
-          {tab === 'People' && <select className="filter-select" value={peopleRole} onChange={(e) => setPeopleRole(e.target.value)}><option>All</option><option>Owner</option><option>Tenant</option><option>Technician</option><option>Insurance agent</option></select>}
+          {tab === 'People' && (
+            <select
+              className="filter-select"
+              value={peopleRole}
+              onChange={(e) => setPeopleRole(e.target.value)}
+            >
+              <option>All</option>
+              <option>Owner</option>
+              <option>Tenant</option>
+              <option>Technician</option>
+              <option>Insurance agent</option>
+            </select>
+          )}
           {tab === 'Buildings' && (
             <>
+              <label className="outline small csv-import-label">Import master CSV<input type="file" accept=".csv,text/csv" onChange={importCsv} /></label>
               <button className="outline small" onClick={exportData}>
                 Export backup
               </button>
@@ -641,60 +2227,533 @@ function ListView({ tab, data, selected, setSelected, onAdd, exportData, importD
         </div>
       </div>
       <div className={tab === 'Apartments' ? 'building-groups' : 'record-grid'}>
-        {tab === 'Apartments' ? data.buildings.map((building) => <section className="building-group" key={building.id}><div className="group-heading"><h3>{building.name}</h3><span>{data.apartments.filter((apartment) => apartment.buildingId === building.id).length} apartments</span></div><div className="record-grid">{data.apartments.filter((apartment) => apartment.buildingId === building.id).map((r) => <button className={`record-card owner-${String(r.ownerName || '').toLowerCase().replaceAll(' ', '-')}`} key={r.id} onClick={() => setSelectedApartment(r)}><b>{r.number}</b><span>{r.ownerName || 'Individual owner'} · {r.status}</span><small>{r.tenantName || 'No tenant'} · {money(r.rent)}</small></button>)}</div></section>) : rows.map((r) => (
-          <button
-            className="record-card"
-            key={r.id}
-            onClick={() => { if (tab === 'Buildings') { setSelected(r); setSelectedBuilding(r); } if (tab === 'Apartments') setSelectedApartment(r); if (tab === 'People') setSelectedPerson(r); }}
-          >
-            <b>{r.name || r.number || r.title}</b>
-            <span>{tab === 'People' ? r.role : r.area || r.status || 'Maintenance record'}</span>
-            <small>
-              {tab === 'People' ? r.phone : r.units
-                ? `${r.units} apartments · ${r.floors} floors`
-                : r.rent
-                  ? money(r.rent)
-                  : money(r.cost)}
-            </small>
-            {tab === 'Buildings' && <div className="building-apartments">{data.apartments.filter((apartment) => apartment.buildingId === r.id).map((apartment) => <span key={apartment.id} onClick={(event) => { event.stopPropagation(); setSelectedApartment(apartment); }}>{apartment.number}</span>)}</div>}
-          </button>
-        ))}
+        {tab === 'Apartments'
+          ? data.buildings.map((building) => (
+              <section className="building-group" key={building.id}>
+                <div className="group-heading">
+                  <h3>{building.name}</h3>
+                  <span>
+                    {
+                      data.apartments.filter((apartment) => apartment.buildingId === building.id)
+                        .length
+                    }{' '}
+                    apartments
+                  </span>
+                </div>
+                <div className="record-grid">
+                  {data.apartments
+                    .filter((apartment) => apartment.buildingId === building.id)
+                    .map((r) => (
+                      <button
+                        className={`record-card owner-${String(r.ownerName || '')
+                          .toLowerCase()
+                          .replaceAll(' ', '-')}`}
+                        key={r.id}
+                        onClick={() => setSelectedApartment(r)}
+                      >
+                        <b>{r.number}</b>
+                        <span>
+                          {r.ownerName || 'Individual owner'} · {r.status}
+                        </span>
+                        <small>
+                          {r.tenantName || 'No tenant'} · {money(r.rent)}
+                        </small>
+                      </button>
+                    ))}
+                </div>
+              </section>
+            ))
+          : rows.map((r) => (
+              <button
+                className="record-card"
+                key={r.id}
+                onClick={() => {
+                  if (tab === 'Buildings') {
+                    setSelected(r);
+                    setSelectedBuilding(r);
+                  }
+                  if (tab === 'Apartments') setSelectedApartment(r);
+                  if (tab === 'People') setSelectedPerson(r);
+                }}
+              >
+                <b>{r.name || r.number || r.title}</b>
+                <span>
+                  {tab === 'People' ? r.role : r.area || r.status || 'Maintenance record'}
+                </span>
+                <small>
+                  {tab === 'People'
+                    ? r.phone
+                    : r.units
+                      ? `${r.units} apartments · ${r.floors} floors`
+                      : r.rent
+                        ? money(r.rent)
+                        : money(r.cost)}
+                </small>
+                {tab === 'Buildings' && (
+                  <div className="building-apartments">
+                    {data.apartments
+                      .filter((apartment) => apartment.buildingId === r.id)
+                      .map((apartment) => (
+                        <span
+                          key={apartment.id}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setSelectedApartment(apartment);
+                          }}
+                        >
+                          {apartment.number}
+                        </span>
+                      ))}
+                  </div>
+                )}
+              </button>
+            ))}
       </div>
       {!rows.length && <p className="empty">No records yet. Use Add to create your first one.</p>}
-      {selectedApartment && <div className="drawer-backdrop" onClick={() => setSelectedApartment(null)}><div onClick={(event) => event.stopPropagation()}><ApartmentSidePanel apartment={selectedApartment} buildings={data.buildings} people={data.people} data={data} onClose={() => setSelectedApartment(null)} /></div></div>}
-      {selectedBuilding && !selectedApartment && <div className="drawer-backdrop" onClick={() => setSelectedBuilding(null)}><div onClick={(event) => event.stopPropagation()}><BuildingDrawer building={selectedBuilding} apartments={data.apartments} onApartment={setSelectedApartment} onClose={() => setSelectedBuilding(null)} /></div></div>}
-      {selectedPerson && <PersonDetails person={selectedPerson} apartments={data.apartments} buildings={data.buildings} onClose={() => setSelectedPerson(null)} />}
+      {selectedApartment && (
+        <div className="drawer-backdrop" onClick={() => setSelectedApartment(null)}>
+          <div onClick={(event) => event.stopPropagation()}>
+            <ApartmentSidePanel
+              apartment={selectedApartment}
+              buildings={data.buildings}
+              people={data.people}
+              data={data}
+              onClose={() => setSelectedApartment(null)}
+            />
+          </div>
+        </div>
+      )}
+      {selectedBuilding && !selectedApartment && (
+        <div className="drawer-backdrop" onClick={() => setSelectedBuilding(null)}>
+          <div onClick={(event) => event.stopPropagation()}>
+            <BuildingDrawer
+              building={selectedBuilding}
+              apartments={data.apartments}
+              onApartment={setSelectedApartment}
+              onClose={() => setSelectedBuilding(null)}
+            />
+          </div>
+        </div>
+      )}
+      {selectedPerson && (
+        <div className="drawer-backdrop" onClick={() => setSelectedPerson(null)}>
+          <div onClick={(event) => event.stopPropagation()}>
+            <PersonDetailsModal
+              person={selectedPerson}
+              apartments={data.apartments}
+              buildings={data.buildings}
+              onClose={() => setSelectedPerson(null)}
+            />
+          </div>
+        </div>
+      )}
     </section>
   );
 }
 function BuildingDrawer({ building, apartments, onApartment, onClose }) {
   const items = apartments.filter((apartment) => apartment.buildingId === building.id);
-  return <aside className="side-drawer building-drawer"><button className="close" onClick={onClose}>×</button><div className="eyebrow">BUILDING</div><h2>{building.name}</h2><p className="muted">{building.area} · {building.units} apartments · {building.floors} floors</p><div className="drawer-summary"><b>{items.length}</b><span>loaded apartments</span></div><h3>Apartment register</h3>{items.map((apartment) => <button className={`drawer-apartment owner-${String(apartment.ownerName || '').toLowerCase().replaceAll(' ', '-')}`} key={apartment.id} onClick={() => onApartment(apartment)}><span><b>{apartment.number}</b><small>{apartment.ownerName || 'Individual owner'}</small></span><span><b>{apartment.status}</b><small>{apartment.tenantName || 'No tenant'}</small></span><strong>{money(apartment.rent)}</strong></button>)}</aside>;
+  return (
+    <aside className="side-drawer building-drawer">
+      <button className="close" onClick={onClose}>
+        ×
+      </button>
+      <div className="eyebrow">BUILDING</div>
+      <h2>{building.name}</h2>
+      <p className="muted">
+        {building.area} · {building.units} apartments · {building.floors} floors
+      </p>
+      <div className="drawer-summary">
+        <b>{items.length}</b>
+        <span>loaded apartments</span>
+      </div>
+      <h3>Apartment register</h3>
+      {items.map((apartment) => (
+        <button
+          className={`drawer-apartment owner-${String(apartment.ownerName || '')
+            .toLowerCase()
+            .replaceAll(' ', '-')}`}
+          key={apartment.id}
+          onClick={() => onApartment(apartment)}
+        >
+          <span>
+            <b>{apartment.number}</b>
+            <small>{apartment.ownerName || 'Individual owner'}</small>
+          </span>
+          <span>
+            <b>{apartment.status}</b>
+            <small>{apartment.tenantName || 'No tenant'}</small>
+          </span>
+          <strong>{money(apartment.rent)}</strong>
+        </button>
+      ))}
+    </aside>
+  );
 }
 function LegacyApartmentSidePanel({ apartment, buildings, people = [], data, onClose }) {
   const building = buildings.find((item) => item.id === apartment.buildingId);
   const related = people.filter((person) => person.apartmentIds?.includes(apartment.id));
   const events = (data.events || []).filter((event) => event.apartmentId === apartment.id);
   const bills = (data.bills || []).filter((bill) => bill.apartmentId === apartment.id);
-  const monthlyTotal = events.reduce((sum, event) => sum + Number(event.cost || 0), 0) + bills.reduce((sum, bill) => sum + Number(bill.amount || 0), 0);
-  return <aside className="side-drawer apartment-drawer"><button className="close" onClick={onClose}>×</button><div className="eyebrow">APARTMENT DETAILS</div><h2>{apartment.number} · {building?.name}</h2><p className="muted">{apartment.status} · {money(apartment.rent)} per month</p><div className="detail-grid"><div><span>Owner</span><b>{apartment.ownerName || related.find((p) => p.role === 'Owner')?.name || 'Not added'}</b></div><div><span>Tenant</span><b>{apartment.tenantName || related.find((p) => p.role === 'Tenant')?.name || 'Not added'}</b></div><div><span>Rental period</span><b>{apartment.leaseStart || '—'} to {apartment.leaseEnd || '—'}</b></div><div><span>Contract</span><b><a href={apartment.contractUrl || '#'} onClick={(event) => !apartment.contractUrl && event.preventDefault()}>{apartment.contractUrl ? 'Open PDF' : 'PDF to be added'}</a></b></div></div><div className="cost-total"><span>June total costs</span><b>{money(monthlyTotal)}</b><small>Annual view: {money(monthlyTotal * 12)}</small></div><h3>Recent events</h3>{events.map((event) => <div className="event-row" key={event.id}><div><b>{event.title}</b><small>{event.type} · {event.date}</small></div><strong>{money(event.cost)}</strong></div>)}{!events.length && <p className="muted">No events recorded yet.</p>}<h3>Bills</h3>{bills.map((bill) => <div className="event-row" key={bill.id}><div><b>{bill.category}</b><small>{bill.period} · due {bill.dueDate} · {bill.status}</small></div><strong>{money(bill.amount)}</strong></div>)}</aside>;
+  const monthlyTotal =
+    events.reduce((sum, event) => sum + Number(event.cost || 0), 0) +
+    bills.reduce((sum, bill) => sum + Number(bill.amount || 0), 0);
+  return (
+    <aside className="side-drawer apartment-drawer">
+      <button className="close" onClick={onClose}>
+        ×
+      </button>
+      <div className="eyebrow">APARTMENT DETAILS</div>
+      <h2>
+        {apartment.number} · {building?.name}
+      </h2>
+      <p className="muted">
+        {apartment.status} · {money(apartment.rent)} per month
+      </p>
+      <div className="detail-grid">
+        <div>
+          <span>Owner</span>
+          <b>
+            {apartment.ownerName || related.find((p) => p.role === 'Owner')?.name || 'Not added'}
+          </b>
+        </div>
+        <div>
+          <span>Tenant</span>
+          <b>
+            {apartment.tenantName || related.find((p) => p.role === 'Tenant')?.name || 'Not added'}
+          </b>
+        </div>
+        <div>
+          <span>Rental period</span>
+          <b>
+            {apartment.leaseStart || '—'} to {apartment.leaseEnd || '—'}
+          </b>
+        </div>
+        <div>
+          <span>Contract</span>
+          <b>
+            <a
+              href={apartment.contractUrl || '#'}
+              onClick={(event) => !apartment.contractUrl && event.preventDefault()}
+            >
+              {apartment.contractUrl ? 'Open PDF' : 'PDF to be added'}
+            </a>
+          </b>
+        </div>
+      </div>
+      <div className="cost-total">
+        <span>June total costs</span>
+        <b>{money(monthlyTotal)}</b>
+        <small>Annual view: {money(monthlyTotal * 12)}</small>
+      </div>
+      <h3>Recent events</h3>
+      {events.map((event) => (
+        <div className="event-row" key={event.id}>
+          <div>
+            <b>{event.title}</b>
+            <small>
+              {event.type} · {event.date}
+            </small>
+          </div>
+          <strong>{money(event.cost)}</strong>
+        </div>
+      ))}
+      {!events.length && <p className="muted">No events recorded yet.</p>}
+      <h3>Bills</h3>
+      {bills.map((bill) => (
+        <div className="event-row" key={bill.id}>
+          <div>
+            <b>{bill.category}</b>
+            <small>
+              {bill.period} · due {bill.dueDate} · {bill.status}
+            </small>
+          </div>
+          <strong>{money(bill.amount)}</strong>
+        </div>
+      ))}
+    </aside>
+  );
 }
 function FinancialSummary({ rent, bills, events }) {
-  const expenses = bills.reduce((sum, bill) => sum + Number(bill.amount || 0), 0) + events.reduce((sum, event) => sum + Number(event.cost || 0), 0);
-  const history = [0.91, 0.96, 1.03, 0.98, 1.08, 1].map((factor, index) => ({ month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'][index], income: Math.round(rent * factor), expense: Math.round(expenses * (0.88 + index * 0.03)) }));
-  const current = history[history.length - 1]; const previous = history[history.length - 2]; const change = Math.round(((current.income - previous.income) / previous.income) * 100); const annualIncome = history.reduce((sum, month) => sum + month.income, 0); const annualExpense = history.reduce((sum, month) => sum + month.expense, 0);
-  return <div className="financial-summary"><div className="finance-head"><h3>Monthly cash flow</h3><span>{change >= 0 ? '↑' : '↓'} {Math.abs(change)}% vs May</span></div><div className="finance-cards"><div className="income"><small>Rent coming in</small><b>{money(current.income)}</b></div><div className="expense"><small>Costs going out</small><b>{money(current.expense)}</b></div></div><div className="finance-history">{history.map((month) => <div key={month.month}><span>{month.month}</span><i style={{ height: `${Math.max(8, month.income / rent * 30)}px` }} /><em style={{ height: `${Math.max(6, month.expense / Math.max(expenses, 1) * 30)}px` }} /></div>)}</div><div className="finance-totals"><span>6-month income <b>{money(annualIncome)}</b></span><span>6-month costs <b>{money(annualExpense)}</b></span><span>Net ratio <b>{Math.round(((annualIncome - annualExpense) / annualIncome) * 100)}%</b></span></div></div>;
+  const expenses =
+    bills.reduce((sum, bill) => sum + Number(bill.amount || 0), 0) +
+    events.reduce((sum, event) => sum + Number(event.cost || 0), 0);
+  const history = [0.91, 0.96, 1.03, 0.98, 1.08, 1].map((factor, index) => ({
+    month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'][index],
+    income: Math.round(rent * factor),
+    expense: Math.round(expenses * (0.88 + index * 0.03)),
+  }));
+  const current = history[history.length - 1];
+  const previous = history[history.length - 2];
+  const change = Math.round(((current.income - previous.income) / previous.income) * 100);
+  const annualIncome = history.reduce((sum, month) => sum + month.income, 0);
+  const annualExpense = history.reduce((sum, month) => sum + month.expense, 0);
+  return (
+    <div className="financial-summary">
+      <div className="finance-head">
+        <h3>Monthly cash flow</h3>
+        <span>
+          {change >= 0 ? '↑' : '↓'} {Math.abs(change)}% vs May
+        </span>
+      </div>
+      <div className="finance-cards">
+        <div className="income">
+          <small>Rent coming in</small>
+          <b>{money(current.income)}</b>
+        </div>
+        <div className="expense">
+          <small>Costs going out</small>
+          <b>{money(current.expense)}</b>
+        </div>
+      </div>
+      <div className="finance-history">
+        {history.map((month) => (
+          <div key={month.month}>
+            <span>{month.month}</span>
+            <i style={{ height: `${Math.max(8, (month.income / rent) * 30)}px` }} />
+            <em
+              style={{ height: `${Math.max(6, (month.expense / Math.max(expenses, 1)) * 30)}px` }}
+            />
+          </div>
+        ))}
+      </div>
+      <div className="finance-totals">
+        <span>
+          6-month income <b>{money(annualIncome)}</b>
+        </span>
+        <span>
+          6-month costs <b>{money(annualExpense)}</b>
+        </span>
+        <span>
+          Net ratio <b>{Math.round(((annualIncome - annualExpense) / annualIncome) * 100)}%</b>
+        </span>
+      </div>
+    </div>
+  );
 }
 function ApartmentSidePanel({ apartment, buildings, people = [], data, onClose }) {
-  const building = buildings.find((item) => item.id === apartment.buildingId); const related = people.filter((person) => person.apartmentIds?.includes(apartment.id)); const events = (data.events || []).filter((event) => event.apartmentId === apartment.id); const bills = (data.bills || []).filter((bill) => bill.apartmentId === apartment.id);
-  return <aside className="side-drawer apartment-drawer"><button className="close" onClick={onClose}>×</button><div className="eyebrow">APARTMENT DETAILS</div><h2>{apartment.number} · {building?.name}</h2><p className="muted">{apartment.status} · {money(apartment.rent)} per month</p><div className="detail-grid"><div><span>Owner</span><b>{apartment.ownerName || related.find((p) => p.role === 'Owner')?.name || 'Not added'}</b></div><div><span>Tenant</span><b>{apartment.tenantName || related.find((p) => p.role === 'Tenant')?.name || 'Not added'}</b></div><div><span>Rental period</span><b>{apartment.leaseStart || '—'} to {apartment.leaseEnd || '—'}</b></div><div><span>Contract</span><b><a href={apartment.contractUrl || '#'} onClick={(event) => !apartment.contractUrl && event.preventDefault()}>{apartment.contractUrl ? 'Open PDF' : 'PDF to be added'}</a></b></div></div><FinancialSummary rent={apartment.rent} bills={bills} events={events} /><h3>Recent events</h3>{events.map((event) => <div className="event-row" key={event.id}><div><b>{event.title}</b><small>{event.type} · {event.date}</small></div><strong>{money(event.cost)}</strong></div>)}{!events.length && <p className="muted">No events recorded yet.</p>}<h3>Bills</h3>{bills.map((bill) => <div className="event-row" key={bill.id}><div><b>{bill.category}</b><small>{bill.period} · due {bill.dueDate} · {bill.status}</small></div><strong>{money(bill.amount)}</strong></div>)}</aside>;
+  const building = buildings.find((item) => item.id === apartment.buildingId);
+  const related = people.filter((person) => person.apartmentIds?.includes(apartment.id));
+  const events = (data.events || []).filter((event) => event.apartmentId === apartment.id);
+  const bills = (data.bills || []).filter((bill) => bill.apartmentId === apartment.id);
+  return (
+    <aside className="side-drawer apartment-drawer">
+      <button className="close" onClick={onClose}>
+        ×
+      </button>
+      <div className="eyebrow">APARTMENT DETAILS</div>
+      <h2>
+        {apartment.number} · {building?.name}
+      </h2>
+      <p className="muted">
+        {apartment.status} · {money(apartment.rent)} per month
+      </p>
+      <div className="detail-grid">
+        <div>
+          <span>Owner</span>
+          <b>
+            {apartment.ownerName || related.find((p) => p.role === 'Owner')?.name || 'Not added'}
+          </b>
+        </div>
+        <div>
+          <span>Tenant</span>
+          <b>
+            {apartment.tenantName || related.find((p) => p.role === 'Tenant')?.name || 'Not added'}
+          </b>
+        </div>
+        <div>
+          <span>Rental period</span>
+          <b>
+            {apartment.leaseStart || '—'} to {apartment.leaseEnd || '—'}
+          </b>
+        </div>
+        <div>
+          <span>Contract</span>
+          <b>
+            <a
+              href={apartment.contractUrl || '#'}
+              onClick={(event) => !apartment.contractUrl && event.preventDefault()}
+            >
+              {apartment.contractUrl ? 'Open PDF' : 'PDF to be added'}
+            </a>
+          </b>
+        </div>
+      </div>
+      <FinancialSummary rent={apartment.rent} bills={bills} events={events} />
+      <h3>Recent events</h3>
+      {events.map((event) => (
+        <div className="event-row" key={event.id}>
+          <div>
+            <b>{event.title}</b>
+            <small>
+              {event.type} · {event.date}
+            </small>
+          </div>
+          <strong>{money(event.cost)}</strong>
+        </div>
+      ))}
+      {!events.length && <p className="muted">No events recorded yet.</p>}
+      <h3>Bills</h3>
+      {bills.map((bill) => (
+        <div className="event-row" key={bill.id}>
+          <div>
+            <b>{bill.category}</b>
+            <small>
+              {bill.period} · due {bill.dueDate} · {bill.status}
+            </small>
+          </div>
+          <strong>{money(bill.amount)}</strong>
+        </div>
+      ))}
+    </aside>
+  );
 }
 function ApartmentDetails({ apartment, buildings, people = [], onClose }) {
   const building = buildings.find((item) => item.id === apartment.buildingId);
   const related = people.filter((person) => person.apartmentIds?.includes(apartment.id));
-  return <div className="record-detail"><div><div className="eyebrow">APARTMENT DETAILS</div><button className="close" onClick={onClose}>×</button><h2>{apartment.number} · {building?.name}</h2><p className="muted">{apartment.status} · {money(apartment.rent)} per month</p></div><div className="detail-grid"><div><span>Owner</span><b>{apartment.ownerName || related.find((p) => p.role === 'Owner')?.name || 'Not added'}</b></div><div><span>Tenant</span><b>{apartment.tenantName || related.find((p) => p.role === 'Tenant')?.name || 'Not added'}</b></div><div><span>Rental period</span><b>{apartment.leaseStart || '—'} to {apartment.leaseEnd || '—'}</b></div><div><span>Contract</span><b><a href={apartment.contractUrl || '#'} onClick={(event) => !apartment.contractUrl && event.preventDefault()}>{apartment.contractUrl ? 'Open rental contract PDF' : 'PDF to be added later'}</a></b></div></div></div>;
+  return (
+    <div className="record-detail">
+      <div>
+        <div className="eyebrow">APARTMENT DETAILS</div>
+        <button className="close" onClick={onClose}>
+          ×
+        </button>
+        <h2>
+          {apartment.number} · {building?.name}
+        </h2>
+        <p className="muted">
+          {apartment.status} · {money(apartment.rent)} per month
+        </p>
+      </div>
+      <div className="detail-grid">
+        <div>
+          <span>Owner</span>
+          <b>
+            {apartment.ownerName || related.find((p) => p.role === 'Owner')?.name || 'Not added'}
+          </b>
+        </div>
+        <div>
+          <span>Tenant</span>
+          <b>
+            {apartment.tenantName || related.find((p) => p.role === 'Tenant')?.name || 'Not added'}
+          </b>
+        </div>
+        <div>
+          <span>Rental period</span>
+          <b>
+            {apartment.leaseStart || '—'} to {apartment.leaseEnd || '—'}
+          </b>
+        </div>
+        <div>
+          <span>Contract</span>
+          <b>
+            <a
+              href={apartment.contractUrl || '#'}
+              onClick={(event) => !apartment.contractUrl && event.preventDefault()}
+            >
+              {apartment.contractUrl ? 'Open rental contract PDF' : 'PDF to be added later'}
+            </a>
+          </b>
+        </div>
+      </div>
+    </div>
+  );
 }
-function PersonDetails({ person, apartments, buildings, onClose }) { const related = apartments.filter((apartment) => person.apartmentIds?.includes(apartment.id)); return <div className="record-detail"><button className="close" onClick={onClose}>×</button><div className="eyebrow">PERSON</div><h2>{person.name}</h2><p className="muted">{person.role} · {person.phone}</p><h3>Associated apartments</h3>{related.length ? related.map((apartment) => <div className="associated" key={apartment.id}><b>{apartment.number}</b><span>{buildings.find((building) => building.id === apartment.buildingId)?.name}</span><small>{money(apartment.rent)} · {apartment.status}</small></div>) : <p className="muted">No apartment associations yet.</p>}</div>; }
+function PersonDetails({ person, apartments, buildings, onClose }) {
+  const related = apartments.filter((apartment) => person.apartmentIds?.includes(apartment.id));
+  return (
+    <div className="record-detail">
+      <button className="close" onClick={onClose}>
+        ×
+      </button>
+      <div className="eyebrow">PERSON</div>
+      <h2>{person.name}</h2>
+      <p className="muted">
+        {person.role} · {person.phone}
+      </p>
+      <h3>Associated apartments</h3>
+      {related.length ? (
+        related.map((apartment) => (
+          <div className="associated" key={apartment.id}>
+            <b>{apartment.number}</b>
+            <span>{buildings.find((building) => building.id === apartment.buildingId)?.name}</span>
+            <small>
+              {money(apartment.rent)} · {apartment.status}
+            </small>
+          </div>
+        ))
+      ) : (
+        <p className="muted">No apartment associations yet.</p>
+      )}
+    </div>
+  );
+}
+function PersonDetailsModal({ person, apartments, buildings, onClose }) {
+  const enriched = enrichPerson(person);
+  const related = apartments.filter((apartment) => enriched.apartmentIds?.includes(apartment.id));
+  const interactions = enriched.interactions || [];
+  const total = interactions.reduce((sum, item) => sum + Number(item.cost || 0), 0);
+  return (
+    <aside className="side-drawer person-drawer">
+      <button className="close" onClick={onClose}>
+        ×
+      </button>
+      <div className="eyebrow">PERSON PROFILE</div>
+      <h2>{enriched.name}</h2>
+      <p className="muted">{enriched.role}</p>
+      <div className="person-contact">
+        <b>{enriched.phone}</b>
+        <span>{enriched.email}</span>
+        <small>Preferred contact: {enriched.preferredContact}</small>
+        <small>Notes: {enriched.notes}</small>
+      </div>
+      <h3>Associated apartments</h3>
+      {related.length ? (
+        related.map((apartment) => (
+          <div className="associated" key={apartment.id}>
+            <b>{apartment.number}</b>
+            <span>{buildings.find((building) => building.id === apartment.buildingId)?.name}</span>
+            <small>
+              {money(apartment.rent)} · {apartment.status}
+            </small>
+          </div>
+        ))
+      ) : (
+        <p className="muted">No apartment associations yet.</p>
+      )}
+      {interactions.length > 0 && (
+        <>
+          <h3>Interaction history</h3>
+          <div className="interaction-total">
+            Total paid / charged: <b>{money(total)}</b>
+          </div>
+          {interactions.map((item) => (
+            <div className="timeline-item" key={item.id}>
+              <i />
+              <div>
+                <b>{item.title}</b>
+                <small>
+                  {item.date} · {item.apartment}
+                </small>
+              </div>
+              <strong>{money(item.cost)}</strong>
+            </div>
+          ))}
+          <div className="finance-totals">
+            <span>
+              Per month <b>{money(total)}</b>
+            </span>
+            <span>
+              Per quarter <b>{money(total * 3)}</b>
+            </span>
+            <span>
+              Per year <b>{money(total * 12)}</b>
+            </span>
+          </div>
+        </>
+      )}
+    </aside>
+  );
+}
 function Modal({ type, buildings, onClose, onSubmit }) {
   const configs = {
     building: [
