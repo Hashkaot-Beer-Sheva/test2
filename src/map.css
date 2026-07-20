@@ -14,6 +14,9 @@
 .real-map-pin { width: 30px !important; height: 30px !important; padding: 4px !important; border-radius: 50% !important; text-align: center !important; }
 .real-map-pin span { margin: 0 !important; width: 20px !important; height: 20px !important; }
 .map-loading { position: absolute; z-index: 1; inset: 0; display: grid; place-items: center; color: #768697; background: #eef2ef; }
+.geocode-overlay { position: absolute; z-index: 5; top: 14px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-radius: 7px; background: #fff; color: #526779; box-shadow: 0 4px 18px #263d4b33; font-size: 11px; font-weight: 700; }
+.spinner { width: 14px; height: 14px; border: 2px solid #dbe5e5; border-top-color: #ec806d; border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 .floor-grid { display: grid; gap: 10px; margin-top: 12px; }
 .floor-row { display: grid; grid-template-columns: 64px 1fr; gap: 8px; align-items: stretch; }
 .floor-label { display: grid; place-items: center; border-radius: 7px; background: #f0f3f2; color: #667789; font-size: 10px; font-weight: 800; text-transform: uppercase; writing-mode: vertical-rl; transform: rotate(180deg); }

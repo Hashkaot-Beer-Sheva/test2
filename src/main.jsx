@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles.css';
 import './enhancements.css';
@@ -15,701 +15,20 @@ import './pinui.css';
 import './top-search.css';
 import RealMap from './RealMap';
 
-const seed = {
-  buildings: [
-    {
-      id: 'b1',
-      name: 'Gimel 4',
-      street: 'חנה סנש',
-      address: 'חנה סנש 4, שכונה ג׳, באר שבע',
-      lat: 31.2641,
-      lng: 34.7986,
-      area: 'Shechuna Gimel',
-      units: 18,
-      floors: 6,
-      zone: 'Residential A',
-      color: 'coral',
-      x: 27,
-      y: 26,
-    },
-    {
-      id: 'b2',
-      name: 'Gimel 15',
-      street: 'השלום',
-      address: 'השלום 15, שכונה ג׳, באר שבע',
-      lat: 31.26455,
-      lng: 34.7994,
-      area: 'Shechuna Gimel',
-      units: 24,
-      floors: 8,
-      zone: 'Mixed use',
-      color: 'blue',
-      x: 55,
-      y: 37,
-    },
-    {
-      id: 'b3',
-      name: 'HaKaf Gimel 4',
-      street: 'גוש עציון',
-      address: 'גוש עציון 4, שכונה ג׳, באר שבע',
-      lat: 31.26345,
-      lng: 34.8002,
-      area: 'Shechuna Gimel',
-      units: 12,
-      floors: 4,
-      zone: 'Residential B',
-      color: 'mint',
-      x: 71,
-      y: 19,
-    },
-    {
-      id: 'b4',
-      name: 'Gimel 22',
-      street: 'רוטנברג',
-      address: 'רוטנברג 22, שכונה ג׳, באר שבע',
-      lat: 31.2629,
-      lng: 34.7991,
-      area: 'Shechuna Gimel',
-      units: 30,
-      floors: 10,
-      zone: 'Residential A',
-      color: 'gold',
-      x: 38,
-      y: 67,
-    },
-  ],
-  apartments: [
-    {
-      id: 'a1',
-      buildingId: 'b1',
-      number: 'A-01',
-      resident: 'Maya Cohen',
-      ownerName: 'Avi Cohen',
-      tenantName: 'Maya Cohen',
-      leaseStart: '2024-07-01',
-      leaseEnd: '2026-06-30',
-      contractUrl: '',
-      status: 'Leased',
-      rent: 4850,
-      due: '2024-07-01',
-    },
-    {
-      id: 'a2',
-      buildingId: 'b1',
-      number: 'A-02',
-      resident: 'Noam Levi',
-      ownerName: 'Ruth Levi',
-      tenantName: 'Noam Levi',
-      leaseStart: '2023-10-15',
-      leaseEnd: '2025-10-14',
-      contractUrl: '',
-      status: 'Leased',
-      rent: 5200,
-      due: '2023-10-15',
-    },
-    {
-      id: 'a3',
-      buildingId: 'b1',
-      number: 'A-03',
-      resident: '',
-      ownerName: 'Miriam Azulay',
-      tenantName: '',
-      leaseStart: '',
-      leaseEnd: '',
-      contractUrl: '',
-      status: 'Vacant',
-      rent: 4600,
-      due: '2025-06-03',
-    },
-    {
-      id: 'a4',
-      buildingId: 'b1',
-      number: 'A-04',
-      resident: 'Dana Shalev',
-      ownerName: 'Oren Shalev',
-      tenantName: 'Dana Shalev',
-      leaseStart: '2025-07-01',
-      leaseEnd: '2026-06-30',
-      contractUrl: '',
-      status: 'On market',
-      rent: 5100,
-      due: '2025-06-27',
-    },
-  ],
-  maintenance: [
-    {
-      id: 'm1',
-      buildingId: 'b1',
-      title: 'Leaking kitchen tap',
-      status: 'Open',
-      cost: 420,
-      date: '2025-06-28',
-    },
-  ],
-  bills: [],
-  payments: [],
-  activity: [],
-  people: [
-    { id: 'p1', name: 'Avi Cohen', role: 'Owner', phone: '050-555-1040', apartmentIds: ['a1'] },
-    { id: 'p2', name: 'Maya Cohen', role: 'Tenant', phone: '052-555-2091', apartmentIds: ['a1'] },
-    { id: 'p3', name: 'Ruth Levi', role: 'Owner', phone: '050-555-3082', apartmentIds: ['a2'] },
-    { id: 'p4', name: 'Noam Levi', role: 'Tenant', phone: '054-555-4102', apartmentIds: ['a2'] },
-    {
-      id: 'p5',
-      name: 'Yossi Electric',
-      role: 'Technician',
-      phone: '050-555-9012',
-      apartmentIds: [],
-    },
-    {
-      id: 'p6',
-      name: 'Neta Barak',
-      role: 'Insurance agent',
-      phone: '052-555-8801',
-      apartmentIds: [],
-    },
-  ],
-};
+import { seed, mockExpansion, spreadsheetImport, bulkApartments, bulkEvents, bulkBills, buildApartmentOperations } from './mockData';
+
 const money = (n) => `₪${Number(n || 0).toLocaleString('en-US')}`;
-const mockExpansion = {
-  buildings: [
-    {
-      id: 'b5',
-      name: 'Gimel 28',
-      street: 'נילי',
-      address: 'נילי 28, שכונה ג׳, באר שבע',
-      lat: 31.26375,
-      lng: 34.8011,
-      area: 'Shechuna Gimel',
-      units: 16,
-      floors: 5,
-      zone: 'Residential A',
-      color: 'coral',
-      x: 18,
-      y: 45,
-    },
-    {
-      id: 'b6',
-      name: 'Gimel 33',
-      street: 'וינגייט',
-      address: 'וינגייט 33, שכונה ג׳, באר שבע',
-      lat: 31.2626,
-      lng: 34.80055,
-      area: 'Shechuna Gimel',
-      units: 20,
-      floors: 7,
-      zone: 'Residential B',
-      color: 'blue',
-      x: 63,
-      y: 60,
-    },
-    {
-      id: 'b7',
-      name: 'Gimel 41',
-      street: 'בן גוריון',
-      address: 'בן גוריון 41, שכונה ג׳, באר שבע',
-      lat: 31.26485,
-      lng: 34.80125,
-      area: 'Shechuna Gimel',
-      units: 14,
-      floors: 4,
-      zone: 'Residential A',
-      color: 'mint',
-      x: 82,
-      y: 42,
-    },
-    {
-      id: 'b8',
-      name: 'Gimel 48',
-      street: 'רזיאל',
-      address: 'רזיאל 48, שכונה ג׳, באר שבע',
-      lat: 31.2632,
-      lng: 34.80185,
-      area: 'Shechuna Gimel',
-      units: 12,
-      floors: 4,
-      zone: 'Residential A',
-      color: 'gold',
-      x: 76,
-      y: 72,
-    },
-  ],
-  apartments: [
-    {
-      id: 'a5',
-      buildingId: 'b1',
-      number: 'A-05',
-      ownerName: 'Shira Ben-David',
-      tenantName: 'Lior Katz',
-      resident: 'Lior Katz',
-      status: 'Leased',
-      rent: 4950,
-      leaseStart: '2025-02-01',
-      leaseEnd: '2026-01-31',
-      contractUrl: '',
-    },
-    {
-      id: 'a6',
-      buildingId: 'b2',
-      number: 'B-01',
-      ownerName: 'Eli Mizrahi',
-      tenantName: 'Yael Peretz',
-      resident: 'Yael Peretz',
-      status: 'Leased',
-      rent: 5600,
-      leaseStart: '2024-09-01',
-      leaseEnd: '2026-08-31',
-      contractUrl: '',
-    },
-    {
-      id: 'a7',
-      buildingId: 'b2',
-      number: 'B-02',
-      ownerName: 'Eli Mizrahi',
-      tenantName: '',
-      resident: '',
-      status: 'Vacant',
-      rent: 5400,
-      leaseStart: '',
-      leaseEnd: '',
-      contractUrl: '',
-    },
-    {
-      id: 'a8',
-      buildingId: 'b3',
-      number: '2',
-      ownerName: 'Tal Shachar',
-      tenantName: 'Roni Gil',
-      resident: 'Roni Gil',
-      status: 'Leased',
-      rent: 6100,
-      leaseStart: '2025-04-15',
-      leaseEnd: '2026-04-14',
-      contractUrl: '',
-    },
-    {
-      id: 'a9',
-      buildingId: 'b3',
-      number: '3',
-      ownerName: 'Tal Shachar',
-      tenantName: '',
-      resident: '',
-      status: 'On market',
-      rent: 6250,
-      leaseStart: '',
-      leaseEnd: '',
-      contractUrl: '',
-    },
-    {
-      id: 'a10',
-      buildingId: 'b4',
-      number: '1',
-      ownerName: 'Nir Avital',
-      tenantName: 'Ofir Cohen',
-      resident: 'Ofir Cohen',
-      status: 'Leased',
-      rent: 4700,
-      leaseStart: '2024-12-01',
-      leaseEnd: '2025-11-30',
-      contractUrl: '',
-    },
-    {
-      id: 'a11',
-      buildingId: 'b4',
-      number: '2',
-      ownerName: 'Nir Avital',
-      tenantName: '',
-      resident: '',
-      status: 'Vacant',
-      rent: 4650,
-      leaseStart: '',
-      leaseEnd: '',
-      contractUrl: '',
-    },
-    {
-      id: 'a12',
-      buildingId: 'b5',
-      number: '1',
-      ownerName: 'Michal Azulay',
-      tenantName: 'Amit Ronen',
-      resident: 'Amit Ronen',
-      status: 'Leased',
-      rent: 4550,
-      leaseStart: '2025-01-15',
-      leaseEnd: '2026-01-14',
-      contractUrl: '',
-    },
-    {
-      id: 'a13',
-      buildingId: 'b5',
-      number: '2',
-      ownerName: 'Michal Azulay',
-      tenantName: '',
-      resident: '',
-      status: 'Vacant',
-      rent: 4500,
-      leaseStart: '',
-      leaseEnd: '',
-      contractUrl: '',
-    },
-    {
-      id: 'a14',
-      buildingId: 'b6',
-      number: '1',
-      ownerName: 'Gadi Fried',
-      tenantName: 'Hila Naveh',
-      resident: 'Hila Naveh',
-      status: 'Leased',
-      rent: 5750,
-      leaseStart: '2025-06-01',
-      leaseEnd: '2026-05-31',
-      contractUrl: '',
-    },
-    {
-      id: 'a15',
-      buildingId: 'b6',
-      number: '2',
-      ownerName: 'Gadi Fried',
-      tenantName: 'Matan Bar',
-      resident: 'Matan Bar',
-      status: 'Leased',
-      rent: 5800,
-      leaseStart: '2024-11-01',
-      leaseEnd: '2025-10-31',
-      contractUrl: '',
-    },
-    {
-      id: 'a16',
-      buildingId: 'b6',
-      number: '3',
-      ownerName: 'Gadi Fried',
-      tenantName: '',
-      resident: '',
-      status: 'On market',
-      rent: 5900,
-      leaseStart: '',
-      leaseEnd: '',
-      contractUrl: '',
-    },
-    {
-      id: 'a17',
-      buildingId: 'b7',
-      number: '1',
-      ownerName: 'Anat Levi',
-      tenantName: 'Shani Dahan',
-      resident: 'Shani Dahan',
-      status: 'Leased',
-      rent: 5100,
-      leaseStart: '2025-03-01',
-      leaseEnd: '2026-02-28',
-      contractUrl: '',
-    },
-    {
-      id: 'a18',
-      buildingId: 'b7',
-      number: '2',
-      ownerName: 'Anat Levi',
-      tenantName: '',
-      resident: '',
-      status: 'Vacant',
-      rent: 5000,
-      leaseStart: '',
-      leaseEnd: '',
-      contractUrl: '',
-    },
-    {
-      id: 'a19',
-      buildingId: 'b7',
-      number: '3',
-      ownerName: 'Anat Levi',
-      tenantName: 'Yarden Shalev',
-      resident: 'Yarden Shalev',
-      status: 'Leased',
-      rent: 5150,
-      leaseStart: '2024-08-01',
-      leaseEnd: '2025-07-31',
-      contractUrl: '',
-    },
-  ],
-  people: [
-    {
-      id: 'p7',
-      name: 'Shira Ben-David',
-      role: 'Owner',
-      phone: '050-555-6111',
-      apartmentIds: ['a5'],
-    },
-    { id: 'p8', name: 'Lior Katz', role: 'Tenant', phone: '052-555-6222', apartmentIds: ['a5'] },
-    {
-      id: 'p9',
-      name: 'Eli Mizrahi',
-      role: 'Owner',
-      phone: '050-555-6333',
-      apartmentIds: ['a6', 'a7'],
-    },
-    { id: 'p10', name: 'Yael Peretz', role: 'Tenant', phone: '054-555-6444', apartmentIds: ['a6'] },
-    {
-      id: 'p11',
-      name: 'Tal Shachar',
-      role: 'Owner',
-      phone: '052-555-6555',
-      apartmentIds: ['a8', 'a9'],
-    },
-    { id: 'p12', name: 'Roni Gil', role: 'Tenant', phone: '050-555-6666', apartmentIds: ['a8'] },
-    {
-      id: 'p13',
-      name: 'Nir Avital',
-      role: 'Owner',
-      phone: '054-555-6777',
-      apartmentIds: ['a10', 'a11'],
-    },
-    { id: 'p14', name: 'Ofir Cohen', role: 'Tenant', phone: '052-555-6888', apartmentIds: ['a10'] },
-    {
-      id: 'p15',
-      name: 'Michal Azulay',
-      role: 'Owner',
-      phone: '050-555-6999',
-      apartmentIds: ['a12', 'a13'],
-    },
-    { id: 'p16', name: 'Amit Ronen', role: 'Tenant', phone: '054-555-7000', apartmentIds: ['a12'] },
-    {
-      id: 'p17',
-      name: 'Gadi Fried',
-      role: 'Owner',
-      phone: '052-555-7111',
-      apartmentIds: ['a14', 'a15', 'a16'],
-    },
-    { id: 'p18', name: 'Hila Naveh', role: 'Tenant', phone: '050-555-7222', apartmentIds: ['a14'] },
-    { id: 'p19', name: 'Matan Bar', role: 'Tenant', phone: '054-555-7333', apartmentIds: ['a15'] },
-    {
-      id: 'p20',
-      name: 'Anat Levi',
-      role: 'Owner',
-      phone: '052-555-7444',
-      apartmentIds: ['a17', 'a18', 'a19'],
-    },
-    {
-      id: 'p21',
-      name: 'Shani Dahan',
-      role: 'Tenant',
-      phone: '050-555-7555',
-      apartmentIds: ['a17'],
-    },
-    {
-      id: 'p22',
-      name: 'Yarden Shalev',
-      role: 'Tenant',
-      phone: '054-555-7666',
-      apartmentIds: ['a19'],
-    },
-  ],
-};
-const spreadsheetImport = {
-  buildings: [
-    {
-      id: 'b9',
-      name: 'חנה סנש 8',
-      street: 'חנה סנש',
-      streetNumber: '8',
-      address: 'חנה סנש 8, שכונה ג׳, באר שבע',
-      area: 'Shechuna Gimel',
-      units: 1,
-      floors: 2,
-      zone: 'Residential',
-      color: 'gold',
-      lat: 31.2643,
-      lng: 34.7989,
-    },
-  ],
-  apartments: [
-    {
-      id: 'a20',
-      buildingId: 'b9',
-      uniqueId: '3228',
-      apptId: 'U001',
-      number: '5',
-      entrance: 'ד',
-      street: 'חנה סנש',
-      streetNumber: '8',
-      altAddress: 'חנה סנש 28\\8',
-      addressNotEditable: 'חנה סנש 8/5',
-      rooms: 2,
-      garden: false,
-      floor: 2,
-      size: 38.2,
-      parcel: 32,
-      subA: 28,
-      ownerName: 'HD',
-      owner1: '',
-      owner2: '',
-      id1: '',
-      id2: '',
-      phone1: '',
-      phone2: '',
-      warning: '',
-      propertyClass: 'Owned',
-      internalOwner: '',
-      note: '',
-      validated: true,
-      validationDate: '2023-06-15T15:31:08',
-      ownerContract: 'השקעות דרום',
-      invested: 535282,
-      housewares: '',
-      agreement: '',
-      rentable: true,
-      representative: 'jhs73vgs',
-      lawyer: '',
-      pinuiStatus: '1. yet started Process',
-      tenantName: '',
-      resident: '',
-      status: 'Vacant',
-      rent: 0,
-      leaseStart: '',
-      leaseEnd: '',
-      contractUrl: '',
-    },
-  ],
-  people: [
-    {
-      id: 'p23',
-      name: 'HD',
-      role: 'Owner',
-      phone: '',
-      apartmentIds: ['a20'],
-      notes: 'Imported owner record',
-    },
-  ],
-};
-const bulkApartments = Array.from({ length: 8 }, (_, index) => ({
-  id: `bulk-${index}`,
-  buildingId: `b${index + 1}`,
-  number: `G-${index + 1}`,
-  ownerName: ['Amidar', 'Amidar', 'Amidar', 'HD', 'HD', 'MR', 'Individual owner', 'Amidar'][index],
-  tenantName: index % 3 === 1 ? '' : `Sample tenant ${index + 1}`,
-  resident: index % 3 === 1 ? '' : `Sample tenant ${index + 1}`,
-  status: index % 3 === 1 ? 'Vacant' : index === 5 ? 'On market' : 'Leased',
-  rent: 4300 + index * 175,
-  leaseStart: index % 3 === 1 ? '' : `2025-0${(index % 8) + 1}-01`,
-  leaseEnd: index % 3 === 1 ? '' : `2026-0${(index % 8) + 1}-01`,
-  contractUrl: '',
-}));
-const bulkEvents = bulkApartments.flatMap((apartment, index) => [
-  {
-    id: `event-${index}-1`,
-    apartmentId: apartment.id,
-    type: 'Maintenance',
-    title: index % 2 ? 'Furniture replacement' : 'Kitchen leak repair',
-    date: '2025-06-12',
-    cost: 180 + index * 35,
-    notes: 'Mock maintenance record',
-  },
-  {
-    id: `event-${index}-2`,
-    apartmentId: apartment.id,
-    type: 'Inspection',
-    title: 'Annual apartment inspection',
-    date: '2025-05-04',
-    cost: 0,
-    notes: 'Routine visit completed',
-  },
-]);
-const bulkBills = bulkApartments.flatMap((apartment, index) =>
-  ['Water', 'Electricity', 'Vaad', 'Arnona', 'Gas'].map((category, billIndex) => ({
-    id: `bill-${index}-${billIndex}`,
-    apartmentId: apartment.id,
-    category,
-    amount: 90 + index * 17 + billIndex * 23,
-    period: '2025-06-01 to 2025-06-30',
-    dueDate: '2025-07-15',
-    status: billIndex === 2 && index % 2 === 0 ? 'Unpaid' : 'Paid',
-  }))
-);
-const insuranceProviders = [
-  { name: 'Phoenix', agent: 'Dana Shavit', phone: '03-555-1200', email: 'dana.shavit@example.com' },
-  { name: 'Migdal', agent: 'Omer Katz', phone: '03-555-2300', email: 'omer.katz@example.com' },
-  {
-    name: 'Menora',
-    agent: 'Ravit Azulay',
-    phone: '03-555-3400',
-    email: 'ravit.azulay@example.com',
-  },
-];
-const maintenanceTypes = [
-  ['Leak repair', 'Maintenance', 'Yossi Electric'],
-  ['Annual inspection', 'Inspection', 'Maya Services'],
-  ['Paint job', 'Renovation', 'Color Team'],
-  ['Appliance replacement', 'Appliance', 'HomeTech Beersheba'],
-];
-const buildApartmentOperations = (apartments) => ({
-  apartments: apartments.map((apartment, index) => {
-    const insurance = insuranceProviders[index % insuranceProviders.length];
-    return {
-      ...apartment,
-      insuranceProvider: insurance.name,
-      policyNumber: `POL-${100000 + index}`,
-      policyStart: '2025-01-01',
-      policyEnd: '2025-12-31',
-      insuranceAgent: insurance.agent,
-      insuranceAgentPhone: insurance.phone,
-      insuranceAgentEmail: insurance.email,
-    };
-  }),
-  maintenance: apartments.flatMap((apartment, index) =>
-    maintenanceTypes.map((item, typeIndex) => ({
-      id: `maint-${apartment.id}-${typeIndex}`,
-      apartmentId: apartment.id,
-      buildingId: apartment.buildingId,
-      title: item[0],
-      category: item[1],
-      technician: item[2],
-      insuranceAgent: index % 3 === 0 ? insuranceProviders[index % 3].agent : '',
-      date: `2025-0${(typeIndex % 6) + 1}-${String((index % 20) + 1).padStart(2, '0')}`,
-      cost: 180 + index * 22 + typeIndex * 95,
-      status: typeIndex === 1 ? 'Done' : index % 4 === 0 ? 'In progress' : 'Done',
-      notes: 'Mock operational record — edit me',
-    }))
-  ),
-});
-const enrichPerson = (person, index = 0) => ({
-  ...person,
-  email: person.email || `${person.name.toLowerCase().replaceAll(' ', '.')}@example.com`,
-  preferredContact: person.preferredContact || (index % 2 ? 'WhatsApp' : 'Phone'),
-  notes:
-    person.notes ||
-    (person.role === 'Owner'
-      ? 'One with the garden'
-      : person.role === 'Tenant'
-        ? 'Daughter of a former resident'
-        : 'Reliable contact for urgent callouts'),
-  interactions:
-    person.interactions ||
-    (['Technician', 'Insurance agent'].includes(person.role)
-      ? [
-          {
-            id: `${person.id}-i1`,
-            apartment: person.apartmentIds?.[0] || 'Portfolio callout',
-            date: '2025-06-12',
-            title: person.role === 'Technician' ? 'Leak repair' : 'Policy review',
-            cost: person.role === 'Technician' ? 420 : 0,
-          },
-          {
-            id: `${person.id}-i2`,
-            apartment: person.apartmentIds?.[1] || 'Building visit',
-            date: '2025-05-04',
-            title: 'Follow-up visit',
-            cost: person.role === 'Technician' ? 180 : 0,
-          },
-        ]
-      : []),
-});
-const hydrateData = () => {
+const coordinatesLabel = (building) => Number.isFinite(Number(building?.lat)) && Number.isFinite(Number(building?.lng))
+  ? `${Number(building.lat).toFixed(6)}, ${Number(building.lng).toFixed(6)}`
+  : 'Coordinates pending';
+const hydrateData = (loadMock = false) => {
   const saved = JSON.parse(localStorage.getItem('blockwise-data') || 'null');
-  const base = saved || {
+  const base = loadMock ? {
     ...seed,
     buildings: [...seed.buildings, ...mockExpansion.buildings, ...spreadsheetImport.buildings],
     apartments: [...seed.apartments, ...mockExpansion.apartments, ...spreadsheetImport.apartments],
     people: [...seed.people, ...mockExpansion.people, ...spreadsheetImport.people],
-  };
+  } : (saved || { buildings: [], apartments: [], people: [], bills: [], events: [], maintenance: [] });
   const apartments = [
     ...(base.apartments || []),
     ...mockExpansion.apartments.filter(
@@ -758,18 +77,35 @@ const hydrateData = () => {
 };
 const parseMasterCsv = (text) => { const lines = text.trim().split(/\r?\n/).filter(Boolean); if (lines.length < 2) return { buildings: [], apartments: [] }; const headers = lines[0].split(','); const rows = lines.slice(1).map((line) => { const values = line.split(','); return Object.fromEntries(headers.map((header, index) => [header, (values[index] || '').trim()])); }); const buildingMap = new Map(); const apartments = rows.map((row, index) => { const key = `${row.Street}-${row['Street Number']}`; if (!buildingMap.has(key)) buildingMap.set(key, { id: `csv-building-${buildingMap.size + 1}`, name: `${row.Street} ${row['Street Number']}`, street: row.Street, streetNumber: row['Street Number'], address: row['Address (Not editable)'] || `${row.Street} ${row['Street Number']}`, area: 'Shechuna Gimel', units: 0, floors: Number(row.Floor || 0), zone: row.Class || 'Residential', color: 'gold', lat: 31.2643 + buildingMap.size * 0.0004, lng: 34.7989 + buildingMap.size * 0.0004 }); const building = buildingMap.get(key); building.units += 1; return { id: `csv-apartment-${row['Appt ID'] || index}`, buildingId: building.id, uniqueId: row.UniquID, apptId: row['Appt ID'], number: row.Appt, entrance: row.Entrance, street: row.Street, streetNumber: row['Street Number'], altAddress: row.AltAddress, addressNotEditable: row['Address (Not editable)'], rooms: Number(row['#Rooms'] || 0), garden: row.Garden === 'TRUE', floor: Number(row.Floor || 0), size: Number(row.Size || 0), parcel: row.Parcel, subA: row['Sub A'], ownerName: row['Owner 1'] || 'Individual owner', owner2: row['Owner 2'], id1: row['ID-1'], id2: row['ID-2'], phone1: row['Phone 1'], phone2: row['Phone 2'], warning: row.Warning, propertyClass: row.Class, internalOwner: row['Int Owner'], note: row.Note, validated: row.Validated === 'TRUE', validationDate: row['Validation date'], ownerContract: row.OWNER_CONTRACT, invested: Number(row.Invested || 0), housewares: row.Housewares, agreement: row.Agreement, rentable: row.Rentable === 'Yes', representative: row.Representative, lawyer: row.Lawyer, pinuiStatus: row.Status, status: 'Vacant', rent: 0, tenantName: '', resident: '' }; }); return { buildings: [...buildingMap.values()], apartments }; };
 const mergeMasterCsv = (current = { buildings: [], apartments: [] }, imported = { buildings: [], apartments: [] }) => { const buildings = [...(current.buildings || [])]; const idMap = new Map(); (imported.buildings || []).forEach((building) => { const existing = buildings.find((item) => item.street === building.street && item.streetNumber === building.streetNumber); if (existing) idMap.set(building.id, existing.id); else { buildings.push(building); idMap.set(building.id, building.id); } }); const apartments = [...(current.apartments || [])]; (imported.apartments || []).forEach((apartment) => { if (apartments.some((existing) => existing.apptId === apartment.apptId)) return; apartments.push({ ...apartment, buildingId: idMap.get(apartment.buildingId) || apartment.buildingId }); }); return { ...current, buildings, apartments }; };
-const geocodeBuildings = async (buildings) => {
+const addressKey = (building) => `${String(building.street || '').trim()} ${String(building.streetNumber || '').trim()} ${String(building.entrance || 'main').trim()}`.replace(/\s+/g, ' ').trim();
+const geocodeBuildings = async (buildings, onUpdate) => {
+  const cached = new Map();
   const updated = [...buildings];
   for (let index = 0; index < updated.length; index += 1) {
     const building = updated[index];
-    if (building.geoSource || !building.street || !building.streetNumber) continue;
+    if (!building.street || !building.streetNumber) continue;
+    const key = addressKey(building);
+    if (building.geoSource === 'arcgis' && building.geocodeAddress === key) { cached.set(key, { lat: building.lat, lng: building.lng, geoSource: building.geoSource, geocodeAddress: key }); continue; }
+    if (cached.has(key)) { updated[index] = { ...building, ...cached.get(key) }; onUpdate?.([...updated]); continue; }
     try {
-      const query = `${building.street} ${building.streetNumber}${building.entrance && building.entrance !== 'main' ? ` entrance ${building.entrance}` : ''}, Be'er Sheva, Israel`;
-      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=il&q=${encodeURIComponent(query)}`);
-      const results = await response.json();
-      if (results[0]) updated[index] = { ...building, lat: Number(results[0].lat), lng: Number(results[0].lon), geoSource: 'nominatim' };
-      else updated[index] = { ...building, geoSource: 'not-found' };
-    } catch (error) { updated[index] = { ...building, geoSource: 'not-found' }; console.warn('Could not geocode building', building.name, error); }
+      const query = `${key}, Be'er Sheva, Israel`;
+      console.info('[Property geocode] Looking up:', query);
+      const response = await fetch(`https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?f=json&maxLocations=1&sourceCountry=ISR&singleLine=${encodeURIComponent(query)}`);
+      const arcgis = await response.json();
+      const candidate = arcgis.candidates?.[0];
+      const results = candidate?.location ? [{ lat: candidate.location.y, lon: candidate.location.x }] : [];
+      const source = 'arcgis';
+      if (results[0]) {
+        const location = { lat: Number(results[0].lat), lng: Number(results[0].lon), geoSource: source, geocodeAddress: key };
+        cached.set(key, location);
+        updated[index] = { ...building, ...location };
+        console.info('[Property geocode] Found:', query, '=>', updated[index].lat, updated[index].lng, `(${source})`);
+      } else {
+        updated[index] = { ...building, geoSource: 'not-found' };
+        console.warn('[Property geocode] No coordinates found:', query);
+      }
+      onUpdate?.([...updated]);
+    } catch (error) { updated[index] = { ...building, geoSource: 'not-found' }; onUpdate?.([...updated]); console.warn('[Property geocode] Failed:', query, error); }
   }
   return updated;
 };
@@ -796,11 +132,16 @@ const splitImportedBuildingsByEntrance = (imported) => {
 };
 function App() {
   const [data, setData] = useState(hydrateData);
+  const geocodingRef = React.useRef(false);
+  const [geocodeQueue, setGeocodeQueue] = useState(null);
   const [tab, setTab] = useState('Overview');
   const [selected, setSelected] = useState(data.buildings[0]);
   const [modal, setModal] = useState(null);
   const [search, setSearch] = useState('');
   const [topSelected, setTopSelected] = useState(null);
+  const loadMockData = () => { const mock = hydrateData(true); localStorage.setItem('blockwise-data', JSON.stringify(mock)); setData(mock); setSelected(mock.buildings[0]); setTopSelected(null); };
+  const startEmpty = () => { const empty = { buildings: [], apartments: [], people: [], bills: [], events: [], maintenance: [] }; localStorage.setItem('blockwise-data', JSON.stringify(empty)); setData(empty); setSelected(undefined); setTopSelected(null); };
+  useEffect(() => { if (!selected && data.buildings[0]) setSelected(data.buildings[0]); }, [data.buildings, selected]);
   useEffect(() => localStorage.setItem('blockwise-data', JSON.stringify(data)), [data]);
   useEffect(() => {
     const normalized = [];
@@ -815,22 +156,46 @@ function App() {
     if (normalized.length !== data.apartments.length || normalized.some((item, index) => item.number !== data.apartments[index].number)) setData((current) => ({ ...current, apartments: normalized }));
   }, [data.apartments]);
   useEffect(() => {
-    let cancelled = false;
-    const needsCoordinates = data.buildings.some((building) => building.street && building.streetNumber && !building.geoSource);
-    if (!needsCoordinates) return undefined;
-    geocodeBuildings(data.buildings).then((buildings) => {
-      if (!cancelled && JSON.stringify(buildings) !== JSON.stringify(data.buildings)) setData((current) => ({ ...current, buildings }));
+    const buildings = data.buildings.map((building) => {
+      const linked = data.apartments.filter((apartment) => apartment.buildingId === building.id);
+      const units = linked.length;
+      const floors = Math.max(0, ...linked.map((apartment) => Number(apartment.floor || 0)));
+      return { ...building, units, floors };
     });
-    return () => { cancelled = true; };
-  }, [data.buildings]);
+    if (buildings.some((building, index) => building.units !== data.buildings[index].units || building.floors !== data.buildings[index].floors)) setData((current) => ({ ...current, buildings }));
+  }, [data.apartments, data.buildings]);
   useEffect(() => {
-    const existing = data.people || [];
-    const importedOwners = data.apartments.flatMap((apartment) => [
-      apartment.ownerName && apartment.ownerName !== 'Individual owner' ? { name: apartment.ownerName, phone: apartment.phone1, apartmentId: apartment.id } : null,
-      apartment.owner2 ? { name: apartment.owner2, phone: apartment.phone2, apartmentId: apartment.id } : null,
-    ].filter(Boolean));
-    const additions = importedOwners.filter((owner) => !existing.some((person) => person.name === owner.name && (!owner.phone || person.phone === owner.phone))).map((owner, index) => ({ id: `csv-owner-${Date.now()}-${index}`, name: owner.name, role: 'Owner', phone: owner.phone || '', email: '', apartmentIds: [owner.apartmentId], notes: 'Imported from master CSV' }));
-    if (additions.length) setData((current) => ({ ...current, people: [...(current.people || []), ...additions] }));
+    let cancelled = false;
+    if (geocodingRef.current) return undefined;
+    const needsCoordinates = Boolean(geocodeQueue?.length);
+    if (!needsCoordinates) return undefined;
+    geocodingRef.current = true;
+    geocodeBuildings(geocodeQueue, (buildings) => {
+      if (!cancelled) setData((current) => ({ ...current, buildings }));
+    }).then((buildings) => {
+      if (!cancelled) { setData((current) => ({ ...current, buildings })); setGeocodeQueue(null); }
+      geocodingRef.current = false;
+    });
+    return () => { cancelled = true; geocodingRef.current = false; };
+  }, [geocodeQueue]);
+  useEffect(() => {
+    const grouped = new Map();
+    const addPerson = (person) => {
+      const name = String(person.name || '').trim();
+      if (!name) return;
+      const phone = String(person.phone || '').trim();
+      const key = name.toLowerCase();
+      const previous = grouped.get(key);
+      grouped.set(key, previous ? { ...previous, phone: previous.phone || phone, email: previous.email || person.email || '', apartmentIds: [...new Set([...(previous.apartmentIds || []), ...(person.apartmentIds || [])])] } : { ...person, name, phone, apartmentIds: [...new Set(person.apartmentIds || [])] });
+    };
+    (data.people || []).forEach(addPerson);
+    data.apartments.forEach((apartment) => {
+      const primaryOwner = apartment.ownerName && apartment.ownerName !== 'Individual owner' ? apartment.ownerName : apartment.internalOwner;
+      if (primaryOwner) addPerson({ id: `csv-owner-${apartment.id}`, name: primaryOwner, role: 'Owner', phone: apartment.phone1, apartmentIds: [apartment.id], notes: 'Imported from master CSV' });
+      if (apartment.owner2) addPerson({ id: `csv-owner-${apartment.id}-2`, name: apartment.owner2, role: 'Owner', phone: apartment.phone2, apartmentIds: [apartment.id], notes: 'Imported from master CSV' });
+    });
+    const people = [...grouped.values()];
+    if (JSON.stringify(people) !== JSON.stringify(data.people || [])) setData((current) => ({ ...current, people }));
   }, [data.apartments, data.people]);
   const apartments = data.apartments.filter((a) => a.buildingId === selected?.id);
   const occupied = data.apartments.filter((a) => a.status === 'Leased').length;
@@ -879,7 +244,7 @@ function App() {
     r.onload = () => setData(JSON.parse(r.result));
     r.readAsText(file);
   };
-  const importCsv = (e) => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => { try { const imported = splitImportedBuildingsByEntrance(parseMasterCsv(String(reader.result || ''))); if (!imported || !Array.isArray(imported.buildings) || !Array.isArray(imported.apartments)) throw new Error('CSV did not produce building and apartment records'); const current = data && Array.isArray(data.buildings) && Array.isArray(data.apartments) ? data : hydrateData(); const nextData = mergeMasterCsv(current, imported); const normalized = { ...nextData, buildings: nextData.buildings || [], apartments: nextData.apartments || [], people: nextData.people || [], bills: nextData.bills || [], events: nextData.events || [], maintenance: nextData.maintenance || [] }; localStorage.setItem('blockwise-data', JSON.stringify(normalized)); setData(normalized); } catch (error) { console.error('CSV import failed', error); window.alert(`Could not import CSV: ${error.message}`); } }; reader.onerror = () => window.alert('Could not read this CSV file. Save it as UTF-8 CSV and try again.'); reader.readAsText(file, 'UTF-8'); e.target.value = ''; };
+  const importCsv = (e) => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => { try { const imported = splitImportedBuildingsByEntrance(parseMasterCsv(String(reader.result || ''))); if (!imported || !Array.isArray(imported.buildings) || !Array.isArray(imported.apartments)) throw new Error('CSV did not produce building and apartment records'); const current = data && Array.isArray(data.buildings) && Array.isArray(data.apartments) ? data : hydrateData(); const nextData = mergeMasterCsv(current, imported); const normalized = { ...nextData, buildings: nextData.buildings || [], apartments: nextData.apartments || [], people: nextData.people || [], bills: nextData.bills || [], events: nextData.events || [], maintenance: nextData.maintenance || [] }; localStorage.setItem('blockwise-data', JSON.stringify(normalized)); setData(normalized); setGeocodeQueue(normalized.buildings); } catch (error) { console.error('CSV import failed', error); window.alert(`Could not import CSV: ${error.message}`); } }; reader.onerror = () => window.alert('Could not read this CSV file. Save it as UTF-8 CSV and try again.'); reader.readAsText(file, 'UTF-8'); e.target.value = ''; };
   const visibleBuildings = data.buildings.filter(
     (b) =>
       b.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -901,6 +266,9 @@ function App() {
               .includes(search.toLowerCase())
           )
           .map((item) => ({ type: 'apartment', item })),
+        ...data.people
+          .filter((person) => `${person.name || ''} ${person.phone || ''} ${person.email || ''}`.toLowerCase().includes(search.toLowerCase()))
+          .map((item) => ({ type: 'person', item })),
       ].slice(0, 10)
     : [];
   return (
@@ -968,6 +336,9 @@ function App() {
             </p>
           </div>
           <div className="actions top-search-wrap">
+            <button className="outline small" onClick={loadMockData}>Load mock data</button>
+            <button className="outline small" onClick={startEmpty}>Start empty</button>
+            <label className="outline small csv-import-label">Upload CSV<input type="file" accept=".csv,text/csv" onChange={importCsv} /></label>
             <input
               className="search"
               placeholder="Search buildings or apartments..."
@@ -981,15 +352,14 @@ function App() {
                     key={`${type}-${item.id}`}
                     onClick={() => {
                       setSearch('');
-                      setSelected(
-                        type === 'building'
-                          ? item
-                          : data.buildings.find((building) => building.id === item.buildingId)
-                      );
-                      setTopSelected({ type, item });
+                      if (type === 'building') setSelected(item);
+                      if (type === 'apartment') setSelected(data.buildings.find((building) => building.id === item.buildingId));
+                      setTopSelected(type === 'person' ? null : { type, item });
                     }}
                   >
-                    {type === 'building' ? (
+                    {type === 'person' ? (
+                      <><b>{item.name}</b><small>{item.role} · {item.phone || 'No phone'} · {item.email || 'No email'}</small></>
+                    ) : type === 'building' ? (
                       <>
                         <b>{item.name}</b>
                         <small>{item.address || item.area} · Building</small>
@@ -1009,6 +379,7 @@ function App() {
             )}
           </div>
         </header>
+        {geocodeQueue && <div className="global-geocode-status"><span className="spinner" /> Looking up building addresses and placing map pins…</div>}
         {tab === 'Overview' ? (
           <>
             <section className="metrics">
@@ -1036,12 +407,13 @@ function App() {
               />
             </section>
             <section className="grid">
-              <RealMap buildings={visibleBuildings} selected={selected} setSelected={setSelected} />
+              <RealMap buildings={visibleBuildings} selected={selected} setSelected={setSelected} geocoding={Boolean(geocodeQueue)} />
               <Detail
                 building={selected}
                 apartments={apartments}
                 rent={rent}
                 onAdd={() => setModal('apartment')}
+                onOpen={() => setTopSelected({ type: 'building', item: selected })}
               />
             </section>
             <section className="bottom-grid">
@@ -1199,12 +571,27 @@ function LegacyMap({ buildings, selected, setSelected }) {
     </div>
   );
 }
-function Detail({ building, apartments, rent, onAdd }) {
+function Detail({ building, apartments, rent, onAdd, onOpen }) {
   if (!building) return <div className="panel detail-panel">No buildings yet.</div>;
+  const className = (apartments.find((a) => a.propertyClass) || {}).propertyClass;
+  const counts = apartments.reduce((result, apartment) => {
+    const value = String(apartment.propertyClass || 'Owned').toLowerCase();
+    const key = value.includes('amidar') ? 'Amidar' : value.includes('target') ? 'Target' : 'Owned';
+    result[key] += 1;
+    return result;
+  }, { Owned: 0, Amidar: 0, Target: 0 });
+  const ownedGroups = apartments.filter((a) => String(a.propertyClass || 'Owned').toLowerCase().includes('owned')).reduce((result, apartment) => {
+    const owner = String(apartment.internalOwner || apartment.ownerName || '').toLowerCase();
+    const key = owner.includes('hd') || owner.includes('zw') ? 'HD / ZW' : owner.includes('ka') || owner.includes('rc') ? 'KA / RC' : owner.includes('emalleh') || owner.includes('emalle') ? 'Emalleh' : null;
+    if (key) result[key] += 1;
+    return result;
+  }, { 'HD / ZW': 0, 'KA / RC': 0, Emalleh: 0 });
+  const pct = (value) => `${Math.round((value / Math.max(apartments.length, 1)) * 100)}%`;
+  const maxFloor = Math.max(Number(building.floors || 0), ...apartments.map((apartment) => Number(apartment.floor || 0)), 0);
   return (
     <div className="panel detail-panel">
       <div className="eyebrow">SELECTED PROPERTY</div>
-      <h2>{building.name}</h2>
+      <button className="property-title" onClick={onOpen}><h2>{building.name} <small className="coordinates-title">{coordinatesLabel(building)}</small></h2></button>
       <p className="muted">{building.area} · Be'er Sheva</p>
       <div className="property-stats">
         <div>
@@ -1212,7 +599,7 @@ function Detail({ building, apartments, rent, onAdd }) {
           <small>Apartments</small>
         </div>
         <div>
-          <b>{building.floors}</b>
+            <b>{maxFloor}</b>
           <small>Floors</small>
         </div>
         <div>
@@ -1234,6 +621,7 @@ function Detail({ building, apartments, rent, onAdd }) {
         <span>Records</span>
         <b>{apartments.length} loaded</b>
       </div>
+      <div className="ownership-stats"><b>Ownership / Pinui-Binui mix</b><div className="ownership-bars">{Object.entries(counts).map(([key, value]) => <div className={`ownership-bar-row ${key.toLowerCase()}`} key={key}><span><strong>{key}</strong><em>{value} · {pct(value)}</em></span><i style={{ width: pct(value) }} /></div>)}</div><small>Owned breakdown</small><div className="owned-breakdown">{Object.entries(ownedGroups).map(([key, value]) => <span key={key}><strong>{key}</strong> {value}</span>)}</div></div>
       <button className="outline" onClick={onAdd}>
         + Add apartment <span>→</span>
       </button>
@@ -2243,7 +1631,7 @@ const ownerTone = (owner) => {
   if (value === 'mr' || value.includes('mr ')) return 'owner-mr';
   return 'owner-individual';
 };
-const apartmentSort = (a, b) => Number(a.floor || 0) - Number(b.floor || 0) || String(a.number || a.appt || a.apptId || '').localeCompare(String(b.number || b.appt || b.apptId || ''), undefined, { numeric: true });
+const apartmentSort = (a, b) => Number(b.floor || 0) - Number(a.floor || 0) || String(b.number || b.appt || b.apptId || '').localeCompare(String(a.number || a.appt || a.apptId || ''), undefined, { numeric: true });
 const normalizeApartmentNumber = (value) => {
   const text = String(value ?? '').trim();
   return /^\d+$/.test(text) ? String(Number(text)) : text;
@@ -2255,13 +1643,28 @@ function ListView({ tab, data, selected, setSelected, onAdd, exportData, importD
   const [selectedBuilding, setSelectedBuilding] = useState(null);
   const people = data.people || [];
   const [peopleRole, setPeopleRole] = useState('All');
+  const peopleRows = people
+    .filter((person) => peopleRole === 'All' || person.role === peopleRole)
+    .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), undefined, { sensitivity: 'base' }));
+  const apartmentGroupsFor = (person) => {
+    const groups = new Map();
+    (person.apartmentIds || []).forEach((id) => {
+      const apartment = data.apartments.find((item) => item.id === id);
+      if (!apartment) return;
+      const building = data.buildings.find((item) => item.id === apartment.buildingId);
+      const key = `${building?.street || building?.name || 'Building'} ${building?.streetNumber || ''}`.trim();
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(apartment);
+    });
+    return [...groups.entries()].sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true })).map(([buildingName, apartments]) => ({ buildingName, apartments: apartments.sort(apartmentSort) }));
+  };
   const rows =
     tab === 'Buildings'
       ? data.buildings
       : tab === 'Apartments'
         ? data.apartments
         : tab === 'People'
-          ? people.filter((person) => peopleRole === 'All' || person.role === peopleRole)
+          ? peopleRows
           : data.maintenance;
   return (
     <section className="panel list-view">
@@ -2343,7 +1746,7 @@ function ListView({ tab, data, selected, setSelected, onAdd, exportData, importD
             ))
           : [...rows].sort(tab === 'Buildings' ? buildingSort : tab === 'Apartments' ? apartmentSort : undefined).map((r) => (
               <button
-                className="record-card"
+                className={`record-card ${tab === 'People' ? 'record-card-static' : ''}`}
                 key={r.id}
                 onClick={() => {
                   if (tab === 'Buildings') {
@@ -2351,7 +1754,7 @@ function ListView({ tab, data, selected, setSelected, onAdd, exportData, importD
                     setSelectedBuilding(r);
                   }
                   if (tab === 'Apartments') setSelectedApartment(r);
-                  if (tab === 'People') setSelectedPerson(r);
+                  if (tab !== 'People') setSelectedPerson(r);
                 }}
               >
                 <b>{r.name || r.number || r.title}</b>
@@ -2360,7 +1763,7 @@ function ListView({ tab, data, selected, setSelected, onAdd, exportData, importD
                 </span>
                 <small>
                   {tab === 'People'
-                    ? r.phone
+                    ? <>{r.phone || 'Phone not recorded'} · {r.email || 'Email not recorded'}<div className="person-apartment-groups">{apartmentGroupsFor(r).map((group) => <div className="person-apartment-group" key={group.buildingName}><b>{group.buildingName}</b><span>{group.apartments.map((apartment) => <button type="button" className="person-apartment-link" key={apartment.id} onClick={(event) => { event.stopPropagation(); setSelectedApartment(apartment); }}>{apartment.apptId || apartment.number || 'Apartment'}</button>)}</span></div>)}</div></>
                     : r.units
                       ? `${r.units} apartments · ${r.floors} floors`
                       : r.rent

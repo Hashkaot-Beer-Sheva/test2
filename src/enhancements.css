@@ -46,6 +46,19 @@
 .record-card:hover {
   border-color: #ef806c;
 }
+.record-card-static { cursor: default; }
+.record-card-static:hover { transform: none; box-shadow: none; }
+.record-card-static { height: 190px; overflow-y: auto; align-content: start; }
+.record-card-static::-webkit-scrollbar { width: 5px; }
+.record-card-static::-webkit-scrollbar-thumb { background: #cbd9db; border-radius: 6px; }
+.person-apartments { color: #80909a; font-size: 10px; line-height: 1.5; }
+.person-apartment-link { border: 0; background: transparent; color: #4c82a2; text-decoration: underline; cursor: pointer; margin: 2px 5px 0 0; padding: 0; font: inherit; }
+.person-apartment-groups { display: grid; gap: 5px; margin-top: 7px; }
+.person-apartment-group { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 6px 8px; border: 1px solid #e2e9e9; border-radius: 6px; background: #f8fbfa; }
+.person-apartment-group > b { color: #526b79; font-size: 10px; min-width: 125px; }
+.person-apartment-group > span { display: flex; flex-wrap: wrap; gap: 4px; }
+.person-apartment-group .person-apartment-link { display: inline-flex; align-items: center; justify-content: center; min-width: 42px; margin: 0; padding: 4px 7px; border: 1px solid #c9dce1; border-radius: 5px; background: #fff; color: #3e7894; text-decoration: none; font-size: 10px; font-weight: 700; }
+.person-apartment-group .person-apartment-link:hover { border-color: #ec806d; background: #fff4f1; color: #b85f51; }
 .record-card b,
 .record-card span,
 .record-card small {
