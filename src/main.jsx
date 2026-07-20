@@ -18,6 +18,7 @@ import RealMap from './RealMap';
 import { seed, mockExpansion, spreadsheetImport, bulkApartments, bulkEvents, bulkBills, buildApartmentOperations } from './mockData';
 
 const money = (n) => `₪${Number(n || 0).toLocaleString('en-US')}`;
+const fullPersonName = (person) => person?.fullName || [person?.firstName, person?.lastName].filter(Boolean).join(' ') || person?.name || '';
 const coordinatesLabel = (building) => Number.isFinite(Number(building?.lat)) && Number.isFinite(Number(building?.lng))
   ? `${Number(building.lat).toFixed(6)}, ${Number(building.lng).toFixed(6)}`
   : 'Coordinates pending';
@@ -76,6 +77,26 @@ const hydrateData = (loadMock = false) => {
   };
 };
 const parseMasterCsv = (text) => { const lines = text.trim().split(/\r?\n/).filter(Boolean); if (lines.length < 2) return { buildings: [], apartments: [] }; const headers = lines[0].split(','); const rows = lines.slice(1).map((line) => { const values = line.split(','); return Object.fromEntries(headers.map((header, index) => [header, (values[index] || '').trim()])); }); const buildingMap = new Map(); const apartments = rows.map((row, index) => { const key = `${row.Street}-${row['Street Number']}`; if (!buildingMap.has(key)) buildingMap.set(key, { id: `csv-building-${buildingMap.size + 1}`, name: `${row.Street} ${row['Street Number']}`, street: row.Street, streetNumber: row['Street Number'], address: row['Address (Not editable)'] || `${row.Street} ${row['Street Number']}`, area: 'Shechuna Gimel', units: 0, floors: Number(row.Floor || 0), zone: row.Class || 'Residential', color: 'gold', lat: 31.2643 + buildingMap.size * 0.0004, lng: 34.7989 + buildingMap.size * 0.0004 }); const building = buildingMap.get(key); building.units += 1; return { id: `csv-apartment-${row['Appt ID'] || index}`, buildingId: building.id, uniqueId: row.UniquID, apptId: row['Appt ID'], number: row.Appt, entrance: row.Entrance, street: row.Street, streetNumber: row['Street Number'], altAddress: row.AltAddress, addressNotEditable: row['Address (Not editable)'], rooms: Number(row['#Rooms'] || 0), garden: row.Garden === 'TRUE', floor: Number(row.Floor || 0), size: Number(row.Size || 0), parcel: row.Parcel, subA: row['Sub A'], ownerName: row['Owner 1'] || 'Individual owner', owner2: row['Owner 2'], id1: row['ID-1'], id2: row['ID-2'], phone1: row['Phone 1'], phone2: row['Phone 2'], warning: row.Warning, propertyClass: row.Class, internalOwner: row['Int Owner'], note: row.Note, validated: row.Validated === 'TRUE', validationDate: row['Validation date'], ownerContract: row.OWNER_CONTRACT, invested: Number(row.Invested || 0), housewares: row.Housewares, agreement: row.Agreement, rentable: row.Rentable === 'Yes', representative: row.Representative, lawyer: row.Lawyer, pinuiStatus: row.Status, status: 'Vacant', rent: 0, tenantName: '', resident: '' }; }); return { buildings: [...buildingMap.values()], apartments }; };
+const parseTransactionsCsv = (text) => {
+  const lines = text.trim().split(/\r?\n/).filter(Boolean);
+  if (lines.length < 2) return [];
+  const delimiter = lines[0].includes('\t') ? '\t' : ',';
+  const headers = lines[0].split(delimiter).map((header) => header.replace(/^\uFEFF/, '').trim());
+  return lines.slice(1).map((line, index) => {
+    const values = line.split(delimiter);
+    return { id: `transaction-${index}-${values[0] || Date.now()}`, ...Object.fromEntries(headers.map((header, i) => [header, (values[i] || '').trim()])) };
+  });
+};
+const transactionDate = (value) => {
+  const text = String(value || '').trim();
+  const dateParts = text.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/);
+  if (dateParts) { const first = Number(dateParts[1]); const second = Number(dateParts[2]); const month = second > 12 ? first : second; const day = second > 12 ? second : first; return new Date(Number(dateParts[3]), month - 1, day); }
+  const parsed = new Date(text);
+  return parsed;
+};
+const unitKey = (value) => { const text = String(value ?? '').trim().toLowerCase().replace(/^['"]|['"]$/g, ''); return /^\d+(\.0+)?$/.test(text) ? String(Number(text)) : text.replace(/\s+/g, ''); };
+const transactionMatchesUniqueId = (transaction, apartment) => Boolean(apartment.uniqueId) && unitKey(transaction.Unit) === unitKey(apartment.uniqueId);
+const transactionMatchesApartment = (transaction, apartment) => [apartment.uniqueId, apartment.apptId, apartment.number].filter(Boolean).map(unitKey).includes(unitKey(transaction.Unit));
 const mergeMasterCsv = (current = { buildings: [], apartments: [] }, imported = { buildings: [], apartments: [] }) => { const buildings = [...(current.buildings || [])]; const idMap = new Map(); (imported.buildings || []).forEach((building) => { const existing = buildings.find((item) => item.street === building.street && item.streetNumber === building.streetNumber); if (existing) idMap.set(building.id, existing.id); else { buildings.push(building); idMap.set(building.id, building.id); } }); const apartments = [...(current.apartments || [])]; (imported.apartments || []).forEach((apartment) => { if (apartments.some((existing) => existing.apptId === apartment.apptId)) return; apartments.push({ ...apartment, buildingId: idMap.get(apartment.buildingId) || apartment.buildingId }); }); return { ...current, buildings, apartments }; };
 const addressKey = (building) => `${String(building.street || '').trim()} ${String(building.streetNumber || '').trim()} ${String(building.entrance || 'main').trim()}`.replace(/\s+/g, ' ').trim();
 const geocodeBuildings = async (buildings, onUpdate) => {
@@ -134,6 +155,7 @@ function App() {
   const [data, setData] = useState(hydrateData);
   const geocodingRef = React.useRef(false);
   const [geocodeQueue, setGeocodeQueue] = useState(null);
+  const [transactionProgress, setTransactionProgress] = useState(null);
   const [tab, setTab] = useState('Overview');
   const [selected, setSelected] = useState(data.buildings[0]);
   const [modal, setModal] = useState(null);
@@ -245,6 +267,7 @@ function App() {
     r.readAsText(file);
   };
   const importCsv = (e) => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => { try { const imported = splitImportedBuildingsByEntrance(parseMasterCsv(String(reader.result || ''))); if (!imported || !Array.isArray(imported.buildings) || !Array.isArray(imported.apartments)) throw new Error('CSV did not produce building and apartment records'); const current = data && Array.isArray(data.buildings) && Array.isArray(data.apartments) ? data : hydrateData(); const nextData = mergeMasterCsv(current, imported); const normalized = { ...nextData, buildings: nextData.buildings || [], apartments: nextData.apartments || [], people: nextData.people || [], bills: nextData.bills || [], events: nextData.events || [], maintenance: nextData.maintenance || [] }; localStorage.setItem('blockwise-data', JSON.stringify(normalized)); setData(normalized); setGeocodeQueue(normalized.buildings); } catch (error) { console.error('CSV import failed', error); window.alert(`Could not import CSV: ${error.message}`); } }; reader.onerror = () => window.alert('Could not read this CSV file. Save it as UTF-8 CSV and try again.'); reader.readAsText(file, 'UTF-8'); e.target.value = ''; };
+  const importTransactions = (e) => { const file = e.target.files[0]; if (!file) return; setTransactionProgress({ done: 0, total: 1 }); const reader = new FileReader(); reader.onload = () => { try { const incoming = parseTransactionsCsv(String(reader.result || '')); const transactions = incoming; const merged = [...(data.transactions || [])]; let uniqueIdMatches = 0; transactions.forEach((item, index) => { const apartment = data.apartments.find((candidate) => transactionMatchesUniqueId(item, candidate)) || data.apartments.find((candidate) => transactionMatchesApartment(item, candidate)); if (apartment && transactionMatchesUniqueId(item, apartment)) uniqueIdMatches += 1; const linked = { ...item, apartmentId: apartment?.id || item.apartmentId || '' }; if (!merged.some((existing) => existing.PurchaseId === linked.PurchaseId)) merged.push(linked); if (index % 25 === 0) setTransactionProgress({ done: index + 1, total: transactions.length }); }); setData((current) => ({ ...current, transactions: merged })); setTransactionProgress({ done: transactions.length, total: transactions.length }); window.console.info(`[Transactions] Imported ${transactions.length} records; ${uniqueIdMatches} matched Unit → apartment UniquID; ${merged.filter((item) => item.apartmentId).length} linked total.`); setTimeout(() => setTransactionProgress(null), 1200); } catch (error) { setTransactionProgress(null); window.alert(`Could not import transactions CSV: ${error.message}`); } }; reader.readAsText(file, 'UTF-8'); e.target.value = ''; };
   const visibleBuildings = data.buildings.filter(
     (b) =>
       b.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -295,6 +318,7 @@ function App() {
             ['Maintenance', '⚒'],
             ['Reports', '◒'],
             ['People', '◉'],
+            ['Transactions', '↔'],
             ['Pinui-Binui', '↗'],
           ].map(([label, icon]) => (
             <button
@@ -339,6 +363,7 @@ function App() {
             <button className="outline small" onClick={loadMockData}>Load mock data</button>
             <button className="outline small" onClick={startEmpty}>Start empty</button>
             <label className="outline small csv-import-label">Upload CSV<input type="file" accept=".csv,text/csv" onChange={importCsv} /></label>
+            <label className="outline small csv-import-label">Upload transacts CSV<input type="file" accept=".csv,.tsv,text/csv,text/tab-separated-values" onChange={importTransactions} /></label>
             <input
               className="search"
               placeholder="Search buildings or apartments..."
@@ -380,6 +405,7 @@ function App() {
           </div>
         </header>
         {geocodeQueue && <div className="global-geocode-status"><span className="spinner" /> Looking up building addresses and placing map pins…</div>}
+        {transactionProgress && <div className="global-geocode-status transaction-progress"><span className="spinner" /> Loading apartment transactions: {transactionProgress.done} / {transactionProgress.total}</div>}
         {tab === 'Overview' ? (
           <>
             <section className="metrics">
@@ -418,11 +444,13 @@ function App() {
             </section>
             <section className="bottom-grid">
               <ApartmentTable apartments={apartments} />
-              <Activity data={data} onAdd={() => setModal('maintenance')} />
+              <Activity data={data} onAdd={() => setModal('maintenance')} onApartment={(apartment) => setTopSelected({ type: 'apartment', item: apartment })} />
             </section>
           </>
         ) : tab === 'Pinui-Binui' ? (
           <PinuiUnified data={data} />
+        ) : tab === 'Transactions' ? (
+          <TransactionsView data={data} />
         ) : tab === 'Finance' ? (
           <FinanceView data={data} />
         ) : tab === 'Maintenance' ? (
@@ -661,7 +689,15 @@ function ApartmentTable({ apartments }) {
     </div>
   );
 }
-function Activity({ data, onAdd }) {
+function Activity({ data, onAdd, onApartment }) {
+  const activities = [
+    ...(data.transactions || []).map((transaction) => ({ type: 'transaction', date: transactionDate(transaction['Order Date']), transaction, apartment: data.apartments.find((apartment) => apartment.id === transaction.apartmentId) || data.apartments.find((apartment) => transactionMatchesUniqueId(transaction, apartment)) || data.apartments.find((apartment) => transactionMatchesApartment(transaction, apartment)) })),
+    ...(data.maintenance || []).map((maintenance) => ({ type: 'maintenance', date: transactionDate(maintenance.date), maintenance, apartment: data.apartments.find((apartment) => apartment.id === maintenance.apartmentId) })),
+  ].sort((a, b) => {
+    const aTime = a.date instanceof Date && !Number.isNaN(a.date.getTime()) ? a.date.getTime() : 0;
+    const bTime = b.date instanceof Date && !Number.isNaN(b.date.getTime()) ? b.date.getTime() : 0;
+    return bTime - aTime;
+  });
   return (
     <div className="panel activity">
       <div className="panel-head">
@@ -673,22 +709,18 @@ function Activity({ data, onAdd }) {
           + Log maintenance
         </button>
       </div>
-      {data.maintenance
-        .slice(-3)
-        .reverse()
-        .map((m) => (
-          <div className="activity-row" key={m.id}>
-            <div className="activity-icon orange">⚒</div>
-            <div>
-              <b>{m.title}</b>
-              <small>
-                {m.status} · {money(m.cost)}
-              </small>
-            </div>
-            <time>{m.date}</time>
-          </div>
-        ))}
-      {!data.maintenance.length && <p className="muted">No maintenance records yet.</p>}
+      <div className="activity-scroll">{activities.map((activity) => {
+        const apartment = activity.apartment;
+        const building = data.buildings.find((item) => item.id === apartment?.buildingId);
+        const unitLabel = apartment ? `Unit ${apartment.apptId || apartment.number || '—'}` : `Unit ${activity.transaction?.Unit || '—'}`;
+        const buildingLabel = building?.name || building?.address || 'Building not matched';
+        if (activity.type === 'transaction') {
+          const transaction = activity.transaction;
+          return <button className="activity-row activity-transaction" type="button" key={transaction.id} onClick={() => apartment && onApartment?.(apartment)}><div className="activity-icon blue">↔</div><div><b>{transaction.Description || 'Imported transaction'}</b><small>{unitLabel} · {buildingLabel} · {transaction.Vendor || 'Vendor not recorded'}</small></div><strong>{money(Number(String(transaction.Amount || 0).replace(/[^0-9.-]/g, '') || 0))}</strong><time>{transaction['Order Date'] || '—'}</time></button>;
+        }
+        const maintenance = activity.maintenance;
+        return <button className="activity-row activity-transaction" type="button" key={maintenance.id} onClick={() => apartment && onApartment?.(apartment)}><div className="activity-icon orange">⚒</div><div><b>{maintenance.title}</b><small>{unitLabel} · {buildingLabel} · {maintenance.status || 'Maintenance'} </small></div><strong>{money(maintenance.cost)}</strong><time>{maintenance.date || '—'}</time></button>;
+      })}{!activities.length && <p className="muted">No recent activity yet.</p>}</div>
     </div>
   );
 }
@@ -1637,6 +1669,15 @@ const normalizeApartmentNumber = (value) => {
   return /^\d+$/.test(text) ? String(Number(text)) : text;
 };
 const buildingSort = (a, b) => String(a.name || a.address || '').localeCompare(String(b.name || b.address || ''), undefined, { numeric: true, sensitivity: 'base' });
+function TransactionsView({ data }) {
+  const [query, setQuery] = useState('');
+  const [selectedApartment, setSelectedApartment] = useState(null);
+  const rows = (data.transactions || []).filter((transaction) => `${transaction.Unit || ''} ${transaction.PurchaseId || ''} ${transaction.Vendor || ''} ${transaction.Description || ''} ${transaction['Order Date'] || ''}`.toLowerCase().includes(query.toLowerCase())).sort((a, b) => transactionDate(b['Order Date']) - transactionDate(a['Order Date']));
+  const groups = data.apartments.map((apartment) => ({ apartment, transactions: rows.filter((transaction) => transactionMatchesApartment(transaction, apartment)) })).filter((group) => group.transactions.length);
+  const unmatched = rows.filter((transaction) => !data.apartments.some((apartment) => transactionMatchesApartment(transaction, apartment)));
+  const renderGroup = (apartment, transactions, label = '') => { const building = data.buildings.find((item) => item.id === apartment?.buildingId); return <section className="transaction-apartment-group" key={apartment?.id || label}><header className={apartment ? 'transaction-apartment-header clickable' : 'transaction-apartment-header'} onClick={() => apartment && setSelectedApartment(apartment)}><div><h3>{apartment ? (apartment.apptId || apartment.number) : 'Unmatched unit'}</h3><small>{building?.name || 'Apartment not matched'} · Unique ID {apartment?.uniqueId || label || '—'}</small></div><b>{transactions.length} transactions</b></header><div className="transaction-group-scroll">{transactions.map((transaction) => <article className="transaction-register-card" key={transaction.id}><div><b>{transaction.Description || 'Transaction'}</b><small>{transaction['Order Date'] || '—'} · {transaction.Vendor || 'Vendor not recorded'} · {transaction['Order Number'] || 'No order number'}</small><span>{transaction.Note || ''}</span></div><strong>{transaction.Amount || '—'}</strong></article>)}</div></section>; };
+  return <><section className="panel transactions-register"><div className="panel-head"><div><h2>Apartment transactions</h2><p>{rows.length} records from the latest import · grouped by apartment</p></div><input className="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search apartment ID, vendor, description, date..." /></div><div className="transaction-register-list">{groups.map((group) => renderGroup(group.apartment, group.transactions))}{unmatched.length > 0 && renderGroup(null, unmatched, unmatched[0].Unit)}{!groups.length && !unmatched.length && <p className="empty">No transactions found. Upload a transactions CSV above.</p>}</div></section>{selectedApartment && <div className="drawer-backdrop" onClick={() => setSelectedApartment(null)}><div onClick={(event) => event.stopPropagation()}><ApartmentSidePanel apartment={selectedApartment} buildings={data.buildings} people={data.people} data={data} onClose={() => setSelectedApartment(null)} /></div></div>}</>;
+}
 function ListView({ tab, data, selected, setSelected, onAdd, exportData, importData, importCsv }) {
   const [selectedApartment, setSelectedApartment] = useState(null);
   const [selectedPerson, setSelectedPerson] = useState(null);
@@ -1832,7 +1873,26 @@ function ListView({ tab, data, selected, setSelected, onAdd, exportData, importD
     </section>
   );
 }
+function useSwipeToClose(onClose) {
+  const start = React.useRef(null);
+  return {
+    onTouchStart: (event) => {
+      const touch = event.touches[0];
+      start.current = touch ? { x: touch.clientX, y: touch.clientY } : null;
+    },
+    onTouchEnd: (event) => {
+      const touch = event.changedTouches[0];
+      if (!start.current || !touch) return;
+      const dx = touch.clientX - start.current.x;
+      const dy = Math.abs(touch.clientY - start.current.y);
+      start.current = null;
+      if (dx > 90 && dx > dy * 1.25) onClose();
+    },
+  };
+}
+
 function BuildingDrawer({ building, apartments, onApartment, onClose }) {
+  const swipeHandlers = useSwipeToClose(onClose);
   const items = apartments
     .filter((apartment) => apartment.buildingId === building.id)
     .sort((a, b) => {
@@ -1853,7 +1913,7 @@ function BuildingDrawer({ building, apartments, onApartment, onClose }) {
     return 'owner-individual';
   };
   return (
-    <aside className="side-drawer building-drawer">
+    <aside className="side-drawer building-drawer" {...swipeHandlers}>
       <button className="close" onClick={onClose}>
         ×
       </button>
@@ -1914,7 +1974,7 @@ function LegacyApartmentSidePanel({ apartment, buildings, people = [], data, onC
         <div>
           <span>Owner</span>
           <b>
-            {apartment.ownerName || related.find((p) => p.role === 'Owner')?.name || 'Not added'}
+            {apartment.ownerName || fullPersonName(related.find((p) => p.role === 'Owner')) || 'Not added'}
           </b>
         </div>
         <div>
@@ -1987,24 +2047,50 @@ function LegacyApartmentSidePanel({ apartment, buildings, people = [], data, onC
     </aside>
   );
 }
-function FinancialSummary({ rent, bills, events }) {
-  const expenses =
-    bills.reduce((sum, bill) => sum + Number(bill.amount || 0), 0) +
-    events.reduce((sum, event) => sum + Number(event.cost || 0), 0);
-  const history = [0.91, 0.96, 1.03, 0.98, 1.08, 1].map((factor, index) => ({
-    month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'][index],
-    income: Math.round(rent * factor),
-    expense: Math.round(expenses * (0.88 + index * 0.03)),
-  }));
+function FinancialSummary({ rent, bills, events, transactions = [], transactionSearch = '', setTransactionSearch }) {
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const transactionDetailRef = React.useRef(null);
+  useEffect(() => {
+    if (!selectedTransaction) return undefined;
+    const close = (event) => {
+      if (!transactionDetailRef.current?.contains(event.target)) setSelectedTransaction(null);
+    };
+    document.addEventListener('mousedown', close);
+    document.addEventListener('touchstart', close);
+    return () => {
+      document.removeEventListener('mousedown', close);
+      document.removeEventListener('touchstart', close);
+    };
+  }, [selectedTransaction]);
+  const visibleTransactions = transactions.filter((transaction) => `${transaction.Description || ''} ${transaction.Vendor || ''} ${transaction['Order Date'] || ''} ${transaction.PurchaseId || ''} ${transaction.Amount || ''}`.toLowerCase().includes(transactionSearch.toLowerCase()));
+  const [period, setPeriod] = useState('monthly');
+  const datedAmount = (item, fields) => {
+    const date = fields.map((field) => item[field]).find(Boolean);
+    return { date: date ? new Date(date) : null, amount: Number(String(item.amount ?? item.cost ?? item.Amount ?? 0).replace(/[^0-9.-]/g, '') || 0) };
+  };
+  const costItems = [...bills.map((item) => datedAmount(item, ['dueDate', 'date', 'period'])), ...events.map((item) => datedAmount(item, ['date'])), ...transactions.map((item) => datedAmount(item, ['Order Date', 'Delivery Date', 'InputDate']))];
+  const today = new Date();
+  const within = (date, months) => date && !Number.isNaN(date.getTime()) && date <= today && date >= new Date(today.getFullYear(), today.getMonth() - months, today.getDate());
+  const monthsForPeriod = period === 'quarterly' ? 3 : period === 'annual' ? 12 : period === 'total' ? 1200 : 1;
+  const periodCosts = costItems.filter((item) => period === 'total' || within(item.date, monthsForPeriod)).reduce((sum, item) => sum + item.amount, 0);
+  const periodIncome = Math.max(0, Number(rent || 0)) * (period === 'total' ? 0 : monthsForPeriod);
+  const expenses = periodCosts;
+  const periodExpense = periodCosts;
+  const history = Array.from({ length: 6 }, (_, index) => {
+    const end = new Date(today.getFullYear(), today.getMonth() - (5 - index) + 1, 0);
+    const start = new Date(end.getFullYear(), end.getMonth(), 1);
+    const expense = costItems.filter((item) => item.date && item.date >= start && item.date <= end).reduce((sum, item) => sum + item.amount, 0);
+    return { month: end.toLocaleDateString('en-US', { month: 'short' }), income: Number(rent || 0), expense };
+  });
   const current = history[history.length - 1];
   const previous = history[history.length - 2];
   const change = Math.round(((current.income - previous.income) / previous.income) * 100);
-  const annualIncome = history.reduce((sum, month) => sum + month.income, 0);
-  const annualExpense = history.reduce((sum, month) => sum + month.expense, 0);
+  const periodLabel = period === 'quarterly' ? 'Quarterly' : period === 'annual' ? 'Annual' : period === 'total' ? 'All time' : 'Monthly';
   return (
     <div className="financial-summary">
       <div className="finance-head">
-        <h3>Monthly cash flow</h3>
+        <h3>{periodLabel} cash flow</h3>
+        <select value={period} onChange={(event) => setPeriod(event.target.value)}><option value="monthly">Monthly</option><option value="quarterly">Quarterly</option><option value="annual">Annual</option><option value="total">All time</option></select>
         <span>
           {change >= 0 ? '↑' : '↓'} {Math.abs(change)}% vs May
         </span>
@@ -2012,45 +2098,49 @@ function FinancialSummary({ rent, bills, events }) {
       <div className="finance-cards">
         <div className="income">
           <small>Rent coming in</small>
-          <b>{money(current.income)}</b>
+          <b>{money(periodIncome)}</b>
         </div>
         <div className="expense">
           <small>Costs going out</small>
-          <b>{money(current.expense)}</b>
+          <b>{money(periodExpense)}</b>
         </div>
       </div>
       <div className="finance-history">
         {history.map((month) => (
-          <div key={month.month}>
+          <button type="button" className="finance-history-point" key={month.month} title={`${month.month}: ${money(month.expense)} costs`}>
             <span>{month.month}</span>
             <i style={{ height: `${Math.max(8, (month.income / rent) * 30)}px` }} />
             <em
               style={{ height: `${Math.max(6, (month.expense / Math.max(expenses, 1)) * 30)}px` }}
             />
-          </div>
+          </button>
         ))}
       </div>
+      {transactions.length > 0 && <div className="cashflow-timeline"><div className="cashflow-timeline-head"><small>Imported transaction cash flow ({transactions.length})</small><input value={transactionSearch} onChange={(event) => setTransactionSearch?.(event.target.value)} placeholder="Search transactions..." /></div><div className="cashflow-transaction-scroll">{visibleTransactions.map((transaction) => <div className={`cashflow-transaction-row ${selectedTransaction?.id === transaction.id ? 'transaction-selected' : ''}`} key={transaction.id} onClick={() => setSelectedTransaction(transaction)}><span>{transaction['Order Date'] || '—'} · {transaction.Description || transaction.Vendor || 'Transaction'}</span><b>{money(Number(String(transaction.Amount || 0).replace(/[^0-9.-]/g, '') || 0))}</b>{selectedTransaction?.id === transaction.id && <div className="transaction-hover-details" ref={transactionDetailRef}><button type="button" onClick={(event) => { event.stopPropagation(); setSelectedTransaction(null); }}>×</button>{Object.entries(transaction).filter(([key]) => key !== 'id' && key !== 'apartmentId').map(([key, value]) => <span key={key}><strong>{key}:</strong> {String(value || '—')}</span>)}</div>}</div>)}</div></div>}
       <div className="finance-totals">
         <span>
-          6-month income <b>{money(annualIncome)}</b>
+          {periodLabel} income <b>{money(periodIncome)}</b>
         </span>
         <span>
-          6-month costs <b>{money(annualExpense)}</b>
+          {periodLabel} costs <b>{money(periodExpense)}</b>
         </span>
         <span>
-          Net ratio <b>{Math.round(((annualIncome - annualExpense) / annualIncome) * 100)}%</b>
+          Net ratio <b>{periodIncome ? `${Math.round(((periodIncome - periodExpense) / periodIncome) * 100)}%` : '—'}</b>
         </span>
       </div>
     </div>
   );
 }
 function ApartmentSidePanel({ apartment, buildings, people = [], data, onClose }) {
+  const [transactionSearch, setTransactionSearch] = useState('');
+  const swipeHandlers = useSwipeToClose(onClose);
   const building = buildings.find((item) => item.id === apartment.buildingId);
   const related = people.filter((person) => person.apartmentIds?.includes(apartment.id));
   const events = (data.events || []).filter((event) => event.apartmentId === apartment.id);
   const bills = (data.bills || []).filter((bill) => bill.apartmentId === apartment.id);
+  const transactions = (data.transactions || []).filter((transaction) => transaction.apartmentId === apartment.id || transactionMatchesApartment(transaction, apartment)).filter((transaction) => `${transaction.Description || ''} ${transaction.Vendor || ''} ${transaction['Order Date'] || ''} ${transaction.PurchaseId || ''} ${transaction.Amount || ''}`.toLowerCase().includes(transactionSearch.toLowerCase())).sort((a, b) => transactionDate(b['Order Date']) - transactionDate(a['Order Date']));
   return (
-    <aside className="side-drawer apartment-drawer">
+    <aside className="side-drawer apartment-drawer" {...swipeHandlers}>
       <button className="close" onClick={onClose}>
         ×
       </button>
@@ -2065,7 +2155,7 @@ function ApartmentSidePanel({ apartment, buildings, people = [], data, onClose }
         <div>
           <span>Owner</span>
           <b>
-            {apartment.ownerName || related.find((p) => p.role === 'Owner')?.name || 'Not added'}
+            {apartment.ownerName || fullPersonName(related.find((p) => p.role === 'Owner')) || 'Not added'}
           </b>
         </div>
         <div>
@@ -2094,13 +2184,14 @@ function ApartmentSidePanel({ apartment, buildings, people = [], data, onClose }
         <div><span>Garden</span><b>{apartment.garden ? 'Yes' : 'No'}</b></div>
         <div><span>Invested</span><b>{apartment.invested ? money(apartment.invested) : '—'}</b></div>
         <div><span>Owner contract</span><b>{apartment.ownerContract || '—'}</b></div>
-        <div><span>Apartment ID</span><b>{apartment.apptId || apartment.uniqueId || '—'}</b></div>
+        <div><span>Appt ID</span><b>{apartment.apptId || '—'}</b></div>
+        <div><span>Unique ID</span><b>{apartment.uniqueId || '—'}</b></div>
         <div><span>Floor / Entrance</span><b>{apartment.floor ?? '—'} · {apartment.entrance || '—'}</b></div>
         <div><span>Size / Rooms</span><b>{apartment.size ? `${apartment.size} m²` : '—'} · {apartment.rooms || '—'}</b></div>
         <div><span>Parcel / Sub-parcel</span><b>{apartment.parcel || '—'} · {apartment.subA || '—'}</b></div>
         <div><span>Class / Internal owner</span><b>{apartment.propertyClass || '—'} · {apartment.internalOwner || '—'}</b></div>
       </div>
-      <FinancialSummary rent={apartment.rent} bills={bills} events={events} />
+      <FinancialSummary rent={apartment.rent} bills={bills} events={events} transactions={transactions} transactionSearch={transactionSearch} setTransactionSearch={setTransactionSearch} />
       <h3>Recent events</h3>
       {events.map((event) => (
         <div className="event-row" key={event.id}>
