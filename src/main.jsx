@@ -758,6 +758,42 @@ const hydrateData = () => {
 };
 const parseMasterCsv = (text) => { const lines = text.trim().split(/\r?\n/).filter(Boolean); if (lines.length < 2) return { buildings: [], apartments: [] }; const headers = lines[0].split(','); const rows = lines.slice(1).map((line) => { const values = line.split(','); return Object.fromEntries(headers.map((header, index) => [header, (values[index] || '').trim()])); }); const buildingMap = new Map(); const apartments = rows.map((row, index) => { const key = `${row.Street}-${row['Street Number']}`; if (!buildingMap.has(key)) buildingMap.set(key, { id: `csv-building-${buildingMap.size + 1}`, name: `${row.Street} ${row['Street Number']}`, street: row.Street, streetNumber: row['Street Number'], address: row['Address (Not editable)'] || `${row.Street} ${row['Street Number']}`, area: 'Shechuna Gimel', units: 0, floors: Number(row.Floor || 0), zone: row.Class || 'Residential', color: 'gold', lat: 31.2643 + buildingMap.size * 0.0004, lng: 34.7989 + buildingMap.size * 0.0004 }); const building = buildingMap.get(key); building.units += 1; return { id: `csv-apartment-${row['Appt ID'] || index}`, buildingId: building.id, uniqueId: row.UniquID, apptId: row['Appt ID'], number: row.Appt, entrance: row.Entrance, street: row.Street, streetNumber: row['Street Number'], altAddress: row.AltAddress, addressNotEditable: row['Address (Not editable)'], rooms: Number(row['#Rooms'] || 0), garden: row.Garden === 'TRUE', floor: Number(row.Floor || 0), size: Number(row.Size || 0), parcel: row.Parcel, subA: row['Sub A'], ownerName: row['Owner 1'] || 'Individual owner', owner2: row['Owner 2'], id1: row['ID-1'], id2: row['ID-2'], phone1: row['Phone 1'], phone2: row['Phone 2'], warning: row.Warning, propertyClass: row.Class, internalOwner: row['Int Owner'], note: row.Note, validated: row.Validated === 'TRUE', validationDate: row['Validation date'], ownerContract: row.OWNER_CONTRACT, invested: Number(row.Invested || 0), housewares: row.Housewares, agreement: row.Agreement, rentable: row.Rentable === 'Yes', representative: row.Representative, lawyer: row.Lawyer, pinuiStatus: row.Status, status: 'Vacant', rent: 0, tenantName: '', resident: '' }; }); return { buildings: [...buildingMap.values()], apartments }; };
 const mergeMasterCsv = (current = { buildings: [], apartments: [] }, imported = { buildings: [], apartments: [] }) => { const buildings = [...(current.buildings || [])]; const idMap = new Map(); (imported.buildings || []).forEach((building) => { const existing = buildings.find((item) => item.street === building.street && item.streetNumber === building.streetNumber); if (existing) idMap.set(building.id, existing.id); else { buildings.push(building); idMap.set(building.id, building.id); } }); const apartments = [...(current.apartments || [])]; (imported.apartments || []).forEach((apartment) => { if (apartments.some((existing) => existing.apptId === apartment.apptId)) return; apartments.push({ ...apartment, buildingId: idMap.get(apartment.buildingId) || apartment.buildingId }); }); return { ...current, buildings, apartments }; };
+const geocodeBuildings = async (buildings) => {
+  const updated = [...buildings];
+  for (let index = 0; index < updated.length; index += 1) {
+    const building = updated[index];
+    if (building.geoSource || !building.street || !building.streetNumber) continue;
+    try {
+      const query = `${building.street} ${building.streetNumber}${building.entrance && building.entrance !== 'main' ? ` entrance ${building.entrance}` : ''}, Be'er Sheva, Israel`;
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=il&q=${encodeURIComponent(query)}`);
+      const results = await response.json();
+      if (results[0]) updated[index] = { ...building, lat: Number(results[0].lat), lng: Number(results[0].lon), geoSource: 'nominatim' };
+      else updated[index] = { ...building, geoSource: 'not-found' };
+    } catch (error) { updated[index] = { ...building, geoSource: 'not-found' }; console.warn('Could not geocode building', building.name, error); }
+  }
+  return updated;
+};
+const splitImportedBuildingsByEntrance = (imported) => {
+  const buildings = [];
+  const apartments = [];
+  const groups = new Map();
+  (imported.buildings || []).forEach((building) => {
+    const rows = (imported.apartments || []).filter((apartment) => apartment.buildingId === building.id);
+    rows.forEach((apartment) => {
+      const entrance = apartment.entrance || 'main';
+      const key = `${building.id}-${entrance}`;
+      if (!groups.has(key)) {
+        const next = { ...building, id: `csv-building-${buildings.length + 1}`, entrance, name: `${building.name} · Entrance ${entrance}`, units: 0, geoSource: undefined };
+        groups.set(key, next);
+        buildings.push(next);
+      }
+      const target = groups.get(key);
+      target.units += 1;
+      apartments.push({ ...apartment, buildingId: target.id });
+    });
+  });
+  return { ...imported, buildings, apartments };
+};
 function App() {
   const [data, setData] = useState(hydrateData);
   const [tab, setTab] = useState('Overview');
@@ -766,6 +802,36 @@ function App() {
   const [search, setSearch] = useState('');
   const [topSelected, setTopSelected] = useState(null);
   useEffect(() => localStorage.setItem('blockwise-data', JSON.stringify(data)), [data]);
+  useEffect(() => {
+    const normalized = [];
+    const seen = new Set();
+    data.apartments.forEach((apartment) => {
+      const number = normalizeApartmentNumber(apartment.number || apartment.appt);
+      const key = `${apartment.buildingId}-${number || apartment.apptId || apartment.id}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      normalized.push({ ...apartment, number });
+    });
+    if (normalized.length !== data.apartments.length || normalized.some((item, index) => item.number !== data.apartments[index].number)) setData((current) => ({ ...current, apartments: normalized }));
+  }, [data.apartments]);
+  useEffect(() => {
+    let cancelled = false;
+    const needsCoordinates = data.buildings.some((building) => building.street && building.streetNumber && !building.geoSource);
+    if (!needsCoordinates) return undefined;
+    geocodeBuildings(data.buildings).then((buildings) => {
+      if (!cancelled && JSON.stringify(buildings) !== JSON.stringify(data.buildings)) setData((current) => ({ ...current, buildings }));
+    });
+    return () => { cancelled = true; };
+  }, [data.buildings]);
+  useEffect(() => {
+    const existing = data.people || [];
+    const importedOwners = data.apartments.flatMap((apartment) => [
+      apartment.ownerName && apartment.ownerName !== 'Individual owner' ? { name: apartment.ownerName, phone: apartment.phone1, apartmentId: apartment.id } : null,
+      apartment.owner2 ? { name: apartment.owner2, phone: apartment.phone2, apartmentId: apartment.id } : null,
+    ].filter(Boolean));
+    const additions = importedOwners.filter((owner) => !existing.some((person) => person.name === owner.name && (!owner.phone || person.phone === owner.phone))).map((owner, index) => ({ id: `csv-owner-${Date.now()}-${index}`, name: owner.name, role: 'Owner', phone: owner.phone || '', email: '', apartmentIds: [owner.apartmentId], notes: 'Imported from master CSV' }));
+    if (additions.length) setData((current) => ({ ...current, people: [...(current.people || []), ...additions] }));
+  }, [data.apartments, data.people]);
   const apartments = data.apartments.filter((a) => a.buildingId === selected?.id);
   const occupied = data.apartments.filter((a) => a.status === 'Leased').length;
   const rent = data.apartments.reduce((s, a) => s + Number(a.rent || 0), 0);
@@ -813,7 +879,7 @@ function App() {
     r.onload = () => setData(JSON.parse(r.result));
     r.readAsText(file);
   };
-  const importCsv = (e) => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => { try { const imported = parseMasterCsv(String(reader.result || '')); if (!imported || !Array.isArray(imported.buildings) || !Array.isArray(imported.apartments)) throw new Error('CSV did not produce building and apartment records'); const current = data && Array.isArray(data.buildings) && Array.isArray(data.apartments) ? data : hydrateData(); const nextData = mergeMasterCsv(current, imported); const normalized = { ...nextData, buildings: nextData.buildings || [], apartments: nextData.apartments || [], people: nextData.people || [], bills: nextData.bills || [], events: nextData.events || [], maintenance: nextData.maintenance || [] }; localStorage.setItem('blockwise-data', JSON.stringify(normalized)); setData(normalized); } catch (error) { console.error('CSV import failed', error); window.alert(`Could not import CSV: ${error.message}`); } }; reader.onerror = () => window.alert('Could not read this CSV file. Save it as UTF-8 CSV and try again.'); reader.readAsText(file, 'UTF-8'); e.target.value = ''; };
+  const importCsv = (e) => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => { try { const imported = splitImportedBuildingsByEntrance(parseMasterCsv(String(reader.result || ''))); if (!imported || !Array.isArray(imported.buildings) || !Array.isArray(imported.apartments)) throw new Error('CSV did not produce building and apartment records'); const current = data && Array.isArray(data.buildings) && Array.isArray(data.apartments) ? data : hydrateData(); const nextData = mergeMasterCsv(current, imported); const normalized = { ...nextData, buildings: nextData.buildings || [], apartments: nextData.apartments || [], people: nextData.people || [], bills: nextData.bills || [], events: nextData.events || [], maintenance: nextData.maintenance || [] }; localStorage.setItem('blockwise-data', JSON.stringify(normalized)); setData(normalized); } catch (error) { console.error('CSV import failed', error); window.alert(`Could not import CSV: ${error.message}`); } }; reader.onerror = () => window.alert('Could not read this CSV file. Save it as UTF-8 CSV and try again.'); reader.readAsText(file, 'UTF-8'); e.target.value = ''; };
   const visibleBuildings = data.buildings.filter(
     (b) =>
       b.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -2170,6 +2236,19 @@ function MaintenanceView({ data }) {
     </section>
   );
 }
+const ownerTone = (owner) => {
+  const value = String(owner || '').toLowerCase();
+  if (value.includes('amidar')) return 'owner-amidar';
+  if (value === 'hd' || value.includes('hd ')) return 'owner-hd';
+  if (value === 'mr' || value.includes('mr ')) return 'owner-mr';
+  return 'owner-individual';
+};
+const apartmentSort = (a, b) => Number(a.floor || 0) - Number(b.floor || 0) || String(a.number || a.appt || a.apptId || '').localeCompare(String(b.number || b.appt || b.apptId || ''), undefined, { numeric: true });
+const normalizeApartmentNumber = (value) => {
+  const text = String(value ?? '').trim();
+  return /^\d+$/.test(text) ? String(Number(text)) : text;
+};
+const buildingSort = (a, b) => String(a.name || a.address || '').localeCompare(String(b.name || b.address || ''), undefined, { numeric: true, sensitivity: 'base' });
 function ListView({ tab, data, selected, setSelected, onAdd, exportData, importData, importCsv }) {
   const [selectedApartment, setSelectedApartment] = useState(null);
   const [selectedPerson, setSelectedPerson] = useState(null);
@@ -2228,7 +2307,7 @@ function ListView({ tab, data, selected, setSelected, onAdd, exportData, importD
       </div>
       <div className={tab === 'Apartments' ? 'building-groups' : 'record-grid'}>
         {tab === 'Apartments'
-          ? data.buildings.map((building) => (
+          ? [...data.buildings].sort(buildingSort).map((building) => (
               <section className="building-group" key={building.id}>
                 <div className="group-heading">
                   <h3>{building.name}</h3>
@@ -2243,11 +2322,10 @@ function ListView({ tab, data, selected, setSelected, onAdd, exportData, importD
                 <div className="record-grid">
                   {data.apartments
                     .filter((apartment) => apartment.buildingId === building.id)
+                    .sort(apartmentSort)
                     .map((r) => (
                       <button
-                        className={`record-card owner-${String(r.ownerName || '')
-                          .toLowerCase()
-                          .replaceAll(' ', '-')}`}
+                        className={`record-card ${ownerTone(r.internalOwner || r.ownerName)}`}
                         key={r.id}
                         onClick={() => setSelectedApartment(r)}
                       >
@@ -2263,7 +2341,7 @@ function ListView({ tab, data, selected, setSelected, onAdd, exportData, importD
                 </div>
               </section>
             ))
-          : rows.map((r) => (
+          : [...rows].sort(tab === 'Buildings' ? buildingSort : tab === 'Apartments' ? apartmentSort : undefined).map((r) => (
               <button
                 className="record-card"
                 key={r.id}
@@ -2293,6 +2371,7 @@ function ListView({ tab, data, selected, setSelected, onAdd, exportData, importD
                   <div className="building-apartments">
                     {data.apartments
                       .filter((apartment) => apartment.buildingId === r.id)
+                      .sort(apartmentSort)
                       .map((apartment) => (
                         <span
                           key={apartment.id}
@@ -2351,7 +2430,25 @@ function ListView({ tab, data, selected, setSelected, onAdd, exportData, importD
   );
 }
 function BuildingDrawer({ building, apartments, onApartment, onClose }) {
-  const items = apartments.filter((apartment) => apartment.buildingId === building.id);
+  const items = apartments
+    .filter((apartment) => apartment.buildingId === building.id)
+    .sort((a, b) => {
+      const floorDiff = Number(a.floor || 0) - Number(b.floor || 0);
+      if (floorDiff) return floorDiff;
+      return String(a.number || a.appt || a.apptId || '').localeCompare(
+        String(b.number || b.appt || b.apptId || ''),
+        undefined,
+        { numeric: true }
+      );
+    });
+  const floors = Math.max(Number(building.floors || 0), ...items.map((item) => Number(item.floor || 0)), 1);
+  const ownerClass = (owner) => {
+    const value = String(owner || '').toLowerCase();
+    if (value.includes('amidar')) return 'owner-amidar';
+    if (value === 'hd' || value.includes('hd ')) return 'owner-hd';
+    if (value === 'mr' || value.includes('mr ')) return 'owner-mr';
+    return 'owner-individual';
+  };
   return (
     <aside className="side-drawer building-drawer">
       <button className="close" onClick={onClose}>
@@ -2367,25 +2464,26 @@ function BuildingDrawer({ building, apartments, onApartment, onClose }) {
         <span>loaded apartments</span>
       </div>
       <h3>Apartment register</h3>
-      {items.map((apartment) => (
-        <button
-          className={`drawer-apartment owner-${String(apartment.ownerName || '')
-            .toLowerCase()
-            .replaceAll(' ', '-')}`}
-          key={apartment.id}
-          onClick={() => onApartment(apartment)}
-        >
-          <span>
-            <b>{apartment.number}</b>
-            <small>{apartment.ownerName || 'Individual owner'}</small>
-          </span>
-          <span>
-            <b>{apartment.status}</b>
-            <small>{apartment.tenantName || 'No tenant'}</small>
-          </span>
-          <strong>{money(apartment.rent)}</strong>
-        </button>
-      ))}
+      <div className="floor-grid">
+        {Array.from({ length: floors + 1 }, (_, index) => floors - index).map((floor) => {
+          const floorItems = items.filter((apartment) => Number(apartment.floor || 0) === floor);
+          return (
+            <div className="floor-row" key={floor}>
+              <div className="floor-label">Floor {floor}</div>
+              <div className="floor-apartments">
+                {floorItems.length ? floorItems.map((apartment) => (
+                  <button className={`drawer-apartment ${ownerClass(apartment.internalOwner || apartment.ownerName)}`} key={apartment.id} onClick={() => onApartment(apartment)}>
+                    <span><b>Apt {apartment.number || apartment.appt || apartment.apptId || '—'}</b><small>{apartment.internalOwner || apartment.ownerName || 'Individual owner'}</small></span>
+                    <span><b>{apartment.size ? `${apartment.size} m²` : 'Size —'}</b><small>{apartment.rooms ? `${apartment.rooms} rooms` : 'Rooms —'} · Entrance {apartment.entrance || '—'}</small></span>
+                    <strong>{money(apartment.rent || 0)}</strong>
+                  </button>
+                )) : <span className="empty-floor">No apartment records</span>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="owner-legend"><span className="owner-amidar">Amidar</span><span className="owner-hd">HD</span><span className="owner-mr">MR</span><span className="owner-individual">Individual / unknown</span></div>
     </aside>
   );
 }
@@ -2439,6 +2537,19 @@ function LegacyApartmentSidePanel({ apartment, buildings, people = [], data, onC
             </a>
           </b>
         </div>
+        <div><span>Apartment ID</span><b>{apartment.apptId || apartment.uniqueId || '—'}</b></div>
+        <div><span>Floor / Entrance</span><b>{apartment.floor || '—'} · {apartment.entrance || '—'}</b></div>
+        <div><span>Size / Rooms</span><b>{apartment.size ? `${apartment.size} m²` : '—'} · {apartment.rooms || '—'}</b></div>
+        <div><span>Parcel / Sub A</span><b>{apartment.parcel || '—'} · {apartment.subA || '—'}</b></div>
+        <div><span>Class</span><b>{apartment.propertyClass || '—'}</b></div>
+        <div><span>Garden</span><b>{apartment.garden ? 'Yes' : 'No'}</b></div>
+        <div><span>Invested</span><b>{apartment.invested ? money(apartment.invested) : '—'}</b></div>
+        <div><span>Owner contract</span><b>{apartment.ownerContract || '—'}</b></div>
+        <div><span>Internal owner</span><b>{apartment.internalOwner || '—'}</b></div>
+        <div><span>Address</span><b>{apartment.addressNotEditable || apartment.altAddress || '—'}</b></div>
+        <div><span>Parcel / investment</span><b>{apartment.parcel || '—'} · {apartment.invested ? money(apartment.invested) : '—'}</b></div>
+        <div><span>Rentable / agreement</span><b>{apartment.rentable ? 'Rentable' : 'Not marked'} · {apartment.agreement || '—'}</b></div>
+        <div><span>Pinui-Binui status</span><b>{apartment.pinuiStatus || '—'}</b></div>
       </div>
       <div className="cost-total">
         <span>June total costs</span>
@@ -2577,6 +2688,14 @@ function ApartmentSidePanel({ apartment, buildings, people = [], data, onClose }
             </a>
           </b>
         </div>
+        <div><span>Garden</span><b>{apartment.garden ? 'Yes' : 'No'}</b></div>
+        <div><span>Invested</span><b>{apartment.invested ? money(apartment.invested) : '—'}</b></div>
+        <div><span>Owner contract</span><b>{apartment.ownerContract || '—'}</b></div>
+        <div><span>Apartment ID</span><b>{apartment.apptId || apartment.uniqueId || '—'}</b></div>
+        <div><span>Floor / Entrance</span><b>{apartment.floor ?? '—'} · {apartment.entrance || '—'}</b></div>
+        <div><span>Size / Rooms</span><b>{apartment.size ? `${apartment.size} m²` : '—'} · {apartment.rooms || '—'}</b></div>
+        <div><span>Parcel / Sub-parcel</span><b>{apartment.parcel || '—'} · {apartment.subA || '—'}</b></div>
+        <div><span>Class / Internal owner</span><b>{apartment.propertyClass || '—'} · {apartment.internalOwner || '—'}</b></div>
       </div>
       <FinancialSummary rent={apartment.rent} bills={bills} events={events} />
       <h3>Recent events</h3>
