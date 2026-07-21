@@ -18,61 +18,61 @@ import RealMap from './RealMap';
 import { seed, mockExpansion, spreadsheetImport, bulkApartments, bulkEvents, bulkBills, buildApartmentOperations } from './mockData';
 
 const money = (n) => `₪${Number(n || 0).toLocaleString('en-US')}`;
+const canonicalOwner = (value) => { const text = String(value || '').trim(); const lower = text.toLowerCase(); if (lower.includes('השקעות דרום') || lower === 'hd') return 'HD'; if (lower.includes('קרן אבירם') || lower === 'ka') return 'KA'; return text; };
 const fullPersonName = (person) => person?.fullName || [person?.firstName, person?.lastName].filter(Boolean).join(' ') || person?.name || '';
 const coordinatesLabel = (building) => Number.isFinite(Number(building?.lat)) && Number.isFinite(Number(building?.lng))
   ? `${Number(building.lat).toFixed(6)}, ${Number(building.lng).toFixed(6)}`
   : 'Coordinates pending';
 const hydrateData = (loadMock = false) => {
-  const saved = JSON.parse(localStorage.getItem('blockwise-data') || 'null');
   const base = loadMock ? {
     ...seed,
     buildings: [...seed.buildings, ...mockExpansion.buildings, ...spreadsheetImport.buildings],
     apartments: [...seed.apartments, ...mockExpansion.apartments, ...spreadsheetImport.apartments],
     people: [...seed.people, ...mockExpansion.people, ...spreadsheetImport.people],
-  } : (saved || { buildings: [], apartments: [], people: [], bills: [], events: [], maintenance: [] });
+  } : { buildings: [], apartments: [], people: [], bills: [], events: [], maintenance: [], transactions: [] };
   const apartments = [
     ...(base.apartments || []),
-    ...mockExpansion.apartments.filter(
+    ...(loadMock ? mockExpansion.apartments.filter(
       (a) => !(base.apartments || []).some((item) => item.id === a.id)
-    ),
-    ...bulkApartments.filter((a) => !(base.apartments || []).some((item) => item.id === a.id)),
-    ...spreadsheetImport.apartments.filter(
+    ) : []),
+    ...(loadMock ? bulkApartments.filter((a) => !(base.apartments || []).some((item) => item.id === a.id)) : []),
+    ...(loadMock ? spreadsheetImport.apartments.filter(
       (a) => !(base.apartments || []).some((item) => item.id === a.id)
-    ),
+    ) : []),
   ];
   const operations = buildApartmentOperations(apartments);
   return {
     ...base,
     buildings: [
       ...(base.buildings || []),
-      ...mockExpansion.buildings.filter(
+      ...(loadMock ? mockExpansion.buildings.filter(
         (b) => !(base.buildings || []).some((item) => item.id === b.id)
-      ),
-      ...spreadsheetImport.buildings.filter(
+      ) : []),
+      ...(loadMock ? spreadsheetImport.buildings.filter(
         (b) => !(base.buildings || []).some((item) => item.id === b.id)
-      ),
+      ) : []),
     ],
     apartments: operations.apartments,
     people: [
       ...(base.people || []),
-      ...mockExpansion.people.filter((p) => !(base.people || []).some((item) => item.id === p.id)),
-      ...spreadsheetImport.people.filter(
+      ...(loadMock ? mockExpansion.people.filter((p) => !(base.people || []).some((item) => item.id === p.id)) : []),
+      ...(loadMock ? spreadsheetImport.people.filter(
         (p) => !(base.people || []).some((item) => item.id === p.id)
-      ),
+      ) : []),
     ],
     events: [
       ...(base.events || []),
-      ...bulkEvents.filter((event) => !(base.events || []).some((item) => item.id === event.id)),
+      ...(loadMock ? bulkEvents.filter((event) => !(base.events || []).some((item) => item.id === event.id)) : []),
     ],
     bills: [
       ...(base.bills || []),
-      ...bulkBills.filter((bill) => !(base.bills || []).some((item) => item.id === bill.id)),
+      ...(loadMock ? bulkBills.filter((bill) => !(base.bills || []).some((item) => item.id === bill.id)) : []),
     ],
     maintenance: [
       ...(base.maintenance || []),
-      ...operations.maintenance.filter(
+      ...(loadMock ? operations.maintenance.filter(
         (item) => !(base.maintenance || []).some((existing) => existing.id === item.id)
-      ),
+      ) : []),
     ],
   };
 };
@@ -87,6 +87,20 @@ const parseTransactionsCsv = (text) => {
     return { id: `transaction-${index}-${values[0] || Date.now()}`, ...Object.fromEntries(headers.map((header, i) => [header, (values[i] || '').trim()])) };
   });
 };
+const renterHeader = (value) => String(value || '').replace(/^\uFEFF/, '').replace(/["*]/g, '').replace(/\s+/g, '').trim();
+const parseDelimitedRecords = (text, delimiter) => { const records = []; let row = [], cell = '', quoted = false; for (let i = 0; i < text.length; i += 1) { const char = text[i]; if (char === '"') { if (quoted && text[i + 1] === '"') { cell += '"'; i += 1; } else quoted = !quoted; } else if (!quoted && char === delimiter) { row.push(cell); cell = ''; } else if (!quoted && (char === '\n' || char === '\r')) { if (char === '\r' && text[i + 1] === '\n') i += 1; row.push(cell); if (row.some((value) => value.trim())) records.push(row); row = []; cell = ''; } else cell += char; } if (cell || row.length) { row.push(cell); records.push(row); } return records; };
+const parseRentersCsv = (text) => {
+  const delimiter = text.split(/\r?\n/).find((line) => line.includes('\t')) ? '\t' : ',';
+  const records = parseDelimitedRecords(text, delimiter);
+  const headerIndex = records.findIndex((record) => { const normalized = record.map(renterHeader); return normalized.includes('יחידה') && normalized.includes('רחוב') && normalized.includes('מספר'); });
+  if (headerIndex < 0) return [];
+  const headers = records[headerIndex].map(renterHeader);
+  return records.slice(headerIndex + 1).map((values, index) => {
+    const row = {};
+    headers.forEach((header, column) => { if (header && row[header] === undefined) row[header] = (values[column] || '').replace(/^"|"$/g, '').trim(); });
+    return { ...row, id: `renter-${index}` };
+  }).filter((row) => row['יחידה'] || row['מספר'] || row['שמות']);
+};
 const transactionDate = (value) => {
   const text = String(value || '').trim();
   const dateParts = text.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/);
@@ -97,6 +111,7 @@ const transactionDate = (value) => {
 const unitKey = (value) => { const text = String(value ?? '').trim().toLowerCase().replace(/^['"]|['"]$/g, ''); return /^\d+(\.0+)?$/.test(text) ? String(Number(text)) : text.replace(/\s+/g, ''); };
 const transactionMatchesUniqueId = (transaction, apartment) => Boolean(apartment.uniqueId) && unitKey(transaction.Unit) === unitKey(apartment.uniqueId);
 const transactionMatchesApartment = (transaction, apartment) => [apartment.uniqueId, apartment.apptId, apartment.number].filter(Boolean).map(unitKey).includes(unitKey(transaction.Unit));
+const renterApartmentMatch = (apartments, row) => { const combined = String(row['מספר'] || '').trim(); const parts = combined.split('/').map((value) => String(value || '').trim()); const street = String(row['רחוב'] || '').trim().replace(/\s+/g, ' '); const attempts = parts.length > 1 ? [{ building: parts[0], apartment: parts[1] }, { building: parts[1], apartment: parts[0] }] : [{ building: combined, apartment: '' }]; return attempts.flatMap(({ building, apartment }) => apartments.filter((item) => String(item.street || '').trim().replace(/\s+/g, ' ') === street && unitKey(item.streetNumber) === unitKey(building) && (!apartment || unitKey(item.number || item.appt || item.apptId) === unitKey(apartment)))).concat(apartments.filter((item) => unitKey(item.uniqueId) === unitKey(row['יחידה'])))[0]; };
 const mergeMasterCsv = (current = { buildings: [], apartments: [] }, imported = { buildings: [], apartments: [] }) => { const buildings = [...(current.buildings || [])]; const idMap = new Map(); (imported.buildings || []).forEach((building) => { const existing = buildings.find((item) => item.street === building.street && item.streetNumber === building.streetNumber); if (existing) idMap.set(building.id, existing.id); else { buildings.push(building); idMap.set(building.id, building.id); } }); const apartments = [...(current.apartments || [])]; (imported.apartments || []).forEach((apartment) => { if (apartments.some((existing) => existing.apptId === apartment.apptId)) return; apartments.push({ ...apartment, buildingId: idMap.get(apartment.buildingId) || apartment.buildingId }); }); return { ...current, buildings, apartments }; };
 const addressKey = (building) => `${String(building.street || '').trim()} ${String(building.streetNumber || '').trim()} ${String(building.entrance || 'main').trim()}`.replace(/\s+/g, ' ').trim();
 const geocodeBuildings = async (buildings, onUpdate) => {
@@ -152,6 +167,7 @@ const splitImportedBuildingsByEntrance = (imported) => {
   return { ...imported, buildings, apartments };
 };
 function App() {
+  const importRentersFile = (e) => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => { const rows = parseRentersCsv(String(reader.result || '')); setData((current) => { const apartments = current.apartments.map((apartment) => ({ ...apartment })); const people = [...(current.people || [])]; let matched = 0; rows.forEach((row, index) => { const street = String(row['רחוב'] || '').trim().replace(/\s+/g, ' '); const parts = String(row['מספר'] || '').trim().split('/').map((value) => value.trim()); const attempts = parts.length > 1 ? [{ building: parts[0], apartment: parts[1] }, { building: parts[1], apartment: parts[0] }] : []; let apartment = null; let builtAddress = ''; for (const attempt of attempts) { apartment = apartments.find((candidate) => String(candidate.street || '').trim().replace(/\s+/g, ' ') === street && unitKey(candidate.streetNumber) === unitKey(attempt.building) && unitKey(candidate.number || candidate.appt || candidate.apptId) === unitKey(attempt.apartment)); if (apartment) { builtAddress = `${street} ${attempt.building}/${attempt.apartment}`; break; } } if (!apartment) { console.warn('[Renters CSV] No address match', { csvAddress: `${street} ${parts.join('/')}` }); return; } matched += 1; const tenantName = String(row['שמות'] || '').trim(); const ownerName = String(row['בעל הדירה'] || '').trim(); const tenantPeople = tenantName.split(/[;,、]+/).map((name) => name.trim()).filter(Boolean); const ownerPeople = ownerName.split(/[;,、]+/).map((name) => name.trim()).filter(Boolean); const addPerson = (name, role) => { if (!name) return; const idNumber = String(row['ת.ז'] || '').trim(); let person = people.find((candidate) => candidate.role === role && (idNumber ? String(candidate.idNumber || '') === idNumber : String(candidate.name || '').toLowerCase() === name.toLowerCase())); if (!person) { person = { id: `renter-${role}-${index}-${people.length}`, name, fullName: name, role, apartmentIds: [], idNumber, phone: row['טלפונים'] || '', email: row['כתובת אימייל'] || '', permanentAddress: row['כתובת קבועה'] || '' }; people.push(person); } person.apartmentIds = [...new Set([...(person.apartmentIds || []), apartment.id])]; }; tenantPeople.forEach((name) => addPerson(name, 'Tenant')); ownerPeople.forEach((name) => addPerson(name, 'Owner')); const target = apartments.find((candidate) => candidate.id === apartment.id); Object.assign(target, { tenantName: tenantPeople.join(', ') || target.tenantName || '', resident: tenantPeople.join(', ') || target.resident || '', ownerName: ownerName || target.ownerName || '', leaseStart: row['תחילתחוזה'] || target.leaseStart || '', leaseEnd: row['סיוםחוזה'] || target.leaseEnd || '', rent: Number(String(row['שכרדירה'] || '').replace(/[^0-9.-]/g, '') || target.rent || 0), status: tenantPeople.length ? 'Leased' : target.status, renterUnit: row['יחידה'] || target.renterUnit || '', renterCsv: { address: builtAddress, unit: row['יחידה'] || '', idNumber: row['ת.ז'] || '', phone: row['טלפונים'] || '', email: row['כתובת אימייל'] || '' } }); console.info('[Renters CSV] MATCH', { builtAddress, apartmentUniqueId: target.uniqueId, apartmentAddress: target.addressNotEditable || `${target.street} ${target.streetNumber}`, apartmentNumber: target.number || target.appt || target.apptId, tenant: target.tenantName }); }); console.info(`[Renters CSV] ${matched}/${rows.length} rows matched by address only`); return { ...current, apartments, people }; }); }; reader.readAsText(file, 'UTF-8'); e.target.value = ''; };
   const [data, setData] = useState(hydrateData);
   const geocodingRef = React.useRef(false);
   const [geocodeQueue, setGeocodeQueue] = useState(null);
@@ -208,20 +224,24 @@ function App() {
       const phone = String(person.phone || '').trim();
       const key = name.toLowerCase();
       const previous = grouped.get(key);
-      grouped.set(key, previous ? { ...previous, phone: previous.phone || phone, email: previous.email || person.email || '', apartmentIds: [...new Set([...(previous.apartmentIds || []), ...(person.apartmentIds || [])])] } : { ...person, name, phone, apartmentIds: [...new Set(person.apartmentIds || [])] });
+      grouped.set(key, previous ? { ...previous, idNumber: previous.idNumber || person.idNumber || '', permanentAddress: previous.permanentAddress || person.permanentAddress || '', phone: previous.phone || phone, email: previous.email || person.email || '', apartmentIds: [...new Set([...(previous.apartmentIds || []), ...(person.apartmentIds || [])])] } : { ...person, name, phone, apartmentIds: [...new Set(person.apartmentIds || [])] });
     };
     (data.people || []).forEach(addPerson);
     data.apartments.forEach((apartment) => {
-      const primaryOwner = apartment.ownerName && apartment.ownerName !== 'Individual owner' ? apartment.ownerName : apartment.internalOwner;
+      const primaryOwner = canonicalOwner(apartment.ownerContract || apartment.ownerName) || canonicalOwner(apartment.internalOwner);
       if (primaryOwner) addPerson({ id: `csv-owner-${apartment.id}`, name: primaryOwner, role: 'Owner', phone: apartment.phone1, apartmentIds: [apartment.id], notes: 'Imported from master CSV' });
       if (apartment.owner2) addPerson({ id: `csv-owner-${apartment.id}-2`, name: apartment.owner2, role: 'Owner', phone: apartment.phone2, apartmentIds: [apartment.id], notes: 'Imported from master CSV' });
     });
     const people = [...grouped.values()];
     if (JSON.stringify(people) !== JSON.stringify(data.people || [])) setData((current) => ({ ...current, people }));
   }, [data.apartments, data.people]);
+  useEffect(() => {
+    data.apartments.filter((apartment) => apartment.renterCsv).forEach((apartment) => console.info('[Renters CSV] Imported apartment match:', { csvAddress: `${apartment.renterCsv.street || apartment.street || ''} ${apartment.renterCsv.number || apartment.streetNumber || ''}`, uniqueId: apartment.uniqueId, renterUnit: apartment.renterUnit, tenant: apartment.tenantName, owner: apartment.ownerName }));
+  }, [data.apartments]);
   const apartments = data.apartments.filter((a) => a.buildingId === selected?.id);
   const occupied = data.apartments.filter((a) => a.status === 'Leased').length;
   const rent = data.apartments.reduce((s, a) => s + Number(a.rent || 0), 0);
+  const ownerTotals = data.apartments.reduce((totals, apartment) => { const owner = canonicalOwner(apartment.ownerContract || apartment.ownerName || apartment.internalOwner).toLowerCase(); if (owner === 'hd') totals.hd += 1; else if (owner === 'ka' || owner.includes('רוקון נאמנים')) totals.ka += 1; return totals; }, { hd: 0, ka: 0 });
   const saveRecord = (e) => {
     e.preventDefault();
     const f = new FormData(e.target);
@@ -267,6 +287,7 @@ function App() {
     r.readAsText(file);
   };
   const importCsv = (e) => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => { try { const imported = splitImportedBuildingsByEntrance(parseMasterCsv(String(reader.result || ''))); if (!imported || !Array.isArray(imported.buildings) || !Array.isArray(imported.apartments)) throw new Error('CSV did not produce building and apartment records'); const current = data && Array.isArray(data.buildings) && Array.isArray(data.apartments) ? data : hydrateData(); const nextData = mergeMasterCsv(current, imported); const normalized = { ...nextData, buildings: nextData.buildings || [], apartments: nextData.apartments || [], people: nextData.people || [], bills: nextData.bills || [], events: nextData.events || [], maintenance: nextData.maintenance || [] }; localStorage.setItem('blockwise-data', JSON.stringify(normalized)); setData(normalized); setGeocodeQueue(normalized.buildings); } catch (error) { console.error('CSV import failed', error); window.alert(`Could not import CSV: ${error.message}`); } }; reader.onerror = () => window.alert('Could not read this CSV file. Save it as UTF-8 CSV and try again.'); reader.readAsText(file, 'UTF-8'); e.target.value = ''; };
+  const importRenters = (e) => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => { try { const rows = parseRentersCsv(String(reader.result || '')); setData((current) => { const apartments = [...current.apartments]; const people = [...(current.people || [])]; let matched = 0; rows.forEach((row, index) => { const combined = String(row['מספר'] || '').trim(); const [buildingNumber, apartmentNumber] = combined.split('/').map((value) => String(value || '').trim()); const street = String(row['רחוב'] || '').trim(); const apartment = apartments.find((item) => String(item.street || '').trim() === street && String(item.streetNumber || '').trim() === buildingNumber && unitKey(item.number || item.appt || item.apptId) === unitKey(apartmentNumber)) || apartments.find((item) => String(item.street || '').trim() === street && String(item.streetNumber || '').trim() === buildingNumber && unitKey(item.number || item.appt || item.apptId) === unitKey(combined)); if (!apartment) return; matched += 1; const tenantName = String(row['שמות'] || '').trim(); const ownerName = String(row['בעל הדירה'] || '').trim(); const tenantPeople = tenantName.split(/[;,、]+/).map((name) => name.trim()).filter(Boolean); const ownerPeople = ownerName.split(/[;,、]+/).map((name) => name.trim()).filter(Boolean); const updatePerson = (name, role) => { const key = `${role}-${name.toLowerCase()}-${row['ת.ז'] || ''}`; let person = people.find((item) => item.importKey === key || (item.role === role && String(item.name || item.fullName || '').toLowerCase() === name.toLowerCase() && String(item.idNumber || '') === String(row['ת.ז'] || ''))); if (!person) { person = { id: `renter-person-${index}-${role}-${people.length}`, importKey: key, name, fullName: name, role, idNumber: row['ת.ז'] || '', phone: row['טלפונים'] || '', email: row['כתובת אימייל'] || '', permanentAddress: row['כתובת קבועה'] || '', apartmentIds: [] }; people.push(person); } person.apartmentIds = [...new Set([...(person.apartmentIds || []), apartment.id])]; return person; }; tenantPeople.forEach((name) => updatePerson(name, 'Tenant')); ownerPeople.forEach((name) => updatePerson(name, 'Owner')); const tenant = tenantPeople.join(', '); apartments[apartments.indexOf(apartment)] = { ...apartment, ownerName: ownerName || apartment.ownerName, ownerNames: [...new Set([...(apartment.ownerNames || []), ownerName].filter(Boolean))], tenantName: tenant || apartment.tenantName, resident: tenant || apartment.resident, status: tenant ? 'Leased' : apartment.status, leaseStart: row['תחילתחוזה'] || apartment.leaseStart || '', leaseEnd: row['סיוםחוזה'] || apartment.leaseEnd || '', rent: Number(String(row['שכרדירה'] || '').replace(/[^0-9.-]/g, '') || apartment.rent || 0), renterCsv: { unit: row['יחידה'] || '', owner: ownerName, idNumber: row['ת.ז'] || '', phone: row['טלפונים'] || '', email: row['כתובת אימייל'] || '', permanentAddress: row['כתובת קבועה'] || '', status: row['סטאטוס'] || '' } }; }); window.console.info(`[Renters CSV] ${rows.length} rows read; ${matched} apartments matched by street, building number, and apartment number.`); return { ...current, apartments, people }; }); } catch (error) { console.error('Renters CSV import failed', error); window.alert(`Could not import renters CSV: ${error.message}`); } }; reader.readAsText(file, 'UTF-8'); e.target.value = ''; };
   const importTransactions = (e) => { const file = e.target.files[0]; if (!file) return; setTransactionProgress({ done: 0, total: 1 }); const reader = new FileReader(); reader.onload = () => { try { const incoming = parseTransactionsCsv(String(reader.result || '')); const transactions = incoming; const merged = [...(data.transactions || [])]; let uniqueIdMatches = 0; transactions.forEach((item, index) => { const apartment = data.apartments.find((candidate) => transactionMatchesUniqueId(item, candidate)) || data.apartments.find((candidate) => transactionMatchesApartment(item, candidate)); if (apartment && transactionMatchesUniqueId(item, apartment)) uniqueIdMatches += 1; const linked = { ...item, apartmentId: apartment?.id || item.apartmentId || '' }; if (!merged.some((existing) => existing.PurchaseId === linked.PurchaseId)) merged.push(linked); if (index % 25 === 0) setTransactionProgress({ done: index + 1, total: transactions.length }); }); setData((current) => ({ ...current, transactions: merged })); setTransactionProgress({ done: transactions.length, total: transactions.length }); window.console.info(`[Transactions] Imported ${transactions.length} records; ${uniqueIdMatches} matched Unit → apartment UniquID; ${merged.filter((item) => item.apartmentId).length} linked total.`); setTimeout(() => setTransactionProgress(null), 1200); } catch (error) { setTransactionProgress(null); window.alert(`Could not import transactions CSV: ${error.message}`); } }; reader.readAsText(file, 'UTF-8'); e.target.value = ''; };
   const visibleBuildings = data.buildings.filter(
     (b) =>
@@ -284,7 +305,7 @@ function App() {
           .map((item) => ({ type: 'building', item })),
         ...data.apartments
           .filter((a) =>
-            `${a.number} ${a.ownerName || ''} ${a.tenantName || ''}`
+            `${a.number} ${a.apptId || ''} ${a.uniqueId || ''} ${a.renterUnit || a.renterCsv?.unit || ''} ${a.ownerName || ''} ${a.tenantName || ''}`
               .toLowerCase()
               .includes(search.toLowerCase())
           )
@@ -292,8 +313,9 @@ function App() {
         ...data.people
           .filter((person) => `${person.name || ''} ${person.phone || ''} ${person.email || ''}`.toLowerCase().includes(search.toLowerCase()))
           .map((item) => ({ type: 'person', item })),
-      ].slice(0, 10)
+      ].sort((a, b) => String(a.item.name || a.item.number || a.item.tenantName || '').localeCompare(String(b.item.name || b.item.number || b.item.tenantName || ''), undefined, { numeric: true, sensitivity: 'base' })).slice(0, 20)
     : [];
+  const highlight = (value) => { const text = String(value || ''); const query = search.trim(); if (!query) return text; const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); return text.split(new RegExp(`(${escaped})`, 'ig')).map((part, index) => part.toLowerCase() === query.toLowerCase() ? <mark key={index}>{part}</mark> : part); };
   return (
     <div className="app">
       <aside>
@@ -363,6 +385,7 @@ function App() {
             <button className="outline small" onClick={loadMockData}>Load mock data</button>
             <button className="outline small" onClick={startEmpty}>Start empty</button>
             <label className="outline small csv-import-label">Upload CSV<input type="file" accept=".csv,text/csv" onChange={importCsv} /></label>
+            <label className="outline small csv-import-label">Renters CSV upload<input type="file" accept=".csv,.tsv,text/csv,text/tab-separated-values" onChange={importRentersFile} /></label>
             <label className="outline small csv-import-label">Upload transacts CSV<input type="file" accept=".csv,.tsv,text/csv,text/tab-separated-values" onChange={importTransactions} /></label>
             <input
               className="search"
@@ -379,19 +402,19 @@ function App() {
                       setSearch('');
                       if (type === 'building') setSelected(item);
                       if (type === 'apartment') setSelected(data.buildings.find((building) => building.id === item.buildingId));
-                      setTopSelected(type === 'person' ? null : { type, item });
+                      setTopSelected({ type, item });
                     }}
                   >
                     {type === 'person' ? (
-                      <><b>{item.name}</b><small>{item.role} · {item.phone || 'No phone'} · {item.email || 'No email'}</small></>
+                      <><b>{highlight(item.name)}</b><small>{highlight(item.role)} · {item.phone || 'No phone'} · {item.email || 'No email'}</small></>
                     ) : type === 'building' ? (
                       <>
-                        <b>{item.name}</b>
-                        <small>{item.address || item.area} · Building</small>
+                        <b>{highlight(item.name)}</b>
+                        <small>{highlight(item.address || item.area)} · Building</small>
                       </>
                     ) : (
                       <>
-                        <b>{item.number}</b>
+                        <b>{highlight(item.renterUnit || item.renterCsv?.unit || item.number)}</b>
                         <small>
                           {data.buildings.find((building) => building.id === item.buildingId)?.name}{' '}
                           · Apartment
@@ -409,28 +432,8 @@ function App() {
         {tab === 'Overview' ? (
           <>
             <section className="metrics">
-              <Metric label="Properties" value={data.buildings.length} note="across Be'er Sheva" />
-              <Metric
-                label="Apartments"
-                value={data.apartments.length || 84}
-                note={`${occupied} occupied`}
-              />
-              <Metric
-                label="Occupancy"
-                value={
-                  data.apartments.length
-                    ? `${Math.round((occupied / data.apartments.length) * 100)}%`
-                    : '90.5%'
-                }
-                note="calculated live"
-                tone="green"
-              />
-              <Metric
-                label="Open issues"
-                value={data.maintenance.filter((m) => m.status === 'Open').length}
-                note="need attention"
-                tone="orange"
-              />
+              <div className="metric portfolio-summary"><span>Portfolio</span><div><strong>{data.buildings.length}</strong><small>Buildings</small></div><div><strong>{data.apartments.length}</strong><small>Apartments</small></div><em>{occupied} occupied · {data.apartments.length ? `${Math.round((occupied / data.apartments.length) * 100)}%` : '0%'} overall occupancy</em></div>
+              <div className="metric ownership-summary"><span>Ownership & occupancy</span><div><strong>{ownerTotals.hd}</strong><small>HD apartments</small><em>{data.apartments.filter((a) => canonicalOwner(a.ownerContract || a.ownerName || a.internalOwner).toLowerCase() === 'hd' && a.status === 'Leased').length} leased</em></div><div><strong>{ownerTotals.ka}</strong><small>KA apartments</small><em>{data.apartments.filter((a) => ['ka'].includes(canonicalOwner(a.ownerContract || a.ownerName || a.internalOwner).toLowerCase()) || String(a.ownerContract || a.ownerName || '').includes('רוקון נאמנים')).filter((a) => a.status === 'Leased').length} leased</em></div></div>
             </section>
             <section className="grid">
               <RealMap buildings={visibleBuildings} selected={selected} setSelected={setSelected} geocoding={Boolean(geocodeQueue)} />
@@ -443,7 +446,7 @@ function App() {
               />
             </section>
             <section className="bottom-grid">
-              <ApartmentTable apartments={apartments} />
+              <ApartmentTable apartments={data.apartments} people={data.people} buildings={data.buildings} onApartment={(apartment) => setTopSelected({ type: 'apartment', item: apartment })} onPerson={(person) => setTopSelected({ type: 'person', item: person })} onBuilding={(building) => setTopSelected({ type: 'building', item: building })} />
               <Activity data={data} onAdd={() => setModal('maintenance')} onApartment={(apartment) => setTopSelected({ type: 'apartment', item: apartment })} />
             </section>
           </>
@@ -485,7 +488,9 @@ function App() {
         {topSelected && (
           <div className="drawer-backdrop" onClick={() => setTopSelected(null)}>
             <div onClick={(event) => event.stopPropagation()}>
-              {topSelected.type === 'building' ? (
+              {topSelected.type === 'person' ? (
+                <PersonDetailsModal person={topSelected.item} apartments={data.apartments} buildings={data.buildings} onClose={() => setTopSelected(null)} />
+              ) : topSelected.type === 'building' ? (
                 <BuildingDrawer
                   building={topSelected.item}
                   apartments={data.apartments}
@@ -656,35 +661,49 @@ function Detail({ building, apartments, rent, onAdd, onOpen }) {
     </div>
   );
 }
-function ApartmentTable({ apartments }) {
+function ApartmentTable({ apartments, people = [], buildings = [], onApartment, onPerson, onBuilding }) {
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [ownerFilter, setOwnerFilter] = useState('All');
+  const leaseStatus = (apartment) => {
+    if (!apartment.tenantName && apartment.status !== 'Leased') return 'Vacant';
+    const end = apartment.leaseEnd ? new Date(apartment.leaseEnd) : null;
+    const days = end && !Number.isNaN(end.getTime()) ? (end - new Date()) / 86400000 : Infinity;
+    return days >= 0 && days <= 60 ? 'Lease ending soon' : 'Leased';
+  };
   return (
     <div className="panel table-panel">
       <div className="panel-head">
         <div>
           <h2>Apartment status</h2>
-          <p>Selected property · {apartments.length} loaded</p>
+          <p>Renters CSV apartments · {apartments.filter((apartment) => apartment.renterUnit || apartment.renterCsv?.unit).length} loaded</p>
         </div>
+        <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}><option value="All">All statuses</option><option value="Leased">Leased</option><option value="Vacant">Vacant</option></select><select value={ownerFilter} onChange={(event) => setOwnerFilter(event.target.value)}><option value="All">All owners</option><option value="HD">HD</option><option value="KA">KA</option><option value="Other">Other</option></select>
       </div>
       <div className="table">
         <div className="tr th">
           <span>UNIT</span>
-          <span>RESIDENT / STATUS</span>
+          <span>TENANT / STATUS</span>
+          <span>OWNER</span>
           <span>RENT</span>
-          <span>DATE</span>
+          <span>LEASE / ADDRESS</span>
         </div>
-        {apartments.map((a) => (
-          <div className="tr" key={a.id}>
-            <b>{a.number || a.appt || a.apptId || '—'}</b>
+        {[...apartments].filter((a) => a.renterUnit || a.renterCsv?.unit).filter((a) => statusFilter === 'All' || leaseStatus(a) === statusFilter).filter((a) => { const owner = canonicalOwner(a.ownerContract || a.ownerName || a.internalOwner).toLowerCase(); return ownerFilter === 'All' || (ownerFilter === 'HD' && owner === 'hd') || (ownerFilter === 'KA' && (owner === 'ka' || owner.includes('רוקון נאמנים'))) || (ownerFilter === 'Other' && owner !== 'hd' && owner !== 'ka' && !owner.includes('רוקון נאמנים')); }).sort((a, b) => Number(a.renterUnit || a.renterCsv?.unit || 0) - Number(b.renterUnit || b.renterCsv?.unit || 0)).map((a) => {
+          const building = buildings.find((item) => item.id === a.buildingId);
+          const tenants = people.filter((person) => person.role === 'Tenant' && person.apartmentIds?.includes(a.id));
+          const owners = people.filter((person) => person.role === 'Owner' && person.apartmentIds?.includes(a.id));
+          const names = tenants.length ? tenants : String(a.tenantName || '').split(',').map((name) => ({ name: name.trim() })).filter((person) => person.name);
+          const status = leaseStatus(a);
+          return <div className="tr" key={a.id}>
+            <button className="table-link" onClick={() => onApartment?.(a)}>{a.renterUnit || a.renterCsv?.unit}</button>
             <span>
-              <strong>{a.resident || '—'}</strong>
-              <small className={`status ${String(a.status || 'Unknown').toLowerCase().replace(/\s+/g, '-')}`}>
-                {a.status || 'Unknown'}
-              </small>
+              {names.length ? names.map((person, index) => <button className="table-link tenant-link" key={`${person.name}-${index}`} onClick={() => onPerson?.(person)}>{person.name}</button>) : <strong>—</strong>}
+              <small className={`status ${status.toLowerCase().replace(/\s+/g, '-')}`}>{status}</small>
             </span>
+            <span>{owners.length ? owners.map((person, index) => <button className="table-link tenant-link" key={`${person.id}-${index}`} onClick={() => onPerson?.(person)}>{person.name}</button>) : <button className="table-link tenant-link" onClick={() => onPerson?.({ name: canonicalOwner(a.ownerContract || a.ownerName || a.internalOwner || 'Owner not recorded'), role: 'Owner', apartmentIds: [a.id] })}>{canonicalOwner(a.ownerContract || a.ownerName || a.internalOwner || 'Owner not recorded')}</button>}</span>
             <b>{money(a.rent || 0)}</b>
-            <span className="muted">{a.due || '—'}</span>
-          </div>
-        ))}
+            <span className="muted"><b>{a.leaseStart || '—'} → {a.leaseEnd || '—'}</b><button className="table-link building-link" onClick={() => onBuilding?.(building)}>{building?.name || 'Building —'} · Entrance {a.entrance || '—'}</button><button className="table-link building-link" onClick={() => onApartment?.(a)}>Apt {a.number || a.appt || a.apptId || '—'} · {a.street || building?.street || ''} {a.streetNumber || building?.streetNumber || ''}</button></span>
+          </div>;
+        })}
       </div>
     </div>
   );
@@ -1659,8 +1678,9 @@ function MaintenanceView({ data }) {
 const ownerTone = (owner) => {
   const value = String(owner || '').toLowerCase();
   if (value.includes('amidar')) return 'owner-amidar';
-  if (value === 'hd' || value.includes('hd ')) return 'owner-hd';
-  if (value === 'mr' || value.includes('mr ')) return 'owner-mr';
+  if (value === 'hd' || value.includes('hd ') || value.includes('השקעות דרום') || value.includes('וייס זאב דוד')) return 'owner-hd';
+  if (value === 'ka' || value.includes('קרן אבירם') || value.includes('רוקון נאמנים') || value.includes('קון נאמנים')) return 'owner-ka';
+  if (value.includes('emmaleh') || value.includes('emalleh') || value.includes('עמלה')) return 'owner-emmaleh';
   return 'owner-individual';
 };
 const apartmentSort = (a, b) => Number(b.floor || 0) - Number(a.floor || 0) || String(b.number || b.appt || b.apptId || '').localeCompare(String(a.number || a.appt || a.apptId || ''), undefined, { numeric: true });
@@ -1682,6 +1702,8 @@ function ListView({ tab, data, selected, setSelected, onAdd, exportData, importD
   const [selectedApartment, setSelectedApartment] = useState(null);
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [selectedBuilding, setSelectedBuilding] = useState(null);
+  const [audit, setAudit] = useState(null);
+  const runAudit = () => { const missing = []; const conflicts = []; const incomplete = []; data.buildings.forEach((building) => { const records = data.apartments.filter((apartment) => apartment.buildingId === building.id); const byNumber = new Map(); records.forEach((apartment) => { const number = Number(apartment.number || apartment.appt || apartment.apptId); if (!Number.isFinite(number)) return; if (!byNumber.has(number)) byNumber.set(number, []); byNumber.get(number).push(apartment); }); const numbers = [...byNumber.keys()].sort((a, b) => a - b); if (numbers.length > 1) for (let number = numbers[0]; number <= numbers[numbers.length - 1]; number += 1) if (!byNumber.has(number)) missing.push({ building: building.name, address: building.address || `${building.street || ''} ${building.streetNumber || ''}`, apartment: number }); byNumber.forEach((items, number) => { const versions = new Set(items.map((item) => `${item.ownerContract || item.ownerName || item.internalOwner || 'Owner missing'} | ${item.tenantName || 'Tenant missing'}`)); if (versions.size > 1) conflicts.push({ building: building.name, apartment: number, versions: [...versions] }); items.forEach((item) => { if (!(item.ownerContract || item.ownerName || item.internalOwner) || !item.tenantName) incomplete.push({ building: building.name, apartment: number, missing: [!(item.ownerContract || item.ownerName || item.internalOwner) ? 'owner' : '', !item.tenantName ? 'tenant' : ''].filter(Boolean).join(' and ') }); }); }); }); setAudit({ missing, conflicts, incomplete, ranAt: new Date().toLocaleString() }); };
   const people = data.people || [];
   const [peopleRole, setPeopleRole] = useState('All');
   const peopleRows = people
@@ -1719,7 +1741,7 @@ function ListView({ tab, data, selected, setSelected, onAdd, exportData, importD
           </p>
         </div>
         <div>
-          <button className="outline small" onClick={onAdd}>
+              <button className="outline small" onClick={onAdd}>
             + Add
           </button>
           {tab === 'People' && (
@@ -1741,6 +1763,7 @@ function ListView({ tab, data, selected, setSelected, onAdd, exportData, importD
               <button className="outline small" onClick={exportData}>
                 Export backup
               </button>
+              {tab === 'Buildings' && <button className="outline small" onClick={runAudit}>Scan apartments</button>}
               <label className="outline small">
                 Import backup
                 <input type="file" accept="application/json" onChange={importData} />
@@ -1795,7 +1818,7 @@ function ListView({ tab, data, selected, setSelected, onAdd, exportData, importD
                     setSelectedBuilding(r);
                   }
                   if (tab === 'Apartments') setSelectedApartment(r);
-                  if (tab !== 'People') setSelectedPerson(r);
+                  if (tab === 'People') setSelectedPerson(r);
                 }}
               >
                 <b>{r.name || r.number || r.title}</b>
@@ -1818,6 +1841,7 @@ function ListView({ tab, data, selected, setSelected, onAdd, exportData, importD
                       .sort(apartmentSort)
                       .map((apartment) => (
                         <span
+                          className={`${ownerTone(apartment.ownerContract || apartment.internalOwner || apartment.ownerName)} ${apartment.status === 'Leased' ? 'apartment-leased' : ''}`}
                           key={apartment.id}
                           onClick={(event) => {
                             event.stopPropagation();
@@ -1832,6 +1856,7 @@ function ListView({ tab, data, selected, setSelected, onAdd, exportData, importD
               </button>
             ))}
       </div>
+      {tab === 'Buildings' && audit && <div className="audit-report"><b>Apartment scan · {audit.ranAt}</b><p>{audit.missing.length ? `Missing sequential apartments: ${audit.missing.map((item) => `${item.building} (${item.address}) · ${item.apartment}`).join(' | ')}` : 'No sequential apartment gaps found.'}</p><p>{audit.conflicts.length ? `Conflicting records: ${audit.conflicts.map((item) => `${item.building} · Apt ${item.apartment} · ${item.versions.join(' VS ')}`).join(' | ')}` : 'No conflicting owner/tenant versions found.'}</p><p>{audit.incomplete.length ? `Incomplete records: ${audit.incomplete.map((item) => `${item.building} · Apt ${item.apartment} missing ${item.missing}`).join(' | ')}` : 'All scanned apartments have an owner and tenant record.'}</p></div>}
       {!rows.length && <p className="empty">No records yet. Use Add to create your first one.</p>}
       {selectedApartment && (
         <div className="drawer-backdrop" onClick={() => setSelectedApartment(null)}>
@@ -1906,11 +1931,7 @@ function BuildingDrawer({ building, apartments, onApartment, onClose }) {
     });
   const floors = Math.max(Number(building.floors || 0), ...items.map((item) => Number(item.floor || 0)), 1);
   const ownerClass = (owner) => {
-    const value = String(owner || '').toLowerCase();
-    if (value.includes('amidar')) return 'owner-amidar';
-    if (value === 'hd' || value.includes('hd ')) return 'owner-hd';
-    if (value === 'mr' || value.includes('mr ')) return 'owner-mr';
-    return 'owner-individual';
+    return ownerTone(owner);
   };
   return (
     <aside className="side-drawer building-drawer" {...swipeHandlers}>
@@ -1935,7 +1956,7 @@ function BuildingDrawer({ building, apartments, onApartment, onClose }) {
               <div className="floor-label">Floor {floor}</div>
               <div className="floor-apartments">
                 {floorItems.length ? floorItems.map((apartment) => (
-                  <button className={`drawer-apartment ${ownerClass(apartment.internalOwner || apartment.ownerName)}`} key={apartment.id} onClick={() => onApartment(apartment)}>
+                  <button className={`drawer-apartment ${ownerClass(apartment.ownerContract || apartment.internalOwner || apartment.ownerName)} ${apartment.status === 'Leased' ? 'apartment-leased' : ''}`} key={apartment.id} onClick={() => onApartment(apartment)}>
                     <span><b>Apt {apartment.number || apartment.appt || apartment.apptId || '—'}</b><small>{apartment.internalOwner || apartment.ownerName || 'Individual owner'}</small></span>
                     <span><b>{apartment.size ? `${apartment.size} m²` : 'Size —'}</b><small>{apartment.rooms ? `${apartment.rooms} rooms` : 'Rooms —'} · Entrance {apartment.entrance || '—'}</small></span>
                     <strong>{money(apartment.rent || 0)}</strong>
@@ -1974,7 +1995,7 @@ function LegacyApartmentSidePanel({ apartment, buildings, people = [], data, onC
         <div>
           <span>Owner</span>
           <b>
-            {apartment.ownerName || fullPersonName(related.find((p) => p.role === 'Owner')) || 'Not added'}
+            {canonicalOwner(apartment.ownerContract || apartment.ownerName || apartment.internalOwner || fullPersonName(related.find((p) => p.role === 'Owner'))) || 'Not added'}
           </b>
         </div>
         <div>
@@ -2109,9 +2130,9 @@ function FinancialSummary({ rent, bills, events, transactions = [], transactionS
         {history.map((month) => (
           <button type="button" className="finance-history-point" key={month.month} title={`${month.month}: ${money(month.expense)} costs`}>
             <span>{month.month}</span>
-            <i style={{ height: `${Math.max(8, (month.income / rent) * 30)}px` }} />
+            <i style={{ height: `${Math.min(30, Math.max(8, rent ? (month.income / rent) * 30 : 8))}px` }} />
             <em
-              style={{ height: `${Math.max(6, (month.expense / Math.max(expenses, 1)) * 30)}px` }}
+              style={{ height: `${Math.min(30, Math.max(6, (month.expense / Math.max(expenses, 1)) * 30))}px` }}
             />
           </button>
         ))}
@@ -2155,7 +2176,7 @@ function ApartmentSidePanel({ apartment, buildings, people = [], data, onClose }
         <div>
           <span>Owner</span>
           <b>
-            {apartment.ownerName || fullPersonName(related.find((p) => p.role === 'Owner')) || 'Not added'}
+            {canonicalOwner(apartment.ownerContract || apartment.ownerName || apartment.internalOwner || fullPersonName(related.find((p) => p.role === 'Owner'))) || 'Not added'}
           </b>
         </div>
         <div>
@@ -2184,8 +2205,7 @@ function ApartmentSidePanel({ apartment, buildings, people = [], data, onClose }
         <div><span>Garden</span><b>{apartment.garden ? 'Yes' : 'No'}</b></div>
         <div><span>Invested</span><b>{apartment.invested ? money(apartment.invested) : '—'}</b></div>
         <div><span>Owner contract</span><b>{apartment.ownerContract || '—'}</b></div>
-        <div><span>Appt ID</span><b>{apartment.apptId || '—'}</b></div>
-        <div><span>Unique ID</span><b>{apartment.uniqueId || '—'}</b></div>
+        <div><span>Property identifiers</span><b>{apartment.uniqueId || '—'} / {apartment.apptId || '—'} / Unit - {apartment.renterUnit || apartment.renterCsv?.unit || '—'}</b></div>
         <div><span>Floor / Entrance</span><b>{apartment.floor ?? '—'} · {apartment.entrance || '—'}</b></div>
         <div><span>Size / Rooms</span><b>{apartment.size ? `${apartment.size} m²` : '—'} · {apartment.rooms || '—'}</b></div>
         <div><span>Parcel / Sub-parcel</span><b>{apartment.parcel || '—'} · {apartment.subA || '—'}</b></div>
@@ -2301,8 +2321,8 @@ function PersonDetails({ person, apartments, buildings, onClose }) {
   );
 }
 function PersonDetailsModal({ person, apartments, buildings, onClose }) {
-  const enriched = enrichPerson(person);
-  const related = apartments.filter((apartment) => enriched.apartmentIds?.includes(apartment.id));
+  const enriched = person || {};
+  const related = apartments.filter((apartment) => enriched.apartmentIds?.includes(apartment.id)).sort((a, b) => Number(a.renterUnit || a.renterCsv?.unit || 0) - Number(b.renterUnit || b.renterCsv?.unit || 0));
   const interactions = enriched.interactions || [];
   const total = interactions.reduce((sum, item) => sum + Number(item.cost || 0), 0);
   return (
@@ -2323,7 +2343,7 @@ function PersonDetailsModal({ person, apartments, buildings, onClose }) {
       {related.length ? (
         related.map((apartment) => (
           <div className="associated" key={apartment.id}>
-            <b>{apartment.number}</b>
+            <b>{apartment.renterUnit || apartment.renterCsv?.unit || 'Unit —'}</b>
             <span>{buildings.find((building) => building.id === apartment.buildingId)?.name}</span>
             <small>
               {money(apartment.rent)} · {apartment.status}

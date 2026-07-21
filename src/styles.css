@@ -250,6 +250,7 @@ header p {
 .metric small.orange {
   color: #df8a57;
 }
+.portfolio-summary,.ownership-summary{display:flex;align-items:center;gap:18px;min-height:94px}.portfolio-summary>span,.ownership-summary>span{align-self:flex-start}.portfolio-summary>div,.ownership-summary>div{min-width:76px}.portfolio-summary strong,.ownership-summary strong{margin:0}.portfolio-summary small,.ownership-summary small,.portfolio-summary em,.ownership-summary em{display:block;font-style:normal;font-size:10px;color:#8793a1}.portfolio-summary>em{margin-left:auto;color:#35a578;font-style:normal;font-size:11px}.ownership-summary>div em{margin-top:3px;color:#35a578}
 .grid {
   display: grid;
   grid-template-columns: 1.8fr 1fr;
