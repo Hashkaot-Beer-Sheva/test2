@@ -104,6 +104,7 @@ const parseRentersCsv = (text) => {
   }).filter((row) => row['יחידה'] || row['מספר'] || row['שמות']);
   const addressCounts = new Map(); rows.forEach((row) => { const key = `${row['רחוב'] || ''}|${row['מספר'] || ''}`; addressCounts.set(key, (addressCounts.get(key) || 0) + 1); });
   rows.forEach((row) => { const key = `${row['רחוב'] || ''}|${row['מספר'] || ''}`; const alternate = String(row['כתובתחלופית'] || '').replace(/ארנונה/gi, '').replace(/\s+/g, ' ').trim(); if (addressCounts.get(key) > 1 && alternate) { const match = alternate.match(/^(.+?)\s+(\d+(?:\/\d+)?[א-תA-Za-z]?)(?:\s|$)/); if (match) { row['רחוב'] = match[1].trim(); row['מספר'] = match[2].trim(); row.resolvedAlternateAddress = alternate; } } });
+  rows.forEach((row) => { row['רחוב'] = String(row['רחוב'] || '').replace(/ני["״׳']?לי/g, 'נילי').trim(); });
   return rows;
 };
 const transactionDate = (value) => {
@@ -232,15 +233,16 @@ function App() {
       const name = String(person.name || '').trim();
       if (!name) return;
       const phone = String(person.phone || '').trim();
-      const key = `${person.role || ''}-${canonicalOwner(name).toLowerCase()}`;
+      const key = canonicalOwner(name).toLowerCase();
       const previous = grouped.get(key);
-      grouped.set(key, previous ? { ...previous, idNumber: previous.idNumber || person.idNumber || '', permanentAddress: previous.permanentAddress || person.permanentAddress || '', phone: previous.phone || phone, email: previous.email || person.email || '', apartmentIds: [...new Set([...(previous.apartmentIds || []), ...(person.apartmentIds || [])])] } : { ...person, name, phone, apartmentIds: [...new Set(person.apartmentIds || [])] });
+      grouped.set(key, previous ? { ...previous, roles: [...new Set([...(previous.roles || [previous.role]).filter(Boolean), person.role].filter(Boolean))], idNumbers: [...new Set([...(previous.idNumbers || []), ...(person.idNumbers || []), person.idNumber].filter(Boolean))], idNumber: previous.idNumber || person.idNumber || '', permanentAddress: previous.permanentAddress || person.permanentAddress || '', phone: previous.phone || phone, email: previous.email || person.email || '', apartmentIds: [...new Set([...(previous.apartmentIds || []), ...(person.apartmentIds || [])])] } : { ...person, name, phone, roles: [person.role].filter(Boolean), idNumbers: [...new Set([...(person.idNumbers || []), person.idNumber].filter(Boolean))], apartmentIds: [...new Set(person.apartmentIds || [])] });
     };
     (data.people || []).forEach(addPerson);
     data.apartments.forEach((apartment) => {
-      const primaryOwner = leaseOwnerName(apartment.leaseOwner || apartment.ownerContract || apartment.ownerName || apartment.internalOwner);
+      const combinedCsvOwners = [apartment.ownerName, apartment.owner2].filter(Boolean).map((value) => String(value).trim()).filter((value, index, all) => all.indexOf(value) === index).join(' / ');
+      const primaryOwner = leaseOwnerName(apartment.leaseOwner || apartment.ownerContract || combinedCsvOwners || apartment.internalOwner);
       const groupOwner = groupOwnerName(apartment.groupOwner || primaryOwner);
-      if (primaryOwner) addPerson({ id: `csv-owner-${apartment.id}`, name: primaryOwner, role: 'Lease owner', phone: apartment.phone1, apartmentIds: [apartment.id], notes: 'Imported from master CSV' });
+      if (primaryOwner) addPerson({ id: `csv-owner-${apartment.id}`, name: primaryOwner, role: 'Lease owner', phone: apartment.phone1, idNumbers: [apartment.id1, apartment.id2].filter(Boolean), apartmentIds: [apartment.id], notes: 'Imported from master CSV' });
       if (groupOwner) addPerson({ id: `csv-group-owner-${apartment.id}`, name: groupOwner, role: 'Group owner', phone: '', apartmentIds: [apartment.id], notes: 'Owner group' });
       if (apartment.owner2) addPerson({ id: `csv-owner-${apartment.id}-2`, name: apartment.owner2, role: 'Owner', phone: apartment.phone2, apartmentIds: [apartment.id], notes: 'Imported from master CSV' });
     });
@@ -250,7 +252,8 @@ function App() {
   useEffect(() => {
     let changed = false;
     const apartments = data.apartments.map((apartment) => {
-      const renterOwner = String(apartment.renterCsv?.owner || apartment.ownerName || '').trim();
+      const csvOwners = [apartment.ownerName, apartment.owner2].filter(Boolean).map((value) => String(value).trim()).filter((value, index, all) => all.indexOf(value) === index).join(' / ');
+      const renterOwner = String(apartment.renterCsv?.owner || csvOwners || '').trim();
       if (!apartment.renterUnit || !renterOwner || renterOwner.toLowerCase() === 'individual owner') return apartment;
       const leaseOwner = leaseOwnerName(renterOwner);
       const groupOwner = groupOwnerName(leaseOwner);
@@ -346,17 +349,12 @@ function App() {
     <div className="app">
       <aside>
         <div className="brand">
-          <div className="brandmark">B</div>
+          <div className="brandmark"><img src="https://fivefortyinv.co.il/favicon.ico" alt="Five Forty Investments" onError={(event) => { event.currentTarget.style.display = 'none'; }} /></div>
           <div>
-            blockwise<span>PROPERTY OPS</span>
+            540 Investments<span>HASKAOT DAROM</span>
           </div>
         </div>
-        <div className="workspace">
-          <small>WORKSPACE</small>
-          <div className="select">
-            Be'er Sheva <b>⌄</b>
-          </div>
-        </div>
+        <div className="workspace-location">Be'er Sheva</div>
         <nav>
           {[
             ['Overview', '▦'],
@@ -400,7 +398,7 @@ function App() {
       <main>
         <header>
           <div>
-            <div className="crumb">WORKSPACE / {tab.toUpperCase()}</div>
+            <div className="crumb">540 INVESTMENTS / {tab.toUpperCase()}</div>
             <h1>{tab === 'Overview' ? 'Good morning, Effie' : tab}</h1>
             <p>
               {tab === 'Overview'
@@ -468,6 +466,7 @@ function App() {
                 building={selected}
                 apartments={apartments}
                 rent={rent}
+                data={data}
                 onAdd={() => setModal('apartment')}
                 onOpen={() => setTopSelected({ type: 'building', item: selected })}
               />
@@ -480,7 +479,7 @@ function App() {
         ) : tab === 'Pinui-Binui' ? (
           <PinuiUnified data={data} />
         ) : tab === 'Investments' ? (
-          <InvestedPropertiesView data={data} people={data.people} onApartment={(apartment) => setTopSelected({ type: 'apartment', item: apartment })} onPerson={(person) => setTopSelected({ type: 'person', item: person })} />
+          <InvestedPropertiesView data={data} people={data.people} onApartment={(apartment) => setTopSelected({ type: 'apartment', item: apartment })} onPerson={(person) => setTopSelected({ type: 'person', item: person })} onBuilding={(building) => setTopSelected({ type: 'building', item: building })} />
         ) : tab === 'Transactions' ? (
           <TransactionsView data={data} />
         ) : tab === 'Finance' ? (
@@ -518,7 +517,7 @@ function App() {
           <div className="drawer-backdrop" onClick={() => setTopSelected(null)}>
             <div onClick={(event) => event.stopPropagation()}>
               {topSelected.type === 'person' ? (
-                <PersonDetailsModal person={topSelected.item} apartments={data.apartments} buildings={data.buildings} onClose={() => setTopSelected(null)} />
+                <PersonDetailsModal person={topSelected.item} apartments={data.apartments} buildings={data.buildings} onApartment={(apartment) => setTopSelected({ type: 'apartment', item: apartment })} onBuilding={(building) => setTopSelected({ type: 'building', item: building })} onClose={() => setTopSelected(null)} />
               ) : topSelected.type === 'building' ? (
                 <BuildingDrawer
                   building={topSelected.item}
@@ -534,6 +533,7 @@ function App() {
                   buildings={data.buildings}
                   people={data.people}
                   data={data}
+                  onBuilding={(selectedBuilding) => setTopSelected({ type: 'building', item: selectedBuilding })}
                   onClose={() => setTopSelected(null)}
                 />
               )}
@@ -633,7 +633,7 @@ function LegacyMap({ buildings, selected, setSelected }) {
     </div>
   );
 }
-function Detail({ building, apartments, rent, onAdd, onOpen }) {
+function Detail({ building, apartments, rent, data, onAdd, onOpen }) {
   if (!building) return <div className="panel detail-panel">No buildings yet.</div>;
   const unitCount = apartments.reduce((total, apartment) => total + Math.max(1, String(apartment.renterUnit || apartment.renterCsv?.unit || '').split('/').map((unit) => unit.trim()).filter(Boolean).length), 0);
   const className = (apartments.find((a) => a.propertyClass) || {}).propertyClass;
@@ -668,29 +668,27 @@ function Detail({ building, apartments, rent, onAdd, onOpen }) {
         </div>
         <div>
           <b>
-            {apartments.filter((a) => a.status === 'Leased').reduce((total, a) => total + Math.max(1, String(a.renterUnit || a.renterCsv?.unit || '').split('/').map((unit) => unit.trim()).filter(Boolean).length), 0)}/{unitCount || building.units}
+            {Math.max(0, (unitCount || building.units) - apartments.filter((a) => a.status === 'Leased').reduce((total, a) => total + Math.max(1, String(a.renterUnit || a.renterCsv?.unit || '').split('/').map((unit) => unit.trim()).filter(Boolean).length), 0))}
           </b>
-          <small>Occupied</small>
+          <small>Vacancies</small>
         </div>
       </div>
-      <div className="detail-row">
-        <span>Zoning</span>
-        <b>{building.zone}</b>
-      </div>
-      <div className="detail-row">
-        <span>Monthly rent roll</span>
-        <b>{money(rent)}</b>
-      </div>
-      <div className="detail-row">
-        <span>Records</span>
-        <b>{apartments.length} loaded</b>
-      </div>
       <div className="ownership-stats"><b>Ownership / Pinui-Binui mix</b><div className="ownership-bars">{Object.entries(counts).map(([key, value]) => <div className={`ownership-bar-row ${key.toLowerCase()}`} key={key}><span><strong>{key}</strong><em>{value} · {pct(value)}</em></span><i style={{ width: pct(value) }} /></div>)}</div><small>Owned breakdown</small><div className="owned-breakdown">{Object.entries(ownedGroups).map(([key, value]) => <span key={key}><strong>{key}</strong> {value}</span>)}</div></div>
+      {data && <BuildingFinanceSummary building={building} apartments={apartments} data={data} />}
       <button className="outline" onClick={onAdd}>
         + Add apartment <span>→</span>
       </button>
     </div>
   );
+}
+function BuildingFinanceSummary({ building, apartments, data }) {
+  const ids = new Set(apartments.map((apartment) => apartment.id));
+  const transactions = (data?.transactions || []).filter((item) => ids.has(item.apartmentId)).sort((a, b) => transactionDate(b['Order Date']) - transactionDate(a['Order Date']));
+  const spent = transactions.reduce((sum, item) => sum + Number(String(item.Amount || 0).replace(/[^0-9.-]/g, '') || 0), 0);
+  const collected = apartments.reduce((sum, apartment) => sum + (apartment.status === 'Leased' ? Number(apartment.rent || 0) : 0), 0);
+  const months = Array.from({ length: 36 }, (_, index) => { const date = new Date(); date.setMonth(date.getMonth() - (35 - index), 1); const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`; const cost = transactions.filter((item) => { const d = transactionDate(item['Order Date']); return !Number.isNaN(d.getTime()) && `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === key; }).reduce((sum, item) => sum + Number(String(item.Amount || 0).replace(/[^0-9.-]/g, '') || 0), 0); return { key, label: date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }), net: collected - cost, cost }; });
+  const max = Math.max(...months.map((item) => Math.abs(item.net)), 1);
+  return <div className="building-finance-summary"><div className="building-finance-totals"><span className="spent"><b>↓ {money(spent)}</b><small>Total spent</small></span><span className="collected"><b>↑ {money(collected)}</b><small>Total collected</small></span></div><div className="building-cashflow"><div className="cashflow-bars">{months.map((item) => <button title={`${item.label}: ${money(item.net)}`} key={item.key} style={{ height: `${Math.max(4, Math.round(Math.abs(item.net) / max * 100))}%` }} className={item.net >= 0 ? 'positive' : 'negative'} />)}</div><small>Cash flow over the last 3 years · {building.name}</small></div><h3>Recent transactions</h3><div className="building-transaction-list">{transactions.map((item) => <div className="building-transaction" key={item.id || item.PurchaseId}><span>{item['Order Date'] || '—'} · {item.Description || item.Vendor || 'Transaction'}</span><b>{money(Number(String(item.Amount || 0).replace(/[^0-9.-]/g, '') || 0))}</b></div>)}{!transactions.length && <small className="muted">No transactions recorded for this building.</small>}</div></div>;
 }
 function ApartmentTable({ apartments, people = [], buildings = [], onApartment, onPerson, onBuilding }) {
   const [statusFilter, setStatusFilter] = useState('All');
@@ -1714,7 +1712,7 @@ const ownerTone = (owner) => {
   if (value.includes('emmaleh') || value.includes('emalleh') || value.includes('עמלה')) return 'owner-emmaleh';
   return 'owner-individual';
 };
-const apartmentSort = (a, b) => Number(b.floor || 0) - Number(a.floor || 0) || String(a.number || a.appt || a.apptId || '').localeCompare(String(b.number || b.appt || b.apptId || ''), undefined, { numeric: true });
+const apartmentSort = (a, b) => String(a.number || a.appt || a.apptId || '').localeCompare(String(b.number || b.appt || b.apptId || ''), undefined, { numeric: true, sensitivity: 'base' });
 const normalizeApartmentNumber = (value) => {
   const text = String(value ?? '').trim();
   return /^\d+$/.test(text) ? String(Number(text)) : text;
@@ -1736,7 +1734,7 @@ function InvestedPropertiesViewClean({ data, people = [], onApartment, onPerson 
   const buildingRows = (building, group) => rows.filter((row) => row.apartment.buildingId === building.id && row.group === group);
   return <section className="panel list-view invested-properties"><div className="panel-head invested-header"><div><h2>Invested Properties</h2><p>{allRows.length} יחידה records</p><div className="invested-counts"><span className="invested-group-heading">Weiss · {totals('Weiss')}<small>apartments</small></span><span className="invested-group-heading">Morris · {totals('Morris')}<small>apartments</small></span></div></div><div className="invested-controls"><input className="search" placeholder="Search…" value={query} onChange={(e) => setQuery(e.target.value)} /><select value={status} onChange={(e) => setStatus(e.target.value)}><option>All</option><option>Leased</option><option>Vacant</option><option>About to be vacant</option><option>About to be leased</option></select><select multiple value={groups} onChange={(e) => setGroups([...e.target.selectedOptions].map((o) => o.value))}><option value="Weiss">Weiss</option><option value="Morris">Morris</option></select><select value={period} onChange={(e) => setPeriod(e.target.value)}><option value="all">Costs/rent · All time</option><option value="month">Last month</option><option value="quarter">Last quarter</option><option value="half">Last 6 months</option><option value="year">Last year</option><option value="twoYears">Last 2 years</option></select></div></div><div className="invested-building-list">{data.buildings.slice().sort(buildingSort).map((building) => { const weiss = buildingRows(building, 'Weiss'); const morris = buildingRows(building, 'Morris'); if (!weiss.length && !morris.length) return null; return <section className="building-group" key={building.id}><div className="group-heading"><h3>{building.name}</h3><span>{weiss.length + morris.length} records</span></div><div className="invested-column"><h4>Weiss</h4>{weiss.map(renderRow)}</div><div className="invested-column"><h4>Morris</h4>{morris.map(renderRow)}</div></section>; })}</div>{!rows.length && <p className="empty">No matching renter records.</p>}</section>;
 }
-function InvestedPropertiesView({ data, people = [], onApartment, onPerson }) {
+function InvestedPropertiesView({ data, people = [], onApartment, onPerson, onBuilding }) {
   const [statusFilter, setStatusFilter] = useState('All'); const [selectedGroups, setSelectedGroups] = useState(['Weiss', 'Morris']); const [period, setPeriod] = useState('all'); const [query, setQuery] = useState(''); const groupFilter = selectedGroups.length === 1 ? selectedGroups[0] : ''; const setGroupFilter = (group) => setSelectedGroups(group === 'All' ? ['Weiss', 'Morris'] : (selectedGroups.includes(group) ? selectedGroups.filter((item) => item !== group) : [...selectedGroups, group]));
   const investedGroup = (apartment) => { const value = String(apartment.groupOwner || groupOwnerName(apartment.leaseOwner || apartment.ownerContract || apartment.ownerName || apartment.internalOwner || '')).toLowerCase(); if (value.includes('weiss') || value.includes('השקעות דרום') || value.includes('וייס')) return 'Weiss'; if (value.includes('morris') || value.includes('רוקון') || value.includes('קרן אבירם') || value.includes('מוריס')) return 'Morris'; return 'Other'; };
   const apartments = (data.apartments || []).filter((apartment) => apartment.renterUnit || apartment.renterCsv?.unit || apartment.renterRecords?.length);
@@ -1749,7 +1747,7 @@ function InvestedPropertiesView({ data, people = [], onApartment, onPerson }) {
   const moneyValue = (items) => items.reduce((sum, item) => sum + Number(String(item.Amount || 0).replace(/[^0-9.-]/g, '') || 0), 0);
   const periodRent = (record) => { if (!record.rent) return 0; if (!periodStart) return Number(record.rent) * 12; const start = record.leaseStart ? new Date(record.leaseStart) : new Date(0); const end = record.leaseEnd ? new Date(record.leaseEnd) : new Date(8640000000000000); const from = start > periodStart ? start : periodStart; const to = end < new Date() ? end : new Date(); return Math.max(0, Math.ceil((to - from) / 86400000) / 30.44) * Number(record.rent); };
   const counts = (group) => { const source = totals.find((item) => item.group === group)?.rows || []; return ['Leased', 'Vacant', 'About to be vacant', 'About to be leased'].map((status) => `${status}: ${source.filter((apartment) => statusOf(apartment, apartment.renterRecords?.[0]) === status).length}`).join(' · '); };
-  return <section className="panel list-view invested-properties"><div className="panel-head"><div><h2>Invested Properties</h2><p>Renters CSV apartments · {rows.length} יחידה records</p><div className="invested-counts"><button className={groupFilter === 'All' ? 'active' : ''} onClick={() => setGroupFilter('All')}>All {rows.length}<small>{counts('All')}</small></button>{totals.map(({ group, rows: groupRows }) => <button className={groupFilter === group ? 'active' : ''} key={group} onClick={() => setGroupFilter(group)}>{group} {groupRows.length}<small>{counts(group)}</small></button>)}</div></div><div className="invested-controls"><input className="search" placeholder="Search unit, tenant, owner, ID, address…" value={query} onChange={(event) => setQuery(event.target.value)} /><select className="filter-select" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}><option>All</option><option>Leased</option><option>Vacant</option><option>About to be vacant</option><option>About to be leased</option></select><select className="filter-select" value={period} onChange={(event) => setPeriod(event.target.value)}><option value="all">Costs/rent · All time</option><option value="month">Last month</option><option value="quarter">Last quarter</option><option value="half">Last 6 months</option><option value="year">Last year</option><option value="twoYears">Last 2 years</option></select></div></div><div className="invested-building-list">{[...data.buildings].sort(buildingSort).map((building) => { const buildingRows = rows.filter((row) => row.apartment.buildingId === building.id); if (!buildingRows.length) return null; return <section className="building-group" key={building.id}><div className="group-heading"><h3>{building.name}</h3><span>{buildingRows.length} records</span></div><div className="invested-rows">{buildingRows.map(({ apartment, record, status }) => { const leaseOwner = leaseOwnerName(apartment.leaseOwner || apartment.ownerContract || apartment.ownerName || apartment.internalOwner || 'Owner not recorded'); const groupOwner = groupOwnerName(apartment.groupOwner || leaseOwner); const tenantNames = record.tenantNames || []; const costs = moneyValue(transactionsFor(apartment)); const rent = periodRent(record); const personFor = (name, role) => onPerson(makePerson(name, role, apartment)); return <div className={`invested-row ${ownerTone(groupOwner)}`} key={`${apartment.id}-${record.unit}`}><button className="table-link unit-link" onClick={() => onApartment(apartment)}><b>{record.unit || '—'}</b><small>יחידה</small></button><span><button className="table-link" onClick={() => personFor(leaseOwner, 'Lease owner')}>{leaseOwner}</button><button className="table-link group-link" onClick={() => personFor(groupOwner, 'Group owner')}>Group: {groupOwner}</button></span><span><button className="table-link" onClick={() => onApartment(apartment)}><b>{apartment.uniqueId || '—'} / {apartment.apptId || '—'}</b></button><small>Apt {apartment.number || '—'} · Floor {apartment.floor || '—'} · {apartment.size ? `${apartment.size} sq ft` : 'Size —'}</small></span><span><b>Tenant information</b>{tenantNames.length ? tenantNames.map((name, index) => <button className="table-link tenant-link" key={`${name}-${index}`} onClick={() => personFor(name, 'Tenant')}>{name}</button>) : <small>Vacant</small>}<small>{record.phone || 'No phone'} · {record.email || 'No email'}</small></span><span><b>{money(record.rent || apartment.rent || 0)}</b><small>{record.leaseStart || '—'} → {record.leaseEnd || '—'} · {status}</small></span><span className="invested-finance"><b className="cost-value">↓ {money(costs)}</b><b className="rent-value">↑ {money(rent)}</b><b className="net-value">Total {money(rent - costs)}</b></span></div>; })}</div></section>; })}</div>{!rows.length && <p className="empty">No renters CSV apartments loaded yet.</p>}</section>;
+  return <section className="panel list-view invested-properties"><div className="panel-head"><div><h2>Invested Properties</h2><p>Renters CSV apartments · {rows.length} יחידה records</p><div className="invested-counts"><button className={groupFilter === 'All' ? 'active' : ''} onClick={() => setGroupFilter('All')}>All {rows.length}<small>{counts('All')}</small></button>{totals.map(({ group, rows: groupRows }) => <button className={groupFilter === group ? 'active' : ''} key={group} onClick={() => setGroupFilter(group)}>{group} {groupRows.length}<small>{counts(group)}</small></button>)}</div></div><div className="invested-controls"><input className="search" placeholder="Search unit, tenant, owner, ID, address…" value={query} onChange={(event) => setQuery(event.target.value)} /><select className="filter-select" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}><option>All</option><option>Leased</option><option>Vacant</option><option>About to be vacant</option><option>About to be leased</option></select><select className="filter-select" value={period} onChange={(event) => setPeriod(event.target.value)}><option value="all">Costs/rent · All time</option><option value="month">Last month</option><option value="quarter">Last quarter</option><option value="half">Last 6 months</option><option value="year">Last year</option><option value="twoYears">Last 2 years</option></select></div></div><div className="invested-building-list">{[...data.buildings].sort(buildingSort).map((building) => { const buildingRows = rows.filter((row) => row.apartment.buildingId === building.id); if (!buildingRows.length) return null; return <section className="building-group" key={building.id}><div className="group-heading"><h3><button className="invested-building-link" onClick={() => onBuilding?.(building)}>{building.name}</button></h3><span>{buildingRows.length} records</span></div><div className="invested-rows">{buildingRows.map(({ apartment, record, status }) => { const leaseOwner = leaseOwnerName(apartment.leaseOwner || apartment.ownerContract || apartment.ownerName || apartment.internalOwner || 'Owner not recorded'); const groupOwner = groupOwnerName(apartment.groupOwner || leaseOwner); const tenantNames = record.tenantNames || []; const costs = moneyValue(transactionsFor(apartment)); const rent = periodRent(record); const personFor = (name, role) => onPerson(makePerson(name, role, apartment)); return <div className={`invested-row ${ownerTone(groupOwner)}`} key={`${apartment.id}-${record.unit}`}><button className="table-link unit-link" onClick={() => onApartment(apartment)}><b>{record.unit || '—'}</b><small>יחידה</small></button><span><button className="table-link" onClick={() => personFor(leaseOwner, 'Lease owner')}>{leaseOwner}</button><button className="table-link group-link" onClick={() => personFor(groupOwner, 'Group owner')}>Group: {groupOwner}</button></span><span><button className="table-link" onClick={() => onApartment(apartment)}><b>{apartment.uniqueId || '—'} / {apartment.apptId || '—'}</b></button><small>Apt {apartment.number || '—'} · Floor {apartment.floor || '—'} · {apartment.size ? `${apartment.size} sq ft` : 'Size —'}</small></span><span><b>Tenant information</b>{tenantNames.length ? tenantNames.map((name, index) => <button className="table-link tenant-link" key={`${name}-${index}`} onClick={() => personFor(name, 'Tenant')}>{name}</button>) : <small>Vacant</small>}<small>{record.phone || 'No phone'} · {record.email || 'No email'}</small></span><span><b>{money(record.rent || apartment.rent || 0)}</b><small>{record.leaseStart || '—'} → {record.leaseEnd || '—'} · {status}</small></span><span className="invested-finance"><b className="cost-value">↓ {money(costs)}</b><b className="rent-value">↑ {money(rent)}</b><b className="net-value">Total {money(rent - costs)}</b></span></div>; })}</div></section>; })}</div>{!rows.length && <p className="empty">No renters CSV apartments loaded yet.</p>}</section>;
   return <section className="panel list-view invested-properties"><div className="panel-head"><div><h2>Invested Properties</h2><p>Renters CSV apartments, grouped by building and shown by יחידה.</p></div><div><select className="filter-select" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}><option>All</option><option>Leased</option><option>Vacant</option><option>About to be vacant</option><option>About to be leased</option></select><select className="filter-select" value={period} onChange={(event) => setPeriod(event.target.value)}><option value="all">Costs · All time</option><option value="month">Costs · Last month</option><option value="quarter">Costs · Last quarter</option><option value="half">Costs · Last 6 months</option><option value="year">Costs · Last year</option><option value="twoYears">Costs · Last 2 years</option></select></div></div><div className="invested-building-list">{[...data.buildings].sort(buildingSort).map((building) => { const buildingRows = rows.filter((row) => row.apartment.buildingId === building.id); if (!buildingRows.length) return null; return <section className="building-group" key={building.id}><div className="group-heading"><h3>{building.name}</h3><span>{buildingRows.length} יחידה records</span></div><div className="invested-rows">{buildingRows.map(({ apartment, record, status }) => <div className={`invested-row ${ownerTone(apartment.groupOwner || apartment.leaseOwner || apartment.ownerName)}`} key={`${apartment.id}-${record.unit}`}><button className="table-link" onClick={() => onApartment(apartment)}><b>{record.unit || '—'}</b></button><span><b>{leaseOwnerName(apartment.leaseOwner || apartment.ownerName || 'Owner not recorded')}</b><small>Group: {groupOwnerName(apartment.groupOwner || apartment.leaseOwner || apartment.ownerName)}</small></span><span><b>{apartment.uniqueId || '—'}</b><small>{apartment.apptId || '—'} · Apt {apartment.number || '—'}</small></span><span>{record.tenantNames?.length ? record.tenantNames.join(', ') : 'Vacant'}<small>{record.phone || 'No phone'} · {record.email || 'No email'}</small></span><span>{money(record.rent || apartment.rent || 0)}<small>{record.leaseStart || '—'} → {record.leaseEnd || '—'} · {status}</small></span><button className="cost-pill" onClick={() => onApartment(apartment)}>{money(transactionCost(apartment))}<small>costs</small></button></div>)}</div></section>})}</div>{!rows.length && <p className="empty">No renters CSV apartments loaded yet.</p>}</section>;
 }
 function TransactionsView({ data }) {
@@ -1798,6 +1796,7 @@ function ListView({ tab, data, selected, setSelected, onAdd, exportData, importD
       <div className="panel-head">
         <div>
           <h2>{tab} register</h2>
+          {tab === 'Buildings' && <div className="building-tab-legend"><span className="owner-amidar">Amidar</span><span className="owner-weiss">Weiss</span><span className="owner-morris">Morris</span><span className="owner-emmaleh">Emmaleh</span><span className="owner-individual">Other</span></div>}
           <p>
             {tab === 'People'
               ? 'Owners, tenants, vendors, and professional contacts.'
@@ -1893,7 +1892,7 @@ function ListView({ tab, data, selected, setSelected, onAdd, exportData, importD
                 </span>
                 <small>
                   {tab === 'People'
-                    ? <>{r.phone || 'Phone not recorded'} · {r.email || 'Email not recorded'}<div className="person-apartment-groups">{apartmentGroupsFor(r).map((group) => <div className="person-apartment-group" key={group.buildingName}><b>{group.buildingName}</b><span>{group.apartments.map((apartment) => <button type="button" className="person-apartment-link" key={apartment.id} onClick={(event) => { event.stopPropagation(); setSelectedApartment(apartment); }}>{apartment.apptId || apartment.number || 'Apartment'}</button>)}</span></div>)}</div></>
+                    ? <>{r.phone || 'Phone not recorded'} · {r.email || 'Email not recorded'}<div className="person-apartment-groups">{apartmentGroupsFor(r).map((group) => <div className="person-apartment-group" key={group.buildingName}><b>{group.buildingName}</b><span>{group.apartments.map((apartment) => <button type="button" className="person-apartment-link" key={apartment.id} onClick={(event) => { event.stopPropagation(); setSelectedApartment(apartment); }}>Apt {apartment.number || apartment.appt || '—'}</button>)}</span></div>)}</div></>
                     : r.units
                       ? `${r.units} apartments · ${r.floors} floors`
                       : r.rent
@@ -1956,6 +1955,8 @@ function ListView({ tab, data, selected, setSelected, onAdd, exportData, importD
               person={selectedPerson}
               apartments={data.apartments}
               buildings={data.buildings}
+              onBuilding={(building) => { setSelectedBuilding(building); setSelectedPerson(null); }}
+              onApartment={setSelectedApartment}
               onClose={() => setSelectedPerson(null)}
             />
           </div>
@@ -1982,12 +1983,13 @@ function useSwipeToClose(onClose) {
   };
 }
 
+function BuildingMapPreview({ building }) { const mapRef = React.useRef(null); const leafletRef = React.useRef(null); useEffect(() => { if (!window.L || !mapRef.current || leafletRef.current) return undefined; const lat = Number(building.lat); const lng = Number(building.lng); const hasCoordinates = Number.isFinite(lat) && Number.isFinite(lng); const map = window.L.map(mapRef.current, { zoomControl: true, attributionControl: true }).setView(hasCoordinates ? [lat, lng] : [31.2639, 34.7998], hasCoordinates ? 17 : 15); window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' }).addTo(map); if (hasCoordinates) window.L.marker([lat, lng]).addTo(map).bindPopup(`<b>${building.name || 'Building'}</b><br>${lat.toFixed(6)}, ${lng.toFixed(6)}`).openPopup(); leafletRef.current = map; setTimeout(() => map.invalidateSize(), 50); return () => { map.remove(); leafletRef.current = null; }; }, [building]); return <div className="building-map-preview" ref={mapRef}><span>Loading map…</span></div>; }
 function BuildingDrawer({ building, apartments, onApartment, onClose }) {
   const swipeHandlers = useSwipeToClose(onClose);
   const items = apartments
     .filter((apartment) => apartment.buildingId === building.id)
-    .sort((a, b) => String(a.number || a.appt || a.apptId || '').localeCompare(
-        String(b.number || b.appt || b.apptId || ''),
+    .sort((a, b) => String(b.number || b.appt || b.apptId || '').localeCompare(
+        String(a.number || a.appt || a.apptId || ''),
         undefined,
         { numeric: true }
       ));
@@ -2009,9 +2011,9 @@ function BuildingDrawer({ building, apartments, onApartment, onClose }) {
         <b>{items.length}</b>
         <span>loaded apartments</span>
       </div>
-      <h3>Apartment register</h3>
+      <h3>Apartment register</h3><div className="apartment-register-legend"><span className="owner-amidar">Amidar</span><span className="owner-weiss">Weiss</span><span className="owner-morris">Morris</span><span className="owner-emmaleh">Emmaleh</span><span className="owner-individual">Other</span></div>
       <div className="floor-grid">
-        {Array.from({ length: floors + 1 }, (_, index) => floors - index).map((floor) => {
+        {Array.from({ length: floors + 1 }, (_, index) => index).sort((a, b) => b - a).map((floor) => {
           const floorItems = items.filter((apartment) => Number(apartment.floor || 0) === floor);
           return (
             <div className="floor-row" key={floor}>
@@ -2029,7 +2031,7 @@ function BuildingDrawer({ building, apartments, onApartment, onClose }) {
           );
         })}
       </div>
-      <div className="owner-legend"><span className="owner-amidar">Amidar</span><span className="owner-weiss">Weiss</span><span className="owner-morris">Morris</span><span className="owner-emmaleh">Emmaleh</span><span className="owner-individual">Other</span></div>
+      <div className="building-flat-apartments">{items.map((apartment) => <button className={`drawer-apartment ${ownerClass(apartment.ownerContract || apartment.internalOwner || apartment.ownerName)} ${apartment.status === 'Leased' ? 'apartment-leased' : ''}`} key={`flat-${apartment.id}`} onClick={() => onApartment(apartment)}><b>Apt {apartment.number || apartment.appt || apartment.apptId || '—'}</b><span>{apartment.internalOwner || apartment.ownerName || 'Individual owner'}</span><strong>{money(apartment.rent || 0)}</strong></button>)}</div><div className="owner-legend"><span className="owner-amidar">Amidar</span><span className="owner-weiss">Weiss</span><span className="owner-morris">Morris</span><span className="owner-emmaleh">Emmaleh</span><span className="owner-individual">Other</span></div><div className="building-static-map"><BuildingMapPreview building={building} /><small>{building.lat && building.lng ? `${Number(building.lat).toFixed(6)}, ${Number(building.lng).toFixed(6)}` : 'Building coordinates not available'}</small></div>
     </aside>
   );
 }
@@ -2207,7 +2209,7 @@ function FinancialSummary({ rent, bills, events, transactions = [], transactionS
     </div>
   );
 }
-function ApartmentSidePanel({ apartment, buildings, people = [], data, onClose }) {
+function ApartmentSidePanel({ apartment, buildings, people = [], data, onBuilding, onClose }) {
   const [transactionSearch, setTransactionSearch] = useState('');
   const swipeHandlers = useSwipeToClose(onClose);
   const building = buildings.find((item) => item.id === apartment.buildingId);
@@ -2225,7 +2227,7 @@ function ApartmentSidePanel({ apartment, buildings, people = [], data, onClose }
       </button>
       <div className="eyebrow">APARTMENT DETAILS</div>
       <h2>
-        {apartment.number} · {building?.name}
+        {apartment.number} · <button className="drawer-building-link" onClick={() => building && onBuilding?.(building)}>{building?.name}</button>
       </h2>
       <p className="muted">
         {isInvestedGroup ? (apartmentStatus === 'Leased' ? `Leased · ${money(apartment.rent)} per month` : 'Vacant') : 'Apartment details'}
@@ -2369,7 +2371,7 @@ function PersonDetails({ person, apartments, buildings, onClose }) {
     </div>
   );
 }
-function PersonDetailsModal({ person, apartments, buildings, onClose }) {
+function PersonDetailsModal({ person, apartments, buildings, onBuilding, onApartment, onClose }) {
   const enriched = person || {};
   const related = apartments.filter((apartment) => enriched.apartmentIds?.includes(apartment.id)).sort((a, b) => Number(a.renterUnit || a.renterCsv?.unit || 0) - Number(b.renterUnit || b.renterCsv?.unit || 0));
   const interactions = enriched.interactions || [];
@@ -2381,19 +2383,21 @@ function PersonDetailsModal({ person, apartments, buildings, onClose }) {
       </button>
       <div className="eyebrow">PERSON PROFILE</div>
       <h2>{enriched.name}</h2>
-      <p className="muted">{enriched.role}</p>
+      <p className="muted">{enriched.roles?.join(' · ') || enriched.role}</p>
       <div className="person-contact">
         <b>{enriched.phone}</b>
         <span>{enriched.email}</span>
         <small>Preferred contact: {enriched.preferredContact}</small>
         <small>Notes: {enriched.notes}</small>
+        {enriched.idNumbers?.length > 0 && <small>ID numbers: {enriched.idNumbers.join(' · ')}</small>}
       </div>
       <h3>Associated apartments</h3>
       {related.length ? (
         related.map((apartment) => (
           <div className="associated" key={apartment.id}>
-            <b>{apartment.renterUnit || apartment.renterCsv?.unit || 'Unit missing — re-import renters CSV'}</b>
-            <span>{buildings.find((building) => building.id === apartment.buildingId)?.name}</span>
+            <button className="person-apartment-button" onClick={() => onApartment?.(apartment)}>Apt {apartment.number || apartment.appt || apartment.apptId || '—'}</button>
+            <small>UniqueID {apartment.uniqueId || '—'} · Unit {apartment.renterUnit || apartment.renterCsv?.unit || '—'}</small>
+            <button className="person-building-button" onClick={() => onBuilding?.(buildings.find((building) => building.id === apartment.buildingId))}>{buildings.find((building) => building.id === apartment.buildingId)?.name}</button>
             <small>
               {money(apartment.rent)} · {apartment.status}
             </small>
