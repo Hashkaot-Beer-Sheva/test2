@@ -1,0 +1,456 @@
+0 verbose cli C:\Program Files\nodejs\node.exe C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js
+1 info using npm@11.16.0
+2 info using node@v24.18.0
+3 silly config load:file:C:\Program Files\nodejs\node_modules\npm\npmrc
+4 silly config load:file:C:\Users\EffieLandau\Documents\Codex\2026-07-14\hi\.npmrc
+5 silly config load:file:C:\Users\EffieLandau\.npmrc
+6 silly config load:file:C:\Users\EffieLandau\AppData\Roaming\npm\etc\npmrc
+7 verbose title npm install jszip
+8 verbose argv "install" "jszip" "--cache" ".npm-cache"
+9 verbose logfile logs-max:10 dir:C:\Users\EffieLandau\Documents\Codex\2026-07-14\hi\.npm-cache\_logs\2026-08-19T23_11_16_133Z-
+10 verbose logfile C:\Users\EffieLandau\Documents\Codex\2026-07-14\hi\.npm-cache\_logs\2026-08-19T23_11_16_133Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+13 silly idealTree buildDeps
+14 silly fetch manifest jszip@*
+15 silly packumentCache full:https://registry.npmjs.org/jszip cache-miss
+16 http fetch GET 200 https://registry.npmjs.org/jszip 333ms (cache miss)
+17 silly packumentCache full:https://registry.npmjs.org/jszip set size:undefined disposed:false
+18 silly placeDep ROOT jszip@3.10.1 OK for: project-site@0.1.0 want: *
+19 silly fetch manifest lie@~3.3.0
+20 silly packumentCache full:https://registry.npmjs.org/lie cache-miss
+21 silly fetch manifest pako@~1.0.2
+22 silly packumentCache full:https://registry.npmjs.org/pako cache-miss
+23 silly fetch manifest setimmediate@^1.0.5
+24 silly packumentCache full:https://registry.npmjs.org/setimmediate cache-miss
+25 silly fetch manifest readable-stream@~2.3.6
+26 silly packumentCache full:https://registry.npmjs.org/readable-stream cache-miss
+27 http fetch GET 200 https://registry.npmjs.org/lie 94ms (cache miss)
+28 silly packumentCache full:https://registry.npmjs.org/lie set size:undefined disposed:false
+29 http fetch GET 200 https://registry.npmjs.org/npm 627ms
+30 http fetch GET 200 https://registry.npmjs.org/pako 322ms (cache miss)
+31 silly packumentCache full:https://registry.npmjs.org/pako set size:undefined disposed:false
+32 http fetch GET 200 https://registry.npmjs.org/readable-stream 344ms (cache miss)
+33 silly packumentCache full:https://registry.npmjs.org/readable-stream set size:undefined disposed:false
+34 http fetch GET 200 https://registry.npmjs.org/setimmediate 439ms (cache miss)
+35 silly packumentCache full:https://registry.npmjs.org/setimmediate set size:undefined disposed:false
+36 silly placeDep ROOT lie@3.3.0 OK for: jszip@3.10.1 want: ~3.3.0
+37 silly placeDep ROOT pako@1.0.11 OK for: jszip@3.10.1 want: ~1.0.2
+38 silly placeDep ROOT readable-stream@2.3.8 OK for: jszip@3.10.1 want: ~2.3.6
+39 silly placeDep ROOT setimmediate@1.0.5 OK for: jszip@3.10.1 want: ^1.0.5
+40 silly fetch manifest immediate@~3.0.5
+41 silly packumentCache full:https://registry.npmjs.org/immediate cache-miss
+42 silly fetch manifest isarray@~1.0.0
+43 silly packumentCache full:https://registry.npmjs.org/isarray cache-miss
+44 silly fetch manifest inherits@~2.0.3
+45 silly packumentCache full:https://registry.npmjs.org/inherits cache-miss
+46 silly fetch manifest safe-buffer@~5.1.1
+47 silly packumentCache full:https://registry.npmjs.org/safe-buffer cache-miss
+48 silly fetch manifest core-util-is@~1.0.0
+49 silly packumentCache full:https://registry.npmjs.org/core-util-is cache-miss
+50 silly fetch manifest string_decoder@~1.1.1
+51 silly packumentCache full:https://registry.npmjs.org/string_decoder cache-miss
+52 silly fetch manifest util-deprecate@~1.0.1
+53 silly packumentCache full:https://registry.npmjs.org/util-deprecate cache-miss
+54 silly fetch manifest process-nextick-args@~2.0.0
+55 silly packumentCache full:https://registry.npmjs.org/process-nextick-args cache-miss
+56 http fetch GET 200 https://registry.npmjs.org/core-util-is 156ms (cache miss)
+57 silly packumentCache full:https://registry.npmjs.org/core-util-is set size:undefined disposed:false
+58 http fetch GET 200 https://registry.npmjs.org/immediate 171ms (cache miss)
+59 silly packumentCache full:https://registry.npmjs.org/immediate set size:undefined disposed:false
+60 http fetch GET 200 https://registry.npmjs.org/inherits 175ms (cache miss)
+61 silly packumentCache full:https://registry.npmjs.org/inherits set size:undefined disposed:false
+62 http fetch GET 200 https://registry.npmjs.org/safe-buffer 177ms (cache miss)
+63 silly packumentCache full:https://registry.npmjs.org/safe-buffer set size:undefined disposed:false
+64 http fetch GET 200 https://registry.npmjs.org/isarray 265ms (cache miss)
+65 silly packumentCache full:https://registry.npmjs.org/isarray set size:undefined disposed:false
+66 http fetch GET 200 https://registry.npmjs.org/util-deprecate 299ms (cache miss)
+67 silly packumentCache full:https://registry.npmjs.org/util-deprecate set size:undefined disposed:false
+68 http fetch GET 200 https://registry.npmjs.org/process-nextick-args 330ms (cache miss)
+69 silly packumentCache full:https://registry.npmjs.org/process-nextick-args set size:undefined disposed:false
+70 http fetch GET 200 https://registry.npmjs.org/string_decoder 333ms (cache miss)
+71 silly packumentCache full:https://registry.npmjs.org/string_decoder set size:undefined disposed:false
+72 silly placeDep ROOT immediate@3.0.6 OK for: lie@3.3.0 want: ~3.0.5
+73 silly placeDep ROOT core-util-is@1.0.3 OK for: readable-stream@2.3.8 want: ~1.0.0
+74 silly placeDep ROOT inherits@2.0.4 OK for: readable-stream@2.3.8 want: ~2.0.3
+75 silly placeDep ROOT isarray@1.0.0 OK for: readable-stream@2.3.8 want: ~1.0.0
+76 silly placeDep ROOT process-nextick-args@2.0.1 OK for: readable-stream@2.3.8 want: ~2.0.0
+77 silly placeDep ROOT safe-buffer@5.1.2 OK for: readable-stream@2.3.8 want: ~5.1.1
+78 silly placeDep ROOT string_decoder@1.1.1 OK for: readable-stream@2.3.8 want: ~1.1.1
+79 silly placeDep ROOT util-deprecate@1.0.2 OK for: readable-stream@2.3.8 want: ~1.0.1
+80 silly reify mark retired [
+80 silly reify   'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\@oxc-project\\types'
+80 silly reify ]
+81 silly reify mark retired [
+81 silly reify   'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\@rolldown\\binding-win32-x64-msvc'
+81 silly reify ]
+82 silly reify mark retired [
+82 silly reify   'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\detect-libc'
+82 silly reify ]
+83 silly reify mark retired [
+83 silly reify   'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\fdir'
+83 silly reify ]
+84 silly reify mark retired [
+84 silly reify   'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\lightningcss'
+84 silly reify ]
+85 silly reify mark retired [
+85 silly reify   'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\lightningcss-win32-x64-msvc'
+85 silly reify ]
+86 silly reify mark retired [
+86 silly reify   'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\picomatch'
+86 silly reify ]
+87 silly reify mark retired [
+87 silly reify   'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\rolldown',
+87 silly reify   'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\.bin\\rolldown',
+87 silly reify   'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\.bin\\rolldown.cmd',
+87 silly reify   'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\.bin\\rolldown.ps1'
+87 silly reify ]
+88 silly reify mark retired [
+88 silly reify   'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\tinyglobby'
+88 silly reify ]
+89 silly reify mark retired [
+89 silly reify   'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\vite',
+89 silly reify   'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\.bin\\vite',
+89 silly reify   'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\.bin\\vite.cmd',
+89 silly reify   'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\.bin\\vite.ps1'
+89 silly reify ]
+90 silly reify moves {
+90 silly reify   'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\@oxc-project\\types': 'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\@oxc-project\\.types-LPW1vLtw',
+90 silly reify   'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\@rolldown\\binding-win32-x64-msvc': 'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\@rolldown\\.binding-win32-x64-msvc-oDMmItdf',
+90 silly reify   'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\detect-libc': 'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\.detect-libc-FW4fETKq',
+90 silly reify   'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\fdir': 'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\.fdir-GL4MqPSc',
+90 silly reify   'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\lightningcss': 'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\.lightningcss-9jCcNUIm',
+90 silly reify   'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\lightningcss-win32-x64-msvc': 'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\.lightningcss-win32-x64-msvc-ZafHeR7W',
+90 silly reify   'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\picomatch': 'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\.picomatch-7H71JnS9',
+90 silly reify   'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\rolldown': 'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\.rolldown-fjsZWIVV',
+90 silly reify   'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\.bin\\rolldown': 'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\.bin\\.rolldown-x6Pdf7yL',
+90 silly reify   'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\.bin\\rolldown.cmd': 'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\.bin\\.rolldown.cmd-1FHepNSH',
+90 silly reify   'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\.bin\\rolldown.ps1': 'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\.bin\\.rolldown.ps1-wzET7sr7',
+90 silly reify   'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\tinyglobby': 'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\.tinyglobby-0GROPon7',
+90 silly reify   'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\vite': 'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\.vite-abJE8KfV',
+90 silly reify   'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\.bin\\vite': 'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\.bin\\.vite-qOeDvYb0',
+90 silly reify   'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\.bin\\vite.cmd': 'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\.bin\\.vite.cmd-3Su8L9nx',
+90 silly reify   'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\.bin\\vite.ps1': 'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\.bin\\.vite.ps1-WgCjb9GY'
+90 silly reify }
+91 silly audit bulk request {
+91 silly audit   '@babel/code-frame': [ '7.29.7' ],
+91 silly audit   '@babel/compat-data': [ '7.29.7' ],
+91 silly audit   '@babel/core': [ '7.29.7' ],
+91 silly audit   '@babel/generator': [ '7.29.7' ],
+91 silly audit   '@babel/helper-compilation-targets': [ '7.29.7' ],
+91 silly audit   '@babel/helper-globals': [ '7.29.7' ],
+91 silly audit   '@babel/helper-module-imports': [ '7.29.7' ],
+91 silly audit   '@babel/helper-module-transforms': [ '7.29.7' ],
+91 silly audit   '@babel/helper-plugin-utils': [ '7.29.7' ],
+91 silly audit   '@babel/helper-string-parser': [ '7.29.7' ],
+91 silly audit   '@babel/helper-validator-identifier': [ '7.29.7' ],
+91 silly audit   '@babel/helper-validator-option': [ '7.29.7' ],
+91 silly audit   '@babel/helpers': [ '7.29.7' ],
+91 silly audit   '@babel/parser': [ '7.29.7' ],
+91 silly audit   '@babel/plugin-transform-react-jsx-self': [ '7.29.7' ],
+91 silly audit   '@babel/plugin-transform-react-jsx-source': [ '7.29.7' ],
+91 silly audit   '@babel/template': [ '7.29.7' ],
+91 silly audit   '@babel/traverse': [ '7.29.7' ],
+91 silly audit   '@babel/types': [ '7.29.7' ],
+91 silly audit   '@esbuild/aix-ppc64': [ '0.21.5' ],
+91 silly audit   '@esbuild/android-arm': [ '0.21.5' ],
+91 silly audit   '@esbuild/android-arm64': [ '0.21.5' ],
+91 silly audit   '@esbuild/android-x64': [ '0.21.5' ],
+91 silly audit   '@esbuild/darwin-arm64': [ '0.21.5' ],
+91 silly audit   '@esbuild/darwin-x64': [ '0.21.5' ],
+91 silly audit   '@esbuild/freebsd-arm64': [ '0.21.5' ],
+91 silly audit   '@esbuild/freebsd-x64': [ '0.21.5' ],
+91 silly audit   '@esbuild/linux-arm': [ '0.21.5' ],
+91 silly audit   '@esbuild/linux-arm64': [ '0.21.5' ],
+91 silly audit   '@esbuild/linux-ia32': [ '0.21.5' ],
+91 silly audit   '@esbuild/linux-loong64': [ '0.21.5' ],
+91 silly audit   '@esbuild/linux-mips64el': [ '0.21.5' ],
+91 silly audit   '@esbuild/linux-ppc64': [ '0.21.5' ],
+91 silly audit   '@esbuild/linux-riscv64': [ '0.21.5' ],
+91 silly audit   '@esbuild/linux-s390x': [ '0.21.5' ],
+91 silly audit   '@esbuild/linux-x64': [ '0.21.5' ],
+91 silly audit   '@esbuild/netbsd-x64': [ '0.21.5' ],
+91 silly audit   '@esbuild/openbsd-x64': [ '0.21.5' ],
+91 silly audit   '@esbuild/sunos-x64': [ '0.21.5' ],
+91 silly audit   '@esbuild/win32-arm64': [ '0.21.5' ],
+91 silly audit   '@esbuild/win32-ia32': [ '0.21.5' ],
+91 silly audit   '@esbuild/win32-x64': [ '0.21.5' ],
+91 silly audit   '@jridgewell/gen-mapping': [ '0.3.13' ],
+91 silly audit   '@jridgewell/remapping': [ '2.3.5' ],
+91 silly audit   '@jridgewell/resolve-uri': [ '3.1.2' ],
+91 silly audit   '@jridgewell/sourcemap-codec': [ '1.5.5' ],
+91 silly audit   '@jridgewell/trace-mapping': [ '0.3.31' ],
+91 silly audit   '@rolldown/pluginutils': [ '1.0.0-rc.3' ],
+91 silly audit   '@rollup/rollup-android-arm-eabi': [ '4.62.2' ],
+91 silly audit   '@rollup/rollup-android-arm64': [ '4.62.2' ],
+91 silly audit   '@rollup/rollup-darwin-arm64': [ '4.62.2' ],
+91 silly audit   '@rollup/rollup-darwin-x64': [ '4.62.2' ],
+91 silly audit   '@rollup/rollup-freebsd-arm64': [ '4.62.2' ],
+91 silly audit   '@rollup/rollup-freebsd-x64': [ '4.62.2' ],
+91 silly audit   '@rollup/rollup-linux-arm-gnueabihf': [ '4.62.2' ],
+91 silly audit   '@rollup/rollup-linux-arm-musleabihf': [ '4.62.2' ],
+91 silly audit   '@rollup/rollup-linux-arm64-gnu': [ '4.62.2' ],
+91 silly audit   '@rollup/rollup-linux-arm64-musl': [ '4.62.2' ],
+91 silly audit   '@rollup/rollup-linux-loong64-gnu': [ '4.62.2' ],
+91 silly audit   '@rollup/rollup-linux-loong64-musl': [ '4.62.2' ],
+91 silly audit   '@rollup/rollup-linux-ppc64-gnu': [ '4.62.2' ],
+91 silly audit   '@rollup/rollup-linux-ppc64-musl': [ '4.62.2' ],
+91 silly audit   '@rollup/rollup-linux-riscv64-gnu': [ '4.62.2' ],
+91 silly audit   '@rollup/rollup-linux-riscv64-musl': [ '4.62.2' ],
+91 silly audit   '@rollup/rollup-linux-s390x-gnu': [ '4.62.2' ],
+91 silly audit   '@rollup/rollup-linux-x64-gnu': [ '4.62.2' ],
+91 silly audit   '@rollup/rollup-linux-x64-musl': [ '4.62.2' ],
+91 silly audit   '@rollup/rollup-openbsd-x64': [ '4.62.2' ],
+91 silly audit   '@rollup/rollup-openharmony-arm64': [ '4.62.2' ],
+91 silly audit   '@rollup/rollup-win32-arm64-msvc': [ '4.62.2' ],
+91 silly audit   '@rollup/rollup-win32-ia32-msvc': [ '4.62.2' ],
+91 silly audit   '@rollup/rollup-win32-x64-gnu': [ '4.62.2' ],
+91 silly audit   '@rollup/rollup-win32-x64-msvc': [ '4.62.2' ],
+91 silly audit   '@types/babel__core': [ '7.20.5' ],
+91 silly audit   '@types/babel__generator': [ '7.27.0' ],
+91 silly audit   '@types/babel__template': [ '7.4.4' ],
+91 silly audit   '@types/babel__traverse': [ '7.28.0' ],
+91 silly audit   '@types/estree': [ '1.0.9' ],
+91 silly audit   '@vitejs/plugin-react': [ '5.2.0' ],
+91 silly audit   'baseline-browser-mapping': [ '2.10.43' ],
+91 silly audit   browserslist: [ '4.28.6' ],
+91 silly audit   'caniuse-lite': [ '1.0.30001805' ],
+91 silly audit   'convert-source-map': [ '2.0.0' ],
+91 silly audit   debug: [ '4.4.3' ],
+91 silly audit   'electron-to-chromium': [ '1.5.389' ],
+91 silly audit   esbuild: [ '0.21.5' ],
+91 silly audit   escalade: [ '3.2.0' ],
+91 silly audit   fsevents: [ '2.3.3' ],
+91 silly audit   gensync: [ '1.0.0-beta.2' ],
+91 silly audit   'js-tokens': [ '4.0.0' ],
+91 silly audit   jsesc: [ '3.1.0' ],
+91 silly audit   json5: [ '2.2.3' ],
+91 silly audit   'loose-envify': [ '1.4.0' ],
+91 silly audit   'lru-cache': [ '5.1.1' ],
+91 silly audit   ms: [ '2.1.3' ],
+91 silly audit   nanoid: [ '3.3.16' ],
+91 silly audit   'node-releases': [ '2.0.51' ],
+91 silly audit   picocolors: [ '1.1.1' ],
+91 silly audit   postcss: [ '8.5.19' ],
+91 silly audit   react: [ '18.3.1' ],
+91 silly audit   'react-dom': [ '18.3.1' ],
+91 silly audit   'react-refresh': [ '0.18.0' ],
+91 silly audit   rollup: [ '4.62.2' ],
+91 silly audit   scheduler: [ '0.23.2' ],
+91 silly audit   semver: [ '6.3.1' ],
+91 silly audit   'source-map-js': [ '1.2.1' ],
+91 silly audit   'update-browserslist-db': [ '1.2.3' ],
+91 silly audit   vite: [ '5.4.21' ],
+91 silly audit   yallist: [ '3.1.1' ],
+91 silly audit   jszip: [ '3.10.1' ],
+91 silly audit   lie: [ '3.3.0' ],
+91 silly audit   pako: [ '1.0.11' ],
+91 silly audit   'readable-stream': [ '2.3.8' ],
+91 silly audit   setimmediate: [ '1.0.5' ],
+91 silly audit   immediate: [ '3.0.6' ],
+91 silly audit   'core-util-is': [ '1.0.3' ],
+91 silly audit   inherits: [ '2.0.4' ],
+91 silly audit   isarray: [ '1.0.0' ],
+91 silly audit   'process-nextick-args': [ '2.0.1' ],
+91 silly audit   'safe-buffer': [ '5.1.2' ],
+91 silly audit   string_decoder: [ '1.1.1' ],
+91 silly audit   'util-deprecate': [ '1.0.2' ]
+91 silly audit }
+92 http cache util-deprecate@https://registry.npmjs.org/util-deprecate/-/util-deprecate-1.0.2.tgz 1ms (cache hit)
+93 http cache safe-buffer@https://registry.npmjs.org/safe-buffer/-/safe-buffer-5.1.2.tgz 0ms (cache hit)
+94 http cache string_decoder@https://registry.npmjs.org/string_decoder/-/string_decoder-1.1.1.tgz 0ms (cache hit)
+95 http cache process-nextick-args@https://registry.npmjs.org/process-nextick-args/-/process-nextick-args-2.0.1.tgz 0ms (cache hit)
+96 http cache immediate@https://registry.npmjs.org/immediate/-/immediate-3.0.6.tgz 0ms (cache hit)
+97 http cache inherits@https://registry.npmjs.org/inherits/-/inherits-2.0.4.tgz 0ms (cache hit)
+98 http cache isarray@https://registry.npmjs.org/isarray/-/isarray-1.0.0.tgz 0ms (cache hit)
+99 http cache core-util-is@https://registry.npmjs.org/core-util-is/-/core-util-is-1.0.3.tgz 1ms (cache hit)
+100 http cache setimmediate@https://registry.npmjs.org/setimmediate/-/setimmediate-1.0.5.tgz 0ms (cache hit)
+101 http cache lie@https://registry.npmjs.org/lie/-/lie-3.3.0.tgz 0ms (cache hit)
+102 http cache readable-stream@https://registry.npmjs.org/readable-stream/-/readable-stream-2.3.8.tgz 0ms (cache hit)
+103 http cache pako@https://registry.npmjs.org/pako/-/pako-1.0.11.tgz 0ms (cache hit)
+104 http cache jszip@https://registry.npmjs.org/jszip/-/jszip-3.10.1.tgz 0ms (cache hit)
+105 http cache rollup@https://registry.npmjs.org/rollup/-/rollup-4.62.2.tgz 0ms (cache hit)
+106 http cache @types/estree@https://registry.npmjs.org/@types/estree/-/estree-1.0.9.tgz 0ms (cache hit)
+107 http cache esbuild@https://registry.npmjs.org/esbuild/-/esbuild-0.21.5.tgz 0ms (cache hit)
+108 http cache vite@https://registry.npmjs.org/vite/-/vite-5.4.21.tgz 0ms (cache hit)
+109 http cache @esbuild/win32-x64@https://registry.npmjs.org/@esbuild/win32-x64/-/win32-x64-0.21.5.tgz 0ms (cache hit)
+110 silly tarball no local data for util-deprecate@https://registry.npmjs.org/util-deprecate/-/util-deprecate-1.0.2.tgz. Extracting by manifest.
+111 silly tarball no local data for safe-buffer@https://registry.npmjs.org/safe-buffer/-/safe-buffer-5.1.2.tgz. Extracting by manifest.
+112 silly tarball no local data for string_decoder@https://registry.npmjs.org/string_decoder/-/string_decoder-1.1.1.tgz. Extracting by manifest.
+113 silly tarball no local data for process-nextick-args@https://registry.npmjs.org/process-nextick-args/-/process-nextick-args-2.0.1.tgz. Extracting by manifest.
+114 silly tarball no local data for immediate@https://registry.npmjs.org/immediate/-/immediate-3.0.6.tgz. Extracting by manifest.
+115 silly tarball no local data for isarray@https://registry.npmjs.org/isarray/-/isarray-1.0.0.tgz. Extracting by manifest.
+116 silly tarball no local data for inherits@https://registry.npmjs.org/inherits/-/inherits-2.0.4.tgz. Extracting by manifest.
+117 silly tarball no local data for core-util-is@https://registry.npmjs.org/core-util-is/-/core-util-is-1.0.3.tgz. Extracting by manifest.
+118 silly tarball no local data for setimmediate@https://registry.npmjs.org/setimmediate/-/setimmediate-1.0.5.tgz. Extracting by manifest.
+119 silly tarball no local data for lie@https://registry.npmjs.org/lie/-/lie-3.3.0.tgz. Extracting by manifest.
+120 silly tarball no local data for readable-stream@https://registry.npmjs.org/readable-stream/-/readable-stream-2.3.8.tgz. Extracting by manifest.
+121 silly tarball no local data for pako@https://registry.npmjs.org/pako/-/pako-1.0.11.tgz. Extracting by manifest.
+122 silly tarball no local data for jszip@https://registry.npmjs.org/jszip/-/jszip-3.10.1.tgz. Extracting by manifest.
+123 silly tarball no local data for rollup@https://registry.npmjs.org/rollup/-/rollup-4.62.2.tgz. Extracting by manifest.
+124 silly tarball no local data for @types/estree@https://registry.npmjs.org/@types/estree/-/estree-1.0.9.tgz. Extracting by manifest.
+125 silly tarball no local data for esbuild@https://registry.npmjs.org/esbuild/-/esbuild-0.21.5.tgz. Extracting by manifest.
+126 http cache @rollup/rollup-win32-x64-msvc@https://registry.npmjs.org/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.62.2.tgz 0ms (cache hit)
+127 silly tarball no local data for vite@https://registry.npmjs.org/vite/-/vite-5.4.21.tgz. Extracting by manifest.
+128 http cache @rollup/rollup-win32-x64-gnu@https://registry.npmjs.org/@rollup/rollup-win32-x64-gnu/-/rollup-win32-x64-gnu-4.62.2.tgz 0ms (cache hit)
+129 silly tarball no local data for @esbuild/win32-x64@https://registry.npmjs.org/@esbuild/win32-x64/-/win32-x64-0.21.5.tgz. Extracting by manifest.
+130 silly tarball no local data for @rollup/rollup-win32-x64-msvc@https://registry.npmjs.org/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.62.2.tgz. Extracting by manifest.
+131 silly tarball no local data for @rollup/rollup-win32-x64-gnu@https://registry.npmjs.org/@rollup/rollup-win32-x64-gnu/-/rollup-win32-x64-gnu-4.62.2.tgz. Extracting by manifest.
+132 http fetch POST 200 https://registry.npmjs.org/-/npm/v1/security/advisories/bulk 236ms
+133 silly audit report {
+133 silly audit report   esbuild: [
+133 silly audit report     {
+133 silly audit report       id: 1102341,
+133 silly audit report       url: 'https://github.com/advisories/GHSA-67mh-4wv8-2f99',
+133 silly audit report       title: 'esbuild enables any website to send any requests to the development server and read the response',
+133 silly audit report       severity: 'moderate',
+133 silly audit report       vulnerable_versions: '<=0.24.2',
+133 silly audit report       cwe: [Array],
+133 silly audit report       cvss: [Object]
+133 silly audit report     }
+133 silly audit report   ],
+133 silly audit report   nanoid: [
+133 silly audit report     {
+133 silly audit report       id: 1139427,
+133 silly audit report       url: 'https://github.com/advisories/GHSA-2v37-7h3g-55p8',
+133 silly audit report       title: 'nanoid: custom generators can loop indefinitely when size is zero',
+133 silly audit report       severity: 'high',
+133 silly audit report       vulnerable_versions: '<3.3.18',
+133 silly audit report       cwe: [Array],
+133 silly audit report       cvss: [Object]
+133 silly audit report     }
+133 silly audit report   ],
+133 silly audit report   postcss: [
+133 silly audit report     {
+133 silly audit report       id: 1130709,
+133 silly audit report       url: 'https://github.com/advisories/GHSA-fxqj-rqcc-2cmp',
+133 silly audit report       title: 'PostCSS: incomplete fix of GHSA-6g55-p6wh-862q — attacker-controlled sourceMappingURL reads arbitrary .map files when `from` is unset',
+133 silly audit report       severity: 'moderate',
+133 silly audit report       vulnerable_versions: '<=8.5.22',
+133 silly audit report       cwe: [Array],
+133 silly audit report       cvss: [Object]
+133 silly audit report     }
+133 silly audit report   ],
+133 silly audit report   vite: [
+133 silly audit report     {
+133 silly audit report       id: 1120784,
+133 silly audit report       url: 'https://github.com/advisories/GHSA-v6wh-96g9-6wx3',
+133 silly audit report       title: 'launch-editor: NTLMv2 hash disclosure via UNC path handling on Windows',
+133 silly audit report       severity: 'moderate',
+133 silly audit report       vulnerable_versions: '<=6.4.2',
+133 silly audit report       cwe: [Array],
+133 silly audit report       cvss: [Object]
+133 silly audit report     },
+133 silly audit report     {
+133 silly audit report       id: 1116229,
+133 silly audit report       url: 'https://github.com/advisories/GHSA-4w7w-66w2-5vf9',
+133 silly audit report       title: 'Vite Vulnerable to Path Traversal in Optimized Deps `.map` Handling',
+133 silly audit report       severity: 'moderate',
+133 silly audit report       vulnerable_versions: '<=6.4.1',
+133 silly audit report       cwe: [Array],
+133 silly audit report       cvss: [Object]
+133 silly audit report     },
+133 silly audit report     {
+133 silly audit report       id: 1123525,
+133 silly audit report       url: 'https://github.com/advisories/GHSA-fx2h-pf6j-xcff',
+133 silly audit report       title: 'vite: `server.fs.deny` bypass on Windows alternate paths',
+133 silly audit report       severity: 'high',
+133 silly audit report       vulnerable_versions: '<=6.4.2',
+133 silly audit report       cwe: [Array],
+133 silly audit report       cvss: [Object]
+133 silly audit report     }
+133 silly audit report   ]
+133 silly audit report }
+134 silly packumentCache corgi:https://registry.npmjs.org/esbuild cache-miss
+135 silly packumentCache corgi:https://registry.npmjs.org/nanoid cache-miss
+136 silly packumentCache corgi:https://registry.npmjs.org/postcss cache-miss
+137 silly packumentCache corgi:https://registry.npmjs.org/vite cache-miss
+138 http fetch GET 200 https://registry.npmjs.org/util-deprecate/-/util-deprecate-1.0.2.tgz 171ms (cache miss)
+139 http fetch GET 200 https://registry.npmjs.org/string_decoder/-/string_decoder-1.1.1.tgz 178ms (cache miss)
+140 http fetch GET 200 https://registry.npmjs.org/process-nextick-args/-/process-nextick-args-2.0.1.tgz 182ms (cache miss)
+141 http fetch GET 200 https://registry.npmjs.org/inherits/-/inherits-2.0.4.tgz 179ms (cache miss)
+142 http fetch GET 200 https://registry.npmjs.org/isarray/-/isarray-1.0.0.tgz 195ms (cache miss)
+143 http fetch GET 200 https://registry.npmjs.org/immediate/-/immediate-3.0.6.tgz 198ms (cache miss)
+144 http fetch GET 200 https://registry.npmjs.org/safe-buffer/-/safe-buffer-5.1.2.tgz 204ms (cache miss)
+145 http fetch GET 200 https://registry.npmjs.org/@types/estree/-/estree-1.0.9.tgz 205ms (cache miss)
+146 http fetch GET 200 https://registry.npmjs.org/esbuild/-/esbuild-0.21.5.tgz 235ms (cache miss)
+147 http fetch GET 200 https://registry.npmjs.org/nanoid 147ms (cache miss)
+148 silly packumentCache corgi:https://registry.npmjs.org/nanoid set size:undefined disposed:false
+149 http fetch GET 200 https://registry.npmjs.org/core-util-is/-/core-util-is-1.0.3.tgz 525ms (cache miss)
+150 http fetch GET 200 https://registry.npmjs.org/setimmediate/-/setimmediate-1.0.5.tgz 531ms (cache miss)
+151 http fetch GET 200 https://registry.npmjs.org/postcss 424ms (cache miss)
+152 silly packumentCache corgi:https://registry.npmjs.org/postcss set size:undefined disposed:false
+153 http fetch GET 200 https://registry.npmjs.org/lie/-/lie-3.3.0.tgz 641ms (cache miss)
+154 http fetch GET 200 https://registry.npmjs.org/esbuild 529ms (cache miss)
+155 silly packumentCache corgi:https://registry.npmjs.org/esbuild set size:undefined disposed:false
+156 http fetch GET 200 https://registry.npmjs.org/@rollup/rollup-win32-x64-gnu/-/rollup-win32-x64-gnu-4.62.2.tgz 655ms (cache miss)
+157 http fetch GET 200 https://registry.npmjs.org/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.62.2.tgz 715ms (cache miss)
+158 http fetch GET 200 https://registry.npmjs.org/vite 615ms (cache miss)
+159 silly packumentCache corgi:https://registry.npmjs.org/vite set size:undefined disposed:false
+160 http fetch GET 200 https://registry.npmjs.org/readable-stream/-/readable-stream-2.3.8.tgz 805ms (cache miss)
+161 silly packumentCache corgi:https://registry.npmjs.org/@vitejs%2fplugin-react cache-miss
+162 http fetch GET 200 https://registry.npmjs.org/pako/-/pako-1.0.11.tgz 1099ms (cache miss)
+163 http fetch GET 200 https://registry.npmjs.org/vite/-/vite-5.4.21.tgz 1114ms (cache miss)
+164 http fetch GET 200 https://registry.npmjs.org/rollup/-/rollup-4.62.2.tgz 1160ms (cache miss)
+165 http fetch GET 200 https://registry.npmjs.org/jszip/-/jszip-3.10.1.tgz 1181ms (cache miss)
+166 http fetch GET 200 https://registry.npmjs.org/@esbuild/win32-x64/-/win32-x64-0.21.5.tgz 1186ms (cache miss)
+167 http fetch GET 200 https://registry.npmjs.org/@vitejs%2fplugin-react 139ms (cache miss)
+168 silly packumentCache corgi:https://registry.npmjs.org/@vitejs%2fplugin-react set size:undefined disposed:false
+169 info run esbuild@0.21.5 postinstall node_modules/esbuild node install.js
+170 info run esbuild@0.21.5 postinstall { code: 0, signal: null }
+171 warn cleanup Failed to remove some directories [
+171 warn cleanup   [
+171 warn cleanup     'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\@rolldown\\.binding-win32-x64-msvc-oDMmItdf',
+171 warn cleanup     [Error: EPERM: operation not permitted, unlink 'C:\Users\EffieLandau\Documents\Codex\2026-07-14\hi\node_modules\@rolldown\.binding-win32-x64-msvc-oDMmItdf\rolldown-binding.win32-x64-msvc.node'] {
+171 warn cleanup       errno: -4048,
+171 warn cleanup       code: 'EPERM',
+171 warn cleanup       syscall: 'unlink',
+171 warn cleanup       path: 'C:\\Users\\EffieLandau\\Documents\\Codex\\2026-07-14\\hi\\node_modules\\@rolldown\\.binding-win32-x64-msvc-oDMmItdf\\rolldown-binding.win32-x64-msvc.node'
+171 warn cleanup     }
+171 warn cleanup   ]
+171 warn cleanup ]
+172 silly ADD node_modules/util-deprecate
+173 silly ADD node_modules/string_decoder
+174 silly ADD node_modules/safe-buffer
+175 silly ADD node_modules/process-nextick-args
+176 silly ADD node_modules/isarray
+177 silly ADD node_modules/inherits
+178 silly ADD node_modules/core-util-is
+179 silly ADD node_modules/immediate
+180 silly ADD node_modules/setimmediate
+181 silly ADD node_modules/readable-stream
+182 silly ADD node_modules/pako
+183 silly ADD node_modules/lie
+184 silly ADD node_modules/jszip
+185 silly ADD node_modules/rollup
+186 silly ADD node_modules/esbuild
+187 silly ADD node_modules/@types/estree
+188 silly ADD node_modules/@rollup/rollup-win32-x64-msvc
+189 silly ADD node_modules/@rollup/rollup-win32-x64-gnu
+190 silly ADD node_modules/@esbuild/win32-x64
+191 silly CHANGE node_modules/vite
+192 silly REMOVE node_modules/tinyglobby
+193 silly REMOVE node_modules/rolldown
+194 silly REMOVE node_modules/rolldown/node_modules/@rolldown/pluginutils
+195 silly REMOVE node_modules/picomatch
+196 silly REMOVE node_modules/lightningcss-win32-x64-msvc
+197 silly REMOVE node_modules/lightningcss
+198 silly REMOVE node_modules/fdir
+199 silly REMOVE node_modules/detect-libc
+200 silly REMOVE node_modules/@rolldown/binding-win32-x64-msvc
+201 silly REMOVE node_modules/@oxc-project/types
+202 warn allow-scripts 1 package has install scripts not yet covered by allowScripts:
+202 warn allow-scripts   esbuild@0.21.5 (postinstall: node install.js)
+202 warn allow-scripts
+202 warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+203 verbose cwd C:\Users\EffieLandau\Documents\Codex\2026-07-14\hi
+204 verbose os Windows_NT 10.0.26200
+205 verbose node v24.18.0
+206 verbose npm  v11.16.0
+207 notice
+207 notice New major version of npm available! 11.16.0 -> 12.0.2
+207 notice Changelog: https://github.com/npm/cli/releases/tag/v12.0.2
+207 notice To update run: npm install -g npm@12.0.2
+207 notice  { force: true, Symbol(proc-log.meta): true }
+208 verbose exit 0
+209 info ok
