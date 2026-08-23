@@ -1,5 +1,5 @@
 const imagePattern = /\.(jpe?g|png|gif|webp|avif|heic)$/i;
-const folderPattern = /^יחידה\s*[-_:]?\s*/i;
+const folderPattern = /^(?:יחידה|yechida|unit)\s*[-_:]?\s*/i;
 
 export async function onRequestGet({ request, env }) {
   if (!env.PHOTOS) return new Response(JSON.stringify({ error: 'R2 binding PHOTOS is not configured.' }), { status: 500, headers: { 'content-type': 'application/json' } });

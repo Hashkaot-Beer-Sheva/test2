@@ -35,6 +35,7 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
 }
+.people-list-view .record-grid{grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:9px;max-height:calc(100vh - 245px);overflow-y:auto;padding-right:4px}.people-list-view .record-card-static{height:150px;padding:11px;border-radius:7px}.people-list-view .record-card-static h3{margin:0 0 5px;font-size:14px}.people-list-view .record-card-static span{margin:4px 0;font-size:11px}.people-list-view .person-apartment-groups{gap:3px;margin-top:5px}.people-list-view .person-apartment-group{padding:4px 6px;gap:3px}.people-list-view .person-apartment-group>b{min-width:0;width:100%;font-size:9px}.people-list-view .person-apartment-group .person-apartment-link{padding:3px 5px;font-size:9px}
 .record-card {
   background: #fafbfc;
   border: 1px solid #e6ebef;
