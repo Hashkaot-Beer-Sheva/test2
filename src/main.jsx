@@ -132,6 +132,7 @@ const geocodeBuildings = async (buildings, onUpdate) => {
     const building = updated[index];
     if (!building.street || !building.streetNumber) continue;
     const key = addressKey(building);
+    if (building.geoSource === 'coordinate-cache' && Number.isFinite(Number(building.lat)) && Number.isFinite(Number(building.lng))) { cached.set(key, { lat: building.lat, lng: building.lng, geoSource: building.geoSource, geocodeAddress: key }); continue; }
     if (building.geoSource === 'arcgis' && building.geocodeAddress === key) { cached.set(key, { lat: building.lat, lng: building.lng, geoSource: building.geoSource, geocodeAddress: key }); continue; }
     if (cached.has(key)) { updated[index] = { ...building, ...cached.get(key) }; onUpdate?.([...updated]); continue; }
     try {
@@ -329,7 +330,6 @@ function App() {
     a.download = 'blockwise-backup.json';
     a.click();
   };
-  const exportCoordinates = () => { const headers = ['name', 'street', 'streetNumber', 'entrance', 'lat', 'lng', 'source']; const esc = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`; const rows = data.buildings.map((building) => [building.name, building.street || '', building.streetNumber || '', building.entrance || 'main', building.lat ?? '', building.lng ?? '', building.geoSource || 'saved']); const csv = [headers, ...rows].map((row) => row.map(esc).join(',')).join('\r\n'); const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); link.download = 'building-coordinates.csv'; link.click(); setTimeout(() => URL.revokeObjectURL(link.href), 1000); };
   const importData = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -423,7 +423,6 @@ function App() {
           <div className="actions top-search-wrap">
             <button className="outline small" onClick={loadMockData}>Load mock data</button>
             <button className="outline small" onClick={startEmpty}>Start empty</button>
-            <button className="outline small" onClick={exportCoordinates}>Export coordinates</button>
             <label className="outline small csv-import-label">Upload CSV<input type="file" accept=".csv,text/csv" onChange={importCsv} /></label>
             <label className="outline small csv-import-label">Renters CSV upload<input type="file" accept=".csv,.tsv,text/csv,text/tab-separated-values" onChange={importRentersFile} /></label>
             <label className="outline small csv-import-label">Upload transacts CSV<input type="file" accept=".csv,.tsv,text/csv,text/tab-separated-values" onChange={importTransactions} /></label>
