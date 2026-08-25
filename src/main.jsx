@@ -194,6 +194,7 @@ function App() {
   const [data, setData] = useState(hydrateData);
   const geocodingRef = React.useRef(false);
   const [geocodeQueue, setGeocodeQueue] = useState(null);
+  const [coordinateProgress, setCoordinateProgress] = useState(null);
   const [transactionProgress, setTransactionProgress] = useState(null);
   const [photoProgress, setPhotoProgress] = useState(null);
   const [photoAvailability, setPhotoAvailability] = useState({});
@@ -330,6 +331,7 @@ function App() {
     a.download = 'blockwise-backup.json';
     a.click();
   };
+  const regenerateCoordinates = async () => { if (!data.buildings.length || coordinateProgress) return; const source = data.buildings.map((building) => ({ ...building, geoSource: undefined, geocodeAddress: undefined })); setCoordinateProgress({ done: 0, total: source.length }); try { const updated = await geocodeBuildings(source, (buildings) => { const done = buildings.filter((building) => Number.isFinite(Number(building.lat)) && Number.isFinite(Number(building.lng)) && building.geoSource === 'arcgis').length; setCoordinateProgress({ done, total: source.length }); }); setData((current) => { const next = { ...current, buildings: updated }; localStorage.setItem('blockwise-data', JSON.stringify(withoutPhotoBlobs(next))); return next; }); const headers = ['name', 'street', 'streetNumber', 'entrance', 'lat', 'lng', 'source']; const esc = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`; const rows = updated.map((building) => [building.name, building.street || '', building.streetNumber || '', building.entrance || 'main', Number.isFinite(Number(building.lat)) ? building.lat : '', Number.isFinite(Number(building.lng)) ? building.lng : '', building.geoSource || 'not-found']); const csv = [headers, ...rows].map((row) => row.map(esc).join(',')).join('\r\n'); const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); link.download = 'building-coordinates.csv'; link.click(); setTimeout(() => URL.revokeObjectURL(link.href), 1000); } finally { setCoordinateProgress(null); } };
   const importData = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -423,6 +425,7 @@ function App() {
           <div className="actions top-search-wrap">
             <button className="outline small" onClick={loadMockData}>Load mock data</button>
             <button className="outline small" onClick={startEmpty}>Start empty</button>
+            <button className="outline small" onClick={regenerateCoordinates} disabled={Boolean(coordinateProgress)}>Regenerate coordinates</button>
             <label className="outline small csv-import-label">Upload CSV<input type="file" accept=".csv,text/csv" onChange={importCsv} /></label>
             <label className="outline small csv-import-label">Renters CSV upload<input type="file" accept=".csv,.tsv,text/csv,text/tab-separated-values" onChange={importRentersFile} /></label>
             <label className="outline small csv-import-label">Upload transacts CSV<input type="file" accept=".csv,.tsv,text/csv,text/tab-separated-values" onChange={importTransactions} /></label>
@@ -471,6 +474,7 @@ function App() {
         {transactionProgress && <div className="global-geocode-status transaction-progress"><span className="spinner" /> Loading apartment transactions: {transactionProgress.done} / {transactionProgress.total}</div>}
         {photoProgress && <div className="global-geocode-status transaction-progress"><span className="spinner" /> Importing apartment photos: {photoProgress.done} / {photoProgress.total}</div>}
         {cloudDataStatus && <div className="global-geocode-status cloud-data-status">{cloudDataLoading && <span className="spinner" />}{cloudDataStatus}{cloudDataLoading && <div className="cloud-data-progress"><i style={{ width: `${cloudDataProgress}%` }} /></div>}</div>}
+        {coordinateProgress && <div className="global-geocode-status cloud-data-status"><span className="spinner" /> Regenerating building coordinates: {coordinateProgress.done} / {coordinateProgress.total}<div className="cloud-data-progress"><i style={{ width: `${Math.max(4, Math.round((coordinateProgress.done / Math.max(coordinateProgress.total, 1)) * 100))}%` }} /></div></div>}
         {tab === 'Overview' ? (
           <>
             <section className="metrics">
