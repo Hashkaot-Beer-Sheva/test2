@@ -6,10 +6,19 @@ const files = {
 
 export async function onRequestGet({ env }) {
   if (!env.SPREADSHEETS) return new Response(JSON.stringify({ error: 'R2 binding SPREADSHEETS is not configured.' }), { status: 500, headers: { 'content-type': 'application/json' } });
+  const objects = [];
+  let cursor;
+  do {
+    const page = await env.SPREADSHEETS.list({ prefix: 'SPREADSHEETS/', cursor, limit: 1000 });
+    objects.push(...(page.objects || []));
+    cursor = page.truncated ? page.cursor : undefined;
+  } while (cursor);
   const result = {};
   for (const [name, key] of Object.entries(files)) {
-    const object = await env.SPREADSHEETS.get(key);
-    if (!object) return new Response(JSON.stringify({ error: `Missing spreadsheet object: ${key}` }), { status: 404, headers: { 'content-type': 'application/json' } });
+    const expected = key.split('/').pop().toLowerCase().replace(/\s+/g, '');
+    const match = objects.find((item) => item.key.split('/').pop().toLowerCase().replace(/\s+/g, '') === expected);
+    const object = match ? await env.SPREADSHEETS.get(match.key) : null;
+    if (!object) return new Response(JSON.stringify({ error: `Missing spreadsheet object: ${key}`, available: objects.map((item) => item.key) }), { status: 404, headers: { 'content-type': 'application/json' } });
     result[name] = await object.text();
   }
   return new Response(JSON.stringify({ files: result }), { headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } });
