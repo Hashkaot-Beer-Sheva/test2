@@ -1,0 +1,12 @@
+name = "beersheva-540-local"
+compatibility_date = "2026-08-25"
+
+[[r2_buckets]]
+binding = "PHOTOS"
+bucket_name = "apartment-pictures"
+remote = true
+
+[[r2_buckets]]
+binding = "SPREADSHEETS"
+bucket_name = "property-data"
+remote = true
