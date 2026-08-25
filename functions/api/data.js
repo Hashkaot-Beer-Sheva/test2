@@ -2,6 +2,7 @@ const files = {
   master: 'SPREADSHEETS/EasyRent Prod - Apartments (1).csv',
   transactions: 'SPREADSHEETS/Beer Sheva Monthly Report- Purchases.csv',
   renters: 'SPREADSHEETS/Hashkaot Renters zehavit.csv',
+  coordinates: 'SPREADSHEETS/building-coordinates.csv',
 };
 
 export async function onRequestGet({ env }) {
@@ -18,7 +19,8 @@ export async function onRequestGet({ env }) {
     const expected = key.split('/').pop().toLowerCase().replace(/\s+/g, '');
     const match = objects.find((item) => item.key.split('/').pop().toLowerCase().replace(/\s+/g, '') === expected);
     const object = match ? await env.SPREADSHEETS.get(match.key) : null;
-    if (!object) return new Response(JSON.stringify({ error: `Missing spreadsheet object: ${key}`, available: objects.map((item) => item.key) }), { status: 404, headers: { 'content-type': 'application/json' } });
+    if (!object && name !== 'coordinates') return new Response(JSON.stringify({ error: `Missing spreadsheet object: ${key}`, available: objects.map((item) => item.key) }), { status: 404, headers: { 'content-type': 'application/json' } });
+    if (!object) { result[name] = ''; continue; }
     result[name] = await object.text();
   }
   return new Response(JSON.stringify({ files: result }), { headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } });
