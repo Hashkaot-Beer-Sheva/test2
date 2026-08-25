@@ -17,7 +17,7 @@ export default function RealMap({ buildings = [], selected, setSelected, geocodi
     if (!map || !window.L) return;
     const L = window.L;
     map.eachLayer((layer) => { if (!layer._url) map.removeLayer(layer); });
-    const locatedBuildings = buildings.filter((building) => Number.isFinite(Number(building.lat)) && Number.isFinite(Number(building.lng)) && building.geoSource === 'arcgis');
+    const locatedBuildings = buildings.filter((building) => Number.isFinite(Number(building.lat)) && Number.isFinite(Number(building.lng)));
     const points = locatedBuildings.map((building) => [Number(building.lat), Number(building.lng)]);
     const bounds = points.length ? L.latLngBounds(points) : L.latLngBounds([[31.262, 34.796], [31.266, 34.804]]);
     L.rectangle(bounds.pad(0.35), { color: '#ec806d', weight: 2, dashArray: '7 6', fillColor: '#f8c9b5', fillOpacity: 0.16 }).addTo(map).bindTooltip('Your Shechuna Gimel property area');
