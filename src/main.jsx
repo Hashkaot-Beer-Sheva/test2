@@ -399,20 +399,6 @@ function App() {
           ))}
         </nav>
         <div className="sidebar-bottom">
-          <div className="sync">
-            <span className="dot" />{' '}
-            <div>
-              <b>Local data saved</b>
-              <small>Ready for Supabase sync</small>
-            </div>
-          </div>
-          <div className="user">
-            <div className="avatar">EL</div>
-            <div>
-              <b>Effie Landau</b>
-              <small>Administrator</small>
-            </div>
-          </div>
           <button className="sidebar-logout" onClick={logout}><span aria-hidden="true">↪</span> Log out</button>
         </div>
       </aside>
