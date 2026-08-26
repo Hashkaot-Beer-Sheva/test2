@@ -17,7 +17,7 @@ export default function RealMap({ buildings = [], selected, setSelected, geocodi
     if (!map || !window.L) return;
     const L = window.L;
     map.eachLayer((layer) => { if (!layer._url) map.removeLayer(layer); });
-    const locatedBuildings = buildings.filter((building) => Number.isFinite(Number(building.lat)) && Number.isFinite(Number(building.lng)));
+    const locatedBuildings = buildings.filter((building) => Number.isFinite(Number(building.lat)) && Number.isFinite(Number(building.lng)) && building.geoSource !== 'placeholder');
     const pointCounts = new Map();
     const points = locatedBuildings.map((building) => { const lat = Number(building.lat); const lng = Number(building.lng); const key = `${lat.toFixed(6)},${lng.toFixed(6)}`; const count = pointCounts.get(key) || 0; pointCounts.set(key, count + 1); if (!count) return [lat, lng]; const angle = count * 2.399963; const radius = 0.000035 * Math.ceil(count / 2); return [lat + Math.sin(angle) * radius, lng + Math.cos(angle) * radius]; });
     const bounds = points.length ? L.latLngBounds(points) : L.latLngBounds([[31.262, 34.796], [31.266, 34.804]]);
