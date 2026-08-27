@@ -85,7 +85,7 @@ const parseMasterCsv = (text) => { const lines = text.trim().split(/\r?\n/).filt
 const normalizeCoordinateText = (value) => String(value || '').replace(/^\uFEFF/, '').replace(/["']/g, '').trim().replace(/\s+/g, ' ');
 const parseCoordinateCsv = (text) => { const lines = String(text || '').trim().split(/\r?\n/).filter(Boolean); if (lines.length < 2) return []; const headers = lines[0].split(',').map((header) => normalizeCoordinateText(header).toLowerCase()); return lines.slice(1).map((line) => { const values = line.split(',').map((value) => normalizeCoordinateText(value)); const raw = Object.fromEntries(headers.map((header, index) => [header, values[index] || ''])); const row = { ...raw, name: raw.name || raw.building || '', street: raw.street || rawרחוב || '', streetNumber: raw.streetnumber || raw['street number'] || raw.number || '', entrance: raw.entrance || raw.כניסה || 'main', lat: Number(raw.lat || raw.latitude || raw.y), lng: Number(raw.lng || raw.longitude || raw.lon || raw.x) }; return row; }).filter((row) => Number.isFinite(row.lat) && Number.isFinite(row.lng)); };
 const applyCoordinateCache = (buildings, coordinateRows) => buildings.map((building) => { const buildingStreet = normalizeCoordinateText(building.street); const buildingNumber = unitKey(normalizeCoordinateText(building.streetNumber)); const buildingEntrance = normalizeCoordinateText(building.entrance || 'main').toLowerCase(); const sameAddress = (row) => normalizeCoordinateText(row.street) === buildingStreet && unitKey(normalizeCoordinateText(row.streetNumber)) === buildingNumber; const match = coordinateRows.find((row) => sameAddress(row) && normalizeCoordinateText(row.entrance || 'main').toLowerCase() === buildingEntrance) || coordinateRows.find(sameAddress) || coordinateRows.find((row) => normalizeCoordinateText(row.name) === normalizeCoordinateText(building.name)); return match ? { ...building, lat: Number(match.lat), lng: Number(match.lng), geoSource: 'coordinate-cache', geocodeAddress: addressKey({ ...building, entrance: building.entrance || match.entrance }) } : building; });
-const parseOccupancyCsv = (text) => { const lines = String(text || '').split(/\r?\n/); const delimiter = lines.find((line) => line.includes('\t')) ? '\t' : ','; const rows = lines.map((line) => line.split(delimiter).map((value) => String(value || '').replace(/^\uFEFF/, '').replace(/^"|"$/g, '').trim())); const headerRow = rows[7] || []; const addressRow = rows[8] || []; const monthStart = 110; const columns = headerRow.map((unit, index) => ({ unit: String(unit || '').trim(), address: String(addressRow[index] || '').trim(), index })).filter((item) => item.unit && !/^(unit|יחידה)$/i.test(item.unit)); const latest = {}; const records = []; const zeroStatuses = /^(READY|Awaiting Payment|unpaid)$/i; columns.forEach((column) => { for (let rowIndex = monthStart; rowIndex < rows.length; rowIndex += 1) { const value = String(rows[rowIndex]?.[column.index] || '').trim(); const rawDate = String(rows[rowIndex]?.[0] || '').trim(); const parsedDate = new Date(rawDate); const date = Number.isNaN(parsedDate.getTime()) ? rawDate : `${String(parsedDate.getMonth() + 1).padStart(2, '0')}/15/${String(parsedDate.getFullYear()).slice(-2)}`; if (!value) continue; const numeric = value.replace(/[^0-9.-]/g, ''); const amount = numeric && Number.isFinite(Number(numeric)) ? Number(numeric) : null; if (amount !== null) { latest[column.unit] = amount; records.push({ unit: column.unit, address: column.address, date, amount, status: 'Collected' }); } else if (/^HK$/i.test(value) && latest[column.unit] !== undefined) { records.push({ unit: column.unit, address: column.address, date, amount: latest[column.unit], status: 'Autopay' }); } else if (zeroStatuses.test(value)) { records.push({ unit: column.unit, address: column.address, date, amount: 0, status: value }); } } }); return { records, latest }; };
+const parseOccupancyCsv = (text) => { const lines = String(text || '').split(/\r?\n/); const delimiter = lines.find((line) => line.includes('\t')) ? '\t' : ','; const rows = parseDelimitedRecords(String(text || ''), delimiter).map((row) => row.map((value) => String(value || '').replace(/^\uFEFF/, '').trim())); const headerRow = rows[7] || []; const addressRow = rows[8] || []; const monthStart = 110; const columns = headerRow.map((unit, index) => ({ unit: String(unit || '').trim(), address: String(addressRow[index] || '').trim(), index })).filter((item) => item.unit && !/^(unit|יחידה)$/i.test(item.unit)); const latest = {}; const records = []; const zeroStatuses = /^(READY|Awaiting Payment|unpaid)$/i; columns.forEach((column) => { for (let rowIndex = monthStart; rowIndex < rows.length; rowIndex += 1) { const value = String(rows[rowIndex]?.[column.index] || '').trim(); const rawDate = String(rows[rowIndex]?.[0] || '').trim(); const monthYear = rawDate.match(/^([A-Za-z]{3,9})\s+(\d{2})$/); const parsedDate = monthYear ? new Date(`${monthYear[1]} 1, 20${monthYear[2]}`) : new Date(rawDate); const date = Number.isNaN(parsedDate.getTime()) ? rawDate : `${String(parsedDate.getMonth() + 1).padStart(2, '0')}/15/${parsedDate.getFullYear()}`; if (/^leased$/i.test(rawDate) || !monthYear || Number.isNaN(parsedDate.getTime()) || !value) continue; const numeric = value.replace(/[^0-9.-]/g, ''); const amount = numeric && Number.isFinite(Number(numeric)) ? Number(numeric) : null; if (amount !== null) { latest[column.unit] = amount; records.push({ unit: column.unit, address: column.address, date, amount, status: 'Collected' }); } else if (/^HK$/i.test(value) && latest[column.unit] !== undefined) { records.push({ unit: column.unit, address: column.address, date, amount: latest[column.unit], status: 'Autopay' }); } else if (zeroStatuses.test(value)) { records.push({ unit: column.unit, address: column.address, date, amount: 0, status: value }); } } }); return { records, latest }; };
 const parseTransactionsCsv = (text) => {
   const lines = text.trim().split(/\r?\n/).filter(Boolean);
   if (lines.length < 2) return [];
@@ -396,6 +396,7 @@ function App() {
             ['Buildings', '⌂'],
             ['People', '◉'],
             ['Transactions', '↔'],
+            ['Rent History', '◷'],
             ['Finance', '₪'],
             ['Apartments', '▥'],
             ['Maintenance', '⚒'],
@@ -508,6 +509,8 @@ function App() {
           <MapExplorer data={data} selected={selected} setSelected={(building) => { setSelected(building); setTopSelected({ type: 'building', item: building }); }} />
         ) : tab === 'Investments' ? (
           <InvestedPropertiesViewUpdated data={data} people={data.people} photoAvailability={photoAvailability} onApartment={(apartment) => setTopSelected({ type: 'apartment', item: apartment })} onPerson={(person) => setTopSelected({ type: 'person', item: person })} onBuilding={(building) => setTopSelected({ type: 'building', item: building })} />
+        ) : tab === 'Rent History' ? (
+          <RentHistoryView data={data} onApartment={(apartment) => setTopSelected({ type: 'apartment', item: apartment })} />
         ) : tab === 'Transactions' ? (
           <TransactionsView data={data} />
         ) : tab === 'Finance' ? (
@@ -2232,6 +2235,16 @@ function LegacyApartmentSidePanel({ apartment, buildings, people = [], data, onC
     </aside>
   );
 }
+function RentHistoryView({ data, onApartment }) {
+  const rows = (data.apartments || []).flatMap((apartment) => (apartment.occupancyRentHistory || []).map((record) => ({ ...record, apartment })));
+  const dates = [...new Set(rows.map((row) => row.date).filter(Boolean))].sort((a, b) => new Date(a) - new Date(b));
+  const [from, setFrom] = useState(dates[0] || ''); const [to, setTo] = useState(dates[dates.length - 1] || '');
+  const visibleDates = dates.filter((date) => (!from || new Date(date) >= new Date(from)) && (!to || new Date(date) <= new Date(to)));
+  const total = rows.filter((row) => visibleDates.includes(row.date)).reduce((sum, row) => sum + Number(row.amount || 0), 0);
+  const color = (record) => record ? (/^Collected$/i.test(record.status) ? 'rent-history-collected' : /^Autopay$/i.test(record.status) ? 'rent-history-hk' : /^READY$/i.test(record.status) ? 'rent-history-ready' : 'rent-history-pending') : 'rent-history-empty';
+  const units = [...new Map(rows.map((row) => [String(row.unit), row])).values()].sort((a, b) => String(a.unit).localeCompare(String(b.unit), undefined, { numeric: true }));
+  return <section className="panel list-view rent-history-view"><div className="panel-head"><div><h2>Rent History</h2><p>{rows.length} parsed monthly records · {money(total)} in selected range</p></div><div className="rent-history-filters"><label>From <input type="date" value={from} onChange={(event) => setFrom(event.target.value)} /></label><label>To <input type="date" value={to} onChange={(event) => setTo(event.target.value)} /></label></div></div><div className="rent-history-legend"><span className="rent-history-collected">● Number collected</span><span className="rent-history-hk">● HK / autopay</span><span className="rent-history-ready">● READY</span><span className="rent-history-pending">● Awaiting payment / unpaid</span></div><div className="rent-history-scroll"><div className="rent-history-grid" style={{ gridTemplateColumns: `180px repeat(${visibleDates.length}, minmax(92px, 1fr))` }}><div className="rent-history-sticky"><b>Yechida / address</b></div>{visibleDates.map((date) => <b key={date} className="rent-history-date">{date}</b>)}{units.map((unit) => <React.Fragment key={unit.unit}><div className="rent-history-sticky"><button type="button" className="table-link rent-history-unit-link" onClick={() => onApartment?.(unit.apartment)}><b>{unit.unit}</b></button><small>{unit.address || '—'}</small></div>{visibleDates.map((date) => { const record = rows.find((row) => String(row.unit) === String(unit.unit) && row.date === date); return <div className={`rent-history-cell ${color(record)}`} key={`${unit.unit}-${date}`}>{record ? <><b>{record.status === 'Collected' ? money(record.amount) : record.status}</b><small>{record.status}</small></> : '—'}</div>; })}</React.Fragment>)}</div></div>{!rows.length && <p className="empty">No occupancy rent records loaded yet.</p>}</section>;
+}
 function FinancialSummary({ rent, bills, events, transactions = [], transactionSearch = '', setTransactionSearch }) {
   const [transactionSort, setTransactionSort] = useState('newest');
   const [selectedTransaction, setSelectedTransaction] = useState(null);
@@ -2249,34 +2262,40 @@ function FinancialSummary({ rent, bills, events, transactions = [], transactionS
     };
   }, [selectedTransaction]);
   const visibleTransactions = transactions.filter((transaction) => `${transaction.Description || ''} ${transaction.Vendor || ''} ${transaction['Order Date'] || ''} ${transaction.PurchaseId || ''} ${transaction.Amount || ''}`.toLowerCase().includes(transactionSearch.toLowerCase())).sort((a, b) => { const order = transactionDate(b['Order Date']) - transactionDate(a['Order Date']); return transactionSort === 'newest' ? order : -order; });
-  const [period, setPeriod] = useState('monthly');
+  const [period, setPeriod] = useState('annual');
+  const [selectedMonth, setSelectedMonth] = useState(null);
   const datedAmount = (item, fields) => {
     const date = fields.map((field) => item[field]).find(Boolean);
     return { date: date ? new Date(date) : null, amount: Number(String(item.amount ?? item.cost ?? item.Amount ?? 0).replace(/[^0-9.-]/g, '') || 0) };
   };
-  const costItems = [...bills.map((item) => datedAmount(item, ['dueDate', 'date', 'period'])), ...events.map((item) => datedAmount(item, ['date'])), ...transactions.map((item) => datedAmount(item, ['Order Date', 'Delivery Date', 'InputDate']))];
+  const rentTransactions = transactions.filter((item) => /^Rent (received|expected)$/i.test(String(item.Description || '').trim()));
+  const costItems = [...bills.map((item) => datedAmount(item, ['dueDate', 'date', 'period'])), ...events.map((item) => datedAmount(item, ['date'])), ...transactions.filter((item) => !rentTransactions.includes(item)).map((item) => datedAmount(item, ['Order Date', 'Delivery Date', 'InputDate']))];
   const today = new Date();
   const within = (date, months) => date && !Number.isNaN(date.getTime()) && date <= today && date >= new Date(today.getFullYear(), today.getMonth() - months, today.getDate());
   const monthsForPeriod = period === 'quarterly' ? 3 : period === 'annual' ? 12 : period === 'total' ? 1200 : 1;
   const periodCosts = costItems.filter((item) => period === 'total' || within(item.date, monthsForPeriod)).reduce((sum, item) => sum + item.amount, 0);
-  const periodIncome = Math.max(0, Number(rent || 0)) * (period === 'total' ? 0 : monthsForPeriod);
+  const incomeItems = rentTransactions.map((item) => datedAmount(item, ['Order Date']));
+  const periodIncome = incomeItems.filter((item) => period === 'total' || within(item.date, monthsForPeriod)).reduce((sum, item) => sum + item.amount, 0);
   const expenses = periodCosts;
   const periodExpense = periodCosts;
-  const history = Array.from({ length: 6 }, (_, index) => {
-    const end = new Date(today.getFullYear(), today.getMonth() - (5 - index) + 1, 0);
+  const historyLength = period === 'monthly' ? 1 : period === 'quarterly' ? 3 : period === 'annual' ? 12 : 36;
+  const history = Array.from({ length: historyLength }, (_, index) => {
+    const end = new Date(today.getFullYear(), today.getMonth() - (historyLength - 1 - index) + 1, 0);
     const start = new Date(end.getFullYear(), end.getMonth(), 1);
     const expense = costItems.filter((item) => item.date && item.date >= start && item.date <= end).reduce((sum, item) => sum + item.amount, 0);
-    return { month: end.toLocaleDateString('en-US', { month: 'short' }), income: Number(rent || 0), expense };
+    const income = incomeItems.filter((item) => item.date && item.date >= start && item.date <= end).reduce((sum, item) => sum + item.amount, 0);
+    return { key: `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, '0')}`, month: end.toLocaleDateString('en-US', { month: 'short' }), income, expense };
   });
   const current = history[history.length - 1];
   const previous = history[history.length - 2];
+  const maxValue = Math.max(...history.flatMap((item) => [item.income, item.expense]), 1);
   const change = Math.round(((current.income - previous.income) / previous.income) * 100);
   const periodLabel = period === 'quarterly' ? 'Quarterly' : period === 'annual' ? 'Annual' : period === 'total' ? 'All time' : 'Monthly';
   return (
     <div className="financial-summary">
       <div className="finance-head">
         <h3>{periodLabel} cash flow</h3>
-        <select value={period} onChange={(event) => setPeriod(event.target.value)}><option value="monthly">Monthly</option><option value="quarterly">Quarterly</option><option value="annual">Annual</option><option value="total">All time</option></select>
+        <select value={period} onChange={(event) => setPeriod(event.target.value)}><option value="annual">Annual</option><option value="total">All time</option></select>
         <span>
           {change >= 0 ? '↑' : '↓'} {Math.abs(change)}% vs May
         </span>
@@ -2291,18 +2310,8 @@ function FinancialSummary({ rent, bills, events, transactions = [], transactionS
           <b>{money(periodExpense)}</b>
         </div>
       </div>
-      <div className="finance-history">
-        {history.map((month) => (
-          <button type="button" className="finance-history-point" key={month.month} title={`${month.month}: ${money(month.expense)} costs`}>
-            <span>{month.month}</span>
-            <i style={{ height: `${Math.min(30, Math.max(8, rent ? (month.income / rent) * 30 : 8))}px` }} />
-            <em
-              style={{ height: `${Math.min(30, Math.max(6, (month.expense / Math.max(expenses, 1)) * 30))}px` }}
-            />
-          </button>
-        ))}
-      </div>
-      {transactions.length > 0 && <div className="cashflow-timeline"><div className="cashflow-timeline-head"><small>Imported transaction cash flow ({transactions.length})</small><input value={transactionSearch} onChange={(event) => setTransactionSearch?.(event.target.value)} placeholder="Search transactions..." /></div><div className="cashflow-transaction-scroll">{visibleTransactions.map((transaction) => <div className={`cashflow-transaction-row ${selectedTransaction?.id === transaction.id ? 'transaction-selected' : ''}`} key={transaction.id} onClick={() => setSelectedTransaction(transaction)}><span>{transaction['Order Date'] || '—'} · {transaction.Description || transaction.Vendor || 'Transaction'}</span><b>{money(Number(String(transaction.Amount || 0).replace(/[^0-9.-]/g, '') || 0))}</b>{selectedTransaction?.id === transaction.id && <div className="transaction-hover-details" ref={transactionDetailRef}><button type="button" onClick={(event) => { event.stopPropagation(); setSelectedTransaction(null); }}>×</button>{Object.entries(transaction).filter(([key]) => key !== 'id' && key !== 'apartmentId').map(([key, value]) => <span key={key}><strong>{key}:</strong> {String(value || '—')}</span>)}</div>}</div>)}</div></div>}
+      <div className="finance-history finance-line-chart" style={{ display: 'none' }}><svg viewBox="0 0 720 220" role="img" aria-label="Incoming rent and expense cash flow over time"><line x1="36" y1="190" x2="704" y2="190" stroke="#d8e2e4" />{history.map((month, index) => { const x = history.length === 1 ? 370 : 36 + (index * 668) / (history.length - 1); const incomeY = 190 - (month.income / maxValue) * 160; const expenseY = 190 - (month.expense / maxValue) * 160; const selected = selectedMonth === month.key; return <g key={month.key}><line x1={x} y1="30" x2={x} y2="190" stroke="#edf1f2" /><polyline points={history.map((item, pointIndex) => { const px = history.length === 1 ? 370 : 36 + (pointIndex * 668) / (history.length - 1); return `${px},${190 - (item.income / maxValue) * 160}`; }).join(' ')} fill="none" stroke="#21875b" strokeWidth="3" /><polyline points={history.map((item, pointIndex) => { const px = history.length === 1 ? 370 : 36 + (pointIndex * 668) / (history.length - 1); return `${px},${190 - (item.expense / maxValue) * 160}`; }).join(' ')} fill="none" stroke="#c65454" strokeWidth="3" /><button type="button" aria-label={`${month.month}: ${money(month.income)} rent and ${money(month.expense)} costs`} onClick={() => setSelectedMonth(month.key)}><circle cx={x} cy={incomeY} r={selected ? 6 : 4} fill="#21875b" /><circle cx={x} cy={expenseY} r={selected ? 6 : 4} fill="#c65454" /></button><text x={x} y="210" textAnchor="middle" fontSize="10" fill="#70838b">{month.month}</text></g>; })}</svg><div className="finance-chart-legend"><span className="rent-legend">● Incoming rent</span><span className="cost-legend">● Costs / expenses</span></div>{selectedMonth && (() => { const month = history.find((item) => item.key === selectedMonth); return month ? <div className="finance-chart-detail"><b>{month.month}</b><span>Rent: {money(month.income)}</span><span>Costs: {money(month.expense)}</span><span>Net: {money(month.income - month.expense)}</span></div> : null; })()}</div>
+      {transactions.length > 0 && <div className="cashflow-timeline"><div className="cashflow-timeline-head"><small>Imported transaction cash flow ({transactions.length})</small><select value={transactionSort} onChange={(event) => setTransactionSort(event.target.value)}><option value="newest">Newest first</option><option value="oldest">Oldest first</option></select><input value={transactionSearch} onChange={(event) => setTransactionSearch?.(event.target.value)} placeholder="Search transactions..." /></div><div className="cashflow-transaction-scroll">{visibleTransactions.map((transaction) => <div className={`cashflow-transaction-row ${selectedTransaction?.id === transaction.id ? 'transaction-selected' : ''}`} key={transaction.id} onClick={() => setSelectedTransaction(transaction)}><span style={{ color: /^Rent (received|expected)$/i.test(String(transaction.Description || '')) ? '#21875b' : '#c65454' }}>{/^Rent (received|expected)$/i.test(String(transaction.Description || '')) ? '↑' : '↓'} {transaction['Order Date'] || '—'} · {transaction.Description || transaction.Vendor || 'Transaction'}</span><b style={{ color: /^Rent (received|expected)$/i.test(String(transaction.Description || '')) ? '#21875b' : '#c65454' }}>{money(Number(String(transaction.Amount || 0).replace(/[^0-9.-]/g, '') || 0))}</b>{selectedTransaction?.id === transaction.id && <div className="transaction-hover-details" ref={transactionDetailRef}><button type="button" onClick={(event) => { event.stopPropagation(); setSelectedTransaction(null); }}>×</button>{Object.entries(transaction).filter(([key]) => key !== 'id' && key !== 'apartmentId').map(([key, value]) => <span key={key}><strong>{key}:</strong> {String(value || '—')}</span>)}</div>}</div>)}</div></div>}
       <div className="finance-totals">
         <span>
           {periodLabel} income <b>{money(periodIncome)}</b>
@@ -2339,7 +2348,7 @@ function ApartmentSidePanel({ apartment, buildings, people = [], data, onBuildin
   const related = people.filter((person) => person.apartmentIds?.includes(apartment.id));
   const events = (data.events || []).filter((event) => event.apartmentId === apartment.id);
   const bills = (data.bills || []).filter((bill) => bill.apartmentId === apartment.id);
-  const transactions = (data.transactions || []).filter((transaction) => transaction.apartmentId === apartment.id || transactionMatchesApartment(transaction, apartment)).filter((transaction) => `${transaction.Description || ''} ${transaction.Vendor || ''} ${transaction['Order Date'] || ''} ${transaction.PurchaseId || ''} ${transaction.Amount || ''}`.toLowerCase().includes(transactionSearch.toLowerCase())).sort((a, b) => transactionDate(b['Order Date']) - transactionDate(a['Order Date']));
+  const transactions = [...new Map(((data.transactions || []).filter((transaction) => (transaction.apartmentId === apartment.id || transactionMatchesApartment(transaction, apartment)) && !/^LEASED$/i.test(String(transaction.Note || transaction.Description || '').trim()))).map((transaction) => { const isRent = /^Rent (received|expected)$/i.test(String(transaction.Description || '').trim()); const key = isRent ? `rent|${transaction['Order Date'] || ''}|${transaction.Unit || apartment.id}` : `${transaction.Description || ''}|${transaction['Order Date'] || ''}|${transaction.Amount || ''}|${transaction.Unit || ''}`; return [key, transaction]; })).values()].filter((transaction) => `${transaction.Description || ''} ${transaction.Vendor || ''} ${transaction['Order Date'] || ''} ${transaction.PurchaseId || ''} ${transaction.Amount || ''}`.toLowerCase().includes(transactionSearch.toLowerCase())).sort((a, b) => transactionDate(b['Order Date']) - transactionDate(a['Order Date']));
   const groupOwner = groupOwnerName(apartment.groupOwner || apartment.leaseOwner || apartment.ownerContract || apartment.ownerName || apartment.internalOwner || '');
   const isInvestedGroup = ['Weiss', 'Morris'].includes(groupOwner);
   const apartmentStatus = apartment.tenantName && !String(apartment.tenantName).includes('אין דייר') ? apartment.status === 'Leased' ? 'Leased' : apartment.status : 'Vacant';
