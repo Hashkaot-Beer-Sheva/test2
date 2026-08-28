@@ -7,7 +7,7 @@ const files = {
   unified: 'SPREADSHEETS/Unified Attempt1.csv',
 };
 
-export async function onRequestGet({ env }) {
+export async function onRequestGet({ env, request }) {
   if (!env.SPREADSHEETS) return new Response(JSON.stringify({ error: 'R2 binding SPREADSHEETS is not configured.' }), { status: 500, headers: { 'content-type': 'application/json' } });
   const objects = [];
   let cursor;
@@ -16,8 +16,11 @@ export async function onRequestGet({ env }) {
     objects.push(...(page.objects || []));
     cursor = page.truncated ? page.cursor : undefined;
   } while (cursor);
+  const requested = new URL(request.url).searchParams.get('only');
+  if (requested && !files[requested]) return new Response(JSON.stringify({ error: `Unknown spreadsheet source: ${requested}` }), { status: 400, headers: { 'content-type': 'application/json' } });
+  const entries = requested ? [[requested, files[requested]]] : Object.entries(files);
   const result = {};
-  for (const [name, key] of Object.entries(files)) {
+  for (const [name, key] of entries) {
     const expected = key.split('/').pop().toLowerCase().replace(/\s+/g, '');
     const match = objects.find((item) => item.key.split('/').pop().toLowerCase().replace(/\s+/g, '') === expected);
     const object = match ? await env.SPREADSHEETS.get(match.key) : null;

@@ -207,9 +207,10 @@ function App() {
   const [cloudDataStatus, setCloudDataStatus] = useState('');
   const [cloudDataLoading, setCloudDataLoading] = useState(false);
   const [cloudDataProgress, setCloudDataProgress] = useState(0);
-  const cloudDataLoaded = React.useRef(false);
+  const cloudDataLoaded = React.useRef(true);
   const cloudFilesRef = React.useRef(null);
   const occupancyLoaded = React.useRef(false);
+  const [cloudSourceStatus, setCloudSourceStatus] = useState({});
   const [tab, setTab] = useState('Overview');
   const [selected, setSelected] = useState(data.buildings[0]);
   const [modal, setModal] = useState(null);
@@ -217,6 +218,24 @@ function App() {
   const [topSelected, setTopSelected] = useState(null);
   const loadMockData = () => { const mock = hydrateData(true); localStorage.setItem('blockwise-data', JSON.stringify(mock)); setData(mock); setSelected(mock.buildings[0]); setTopSelected(null); };
   const startEmpty = () => { const empty = { buildings: [], apartments: [], people: [], bills: [], events: [], maintenance: [] }; localStorage.setItem('blockwise-data', JSON.stringify(empty)); setData(empty); setSelected(undefined); setTopSelected(null); };
+  const loadCloudSource = async (source) => {
+    setCloudSourceStatus((current) => ({ ...current, [source]: { state: 'loading', message: 'Loading…' } }));
+    try {
+      const response = await fetch(`/api/data?only=${encodeURIComponent(source)}`);
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'Source unavailable');
+      const text = payload.files?.[source] || '';
+      cloudFilesRef.current = { ...(cloudFilesRef.current || {}), [source]: text };
+      if (source === 'master') {
+        setData((current) => buildUnifiedFirstData(mergeMasterCsv(current, splitImportedBuildingsByEntrance(parseMasterCsv(text))), cloudFilesRef.current?.unified || ''));
+      } else if (source === 'unified') {
+        setData((current) => buildUnifiedFirstData(current, text));
+      }
+      setCloudSourceStatus((current) => ({ ...current, [source]: { state: 'ready', message: `${Math.round(text.length / 1024)} KB loaded` } }));
+    } catch (error) {
+      setCloudSourceStatus((current) => ({ ...current, [source]: { state: 'error', message: error.message } }));
+    }
+  };
   useEffect(() => { if (!selected && data.buildings[0]) setSelected(data.buildings[0]); }, [data.buildings, selected]);
   useEffect(() => { if (cloudDataStatus === 'Loading cloud spreadsheets…') { setCloudDataLoading(true); setCloudDataProgress(42); } if (cloudDataStatus === 'Cloud spreadsheets loaded') { setCloudDataLoading(false); setCloudDataProgress(100); const timer = setTimeout(() => setCloudDataStatus(''), 5000); return () => clearTimeout(timer); } if (cloudDataStatus === 'Cloud spreadsheets unavailable — using local data') { setCloudDataLoading(false); const timer = setTimeout(() => setCloudDataStatus(''), 5000); return () => clearTimeout(timer); } return undefined; }, [cloudDataStatus]);
   useEffect(() => { if (!authenticated || cloudDataLoaded.current) return; cloudDataLoaded.current = true; setCloudDataStatus('Loading cloud spreadsheets…'); fetch('/api/data').then((response) => { if (!response.ok) throw new Error('Cloud spreadsheet API unavailable'); return response.json(); }).then(({ files }) => { setData((current) => { let next = current; const imported = splitImportedBuildingsByEntrance(parseMasterCsv(files.master || '')); next = buildUnifiedFirstData(mergeMasterCsv(next, imported), files.unified || ''); const incomingTransactions = parseTransactionsCsv(files.transactions || ''); const transactions = [...(next.transactions || [])]; incomingTransactions.forEach((item) => { const apartment = next.apartments.find((candidate) => transactionMatchesUniqueId(item, candidate)) || next.apartments.find((candidate) => transactionMatchesApartment(item, candidate)); const linked = { ...item, apartmentId: apartment?.id || '' }; if (!transactions.some((existing) => existing.PurchaseId === linked.PurchaseId)) transactions.push(linked); }); next = { ...next, transactions }; const apartments = next.apartments.map((item) => ({ ...item })); const people = [...(next.people || [])]; parseRentersCsv(files.renters || '').forEach((row, index) => { const street = String(row['רחוב'] || '').trim().replace(/\s+/g, ' '); const parts = String(row['מספר'] || '').trim().split('/').map((value) => value.trim()).filter(Boolean); const attempts = parts.length > 1 ? [{ building: parts[0], apartment: parts[1] }, { building: parts[1], apartment: parts[0] }] : []; const unifiedAddress = `${street} ${String(row['מספר'] || '').trim()}`.replace(/\s+/g, ' ').trim(); const target = apartments.find((item) => unitKey(item.unifiedZehavitUnit) === unitKey(row['יחידה']) && normalizeCoordinateText(item.unifiedZehavitAddress) === normalizeCoordinateText(unifiedAddress)) || apartments.find((item) => unitKey(item.unifiedZehavitUnit) === unitKey(row['יחידה'])) || attempts.map((attempt) => apartments.find((item) => String(item.street || '').trim().replace(/\s+/g, ' ') === street && unitKey(item.streetNumber) === unitKey(attempt.building) && unitKey(item.number || item.appt || item.apptId) === unitKey(attempt.apartment))).find(Boolean); if (!target) return; const tenantNames = String(row['שמות'] || '').split(/[;,、]+/).map((name) => name.trim()).filter(Boolean); const owner = String(row['בעל הדירה'] || '').trim(); const record = { unit: String(row['יחידה'] || '').trim(), tenantNames, owner, idNumber: String(row['ת.ז'] || '').trim(), phone: String(row['טלפונים'] || '').trim(), email: String(row['כתובת אימייל'] || '').trim(), leaseStart: row['תחילתחוזה'] || '', leaseEnd: row['סיוםחוזה'] || '', rent: Number(String(row['שכר דירה'] || row['שכרדירה'] || '').replace(/[^0-9.-]/g, '') || 0) }; const renterRecords = [...(target.renterRecords || []).filter((item) => item.unit !== record.unit), record]; const names = [...new Set(renterRecords.flatMap((item) => item.tenantNames || []).filter(Boolean))]; Object.assign(target, { renterRecords, renterUnit: [...new Set(renterRecords.map((item) => item.unit).filter(Boolean))].join(' / '), tenantName: names.join(', '), resident: names.join(', '), ownerName: owner || target.ownerName, leaseOwner: owner ? leaseOwnerName(owner) : target.leaseOwner, groupOwner: owner ? groupOwnerName(owner) : target.groupOwner, leaseStart: record.leaseStart || target.leaseStart, leaseEnd: record.leaseEnd || target.leaseEnd, rent: record.rent || target.rent, status: names.length && !names.some((name) => name.includes('אין דייר')) ? 'Leased' : 'Vacant', renterCsv: { ...(target.renterCsv || {}), ...record } }); tenantNames.forEach((name) => { if (!name) return; const person = people.find((item) => item.role === 'Tenant' && String(item.name || '').toLowerCase() === name.toLowerCase()) || { id: `cloud-tenant-${index}-${people.length}`, name, fullName: name, role: 'Tenant', apartmentIds: [], phone: record.phone, email: record.email, idNumber: record.idNumber }; person.apartmentIds = [...new Set([...(person.apartmentIds || []), target.id])]; if (!people.includes(person)) people.push(person); }); }); return { ...next, apartments, people, transactions }; }); setCloudDataStatus('Cloud spreadsheets loaded'); }).catch((error) => { console.warn('[Cloud spreadsheets]', error.message); setCloudDataStatus('Cloud spreadsheets unavailable — using local data'); }); }, [authenticated]);
@@ -442,6 +461,13 @@ function App() {
             <label className="outline small csv-import-label">Renters CSV upload<input type="file" accept=".csv,.tsv,text/csv,text/tab-separated-values" onChange={importRentersFile} /></label>
             <label className="outline small csv-import-label">Upload transacts CSV<input type="file" accept=".csv,.tsv,text/csv,text/tab-separated-values" onChange={importTransactions} /></label>
             <button className="outline small" onClick={syncPhotos} disabled={Boolean(photoProgress)}>{photoProgress ? `Syncing photos ${photoProgress.done}/${photoProgress.total}` : 'Sync photos'}</button>
+            <div className="cloud-source-loaders" title="Load each cloud source independently">
+              {['unified', 'master', 'occupancy', 'renters', 'transactions', 'coordinates'].map((source) => (
+                <button key={source} className="outline small" onClick={() => loadCloudSource(source)} disabled={cloudSourceStatus[source]?.state === 'loading'}>
+                  {cloudSourceStatus[source]?.state === 'loading' ? `${source}…` : `Load ${source}`}
+                </button>
+              ))}
+            </div>
             <label className="outline small csv-import-label">Upload photos ZIP<input type="file" accept=".zip,application/zip" onChange={importPhotosZip} /></label>
             <input
               className="search"
@@ -449,6 +475,7 @@ function App() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
+            {Object.entries(cloudSourceStatus).some(([, status]) => status) && <div className="cloud-source-status">{Object.entries(cloudSourceStatus).filter(([, status]) => status).map(([source, status]) => <span key={source} className={status.state}>{source}: {status.message}</span>)}</div>}
             {topResults.length > 0 && (
               <div className="top-search-results">
                 {topResults.map(({ type, item }) => (
