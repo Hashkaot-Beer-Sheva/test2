@@ -236,7 +236,48 @@ function App() {
       if (source === 'coordinates') setData((current) => ({ ...current, buildings: applyCoordinateCache(current.buildings, parseCoordinateCsv(text)) }));
       if (source === 'transactions') setData((current) => { const incoming = parseTransactionsCsv(text); const transactions = [...(current.transactions || [])]; incoming.forEach((item) => { const apartment = current.apartments.find((candidate) => transactionMatchesUniqueId(item, candidate)); const linked = { ...item, apartmentId: apartment?.id || '' }; if (!transactions.some((existing) => existing.PurchaseId && existing.PurchaseId === linked.PurchaseId)) transactions.push(linked); }); return { ...current, transactions }; });
       if (source === 'renters') setData((current) => { const apartments = current.apartments.map((item) => ({ ...item })); const people = [...(current.people || [])]; parseRentersCsv(text).forEach((row, index) => { const apartment = renterApartmentMatch(apartments, row); if (!apartment) return; const names = String(row['שמות'] || '').split(/[;,、]+/).map((name) => name.trim()).filter(Boolean); const owner = String(row['בעל הדירה'] || '').trim(); Object.assign(apartment, { renterUnit: String(row['יחידה'] || '').trim(), tenantName: names.join(', '), resident: names.join(', '), ownerName: owner || apartment.ownerName, status: names.length ? 'Leased' : apartment.status, leaseStart: row['תחילתחוזה'] || apartment.leaseStart, leaseEnd: row['סיוםחוזה'] || apartment.leaseEnd, rent: Number(String(row['שכרדירה'] || row['שכר דירה'] || '').replace(/[^0-9.-]/g, '') || apartment.rent || 0), renterCsv: { ...row } }); names.forEach((name) => { let person = people.find((item) => item.role === 'Tenant' && String(item.name || '').toLowerCase() === name.toLowerCase()); if (!person) { person = { id: `cloud-tenant-${index}-${people.length}`, name, fullName: name, role: 'Tenant', apartmentIds: [] }; people.push(person); } person.apartmentIds = [...new Set([...(person.apartmentIds || []), apartment.id])]; }); }); return { ...current, apartments, people }; });
-      if (source === 'occupancy') setData((current) => { const parsed = parseOccupancyCsv(text); const unifiedRows = parseUnifiedCsv(cloudFilesRef.current?.unified || ''); const matches = new Map(); parsed.records.forEach((record) => { const apartment = current.apartments.find((candidate) => occupancyMatchesApartment(record, candidate, unifiedRows)); if (apartment) { const rows = matches.get(apartment.id) || []; if (!rows.some((item) => item.date === record.date)) rows.push(record); matches.set(apartment.id, rows); } }); const apartments = current.apartments.map((apartment) => matches.has(apartment.id) ? { ...apartment, occupancyRentHistory: matches.get(apartment.id), rent: parsed.latest[unitKey(apartment.unifiedOccupancyUnit)] ?? apartment.rent } : apartment); const rentTransactions = parsed.records.map((record, index) => { const apartment = current.apartments.find((candidate) => matches.get(candidate.id)?.some((item) => item === record)); return apartment ? { id: `occupancy-rent-${apartment.id}-${record.date}`, apartmentId: apartment.id, Unit: record.unit, Description: transactionDate(record.date) <= new Date() ? 'Rent received' : 'Rent expected', Amount: record.amount, 'Order Date': record.date, Note: record.status } : null; }).filter(Boolean); const transactions = [...(current.transactions || []).filter((item) => !String(item.id || '').startsWith('occupancy-rent-'))]; rentTransactions.forEach((item) => { if (!transactions.some((existing) => existing.id === item.id)) transactions.push(item); }); return { ...current, apartments, transactions }; });
+      if (source === 'occupancy') setData((current) => {
+        const parsed = parseOccupancyCsv(text);
+        const unifiedRows = parseUnifiedCsv(cloudFilesRef.current?.unified || '');
+        const byUniqueAndAppt = new Map();
+        const byUnique = new Map();
+        const byOccupancyUnit = new Map();
+        unifiedRows.forEach((row) => {
+          const unique = unitKey(row['EASYPROD - UniquID']);
+          const appt = unitKey(row['EASYPROD - Appt ID']);
+          const occupancyUnit = unitKey(row['NEW OCCUPANCY UNIT']);
+          if (unique && appt) byUniqueAndAppt.set(`${unique}|${appt}`, row);
+          if (unique && !byUnique.has(unique)) byUnique.set(unique, row);
+          if (occupancyUnit && !byOccupancyUnit.has(occupancyUnit)) byOccupancyUnit.set(occupancyUnit, row);
+        });
+        const apartmentByUniqueAndAppt = new Map();
+        const apartmentByUnique = new Map();
+        const apartmentByOccupancyUnit = new Map();
+        current.apartments.forEach((apartment) => {
+          const unique = unitKey(apartment.uniqueId);
+          const appt = unitKey(apartment.apptId);
+          const occupancyUnit = unitKey(apartment.unifiedOccupancyUnit);
+          if (unique && appt) apartmentByUniqueAndAppt.set(`${unique}|${appt}`, apartment);
+          if (unique && !apartmentByUnique.has(unique)) apartmentByUnique.set(unique, apartment);
+          if (occupancyUnit && !apartmentByOccupancyUnit.has(occupancyUnit)) apartmentByOccupancyUnit.set(occupancyUnit, apartment);
+        });
+        const recordApartment = new Map();
+        const matches = new Map();
+        parsed.records.forEach((record) => {
+          const row = byOccupancyUnit.get(unitKey(record.unit));
+          const apartment = row ? (apartmentByUniqueAndAppt.get(`${unitKey(row['EASYPROD - UniquID'])}|${unitKey(row['EASYPROD - Appt ID'])}`) || apartmentByUnique.get(unitKey(row['EASYPROD - UniquID']))) : apartmentByOccupancyUnit.get(unitKey(record.unit));
+          if (!apartment) return;
+          const rows = matches.get(apartment.id) || [];
+          if (!rows.some((item) => item.date === record.date)) rows.push(record);
+          matches.set(apartment.id, rows);
+          recordApartment.set(record, apartment);
+        });
+        const apartments = current.apartments.map((apartment) => matches.has(apartment.id) ? { ...apartment, occupancyRentHistory: matches.get(apartment.id), rent: parsed.latest[unitKey(apartment.unifiedOccupancyUnit)] ?? apartment.rent } : apartment);
+        const transactions = [...(current.transactions || []).filter((item) => !String(item.id || '').startsWith('occupancy-rent-'))];
+        const transactionIds = new Set();
+        parsed.records.forEach((record) => { const apartment = recordApartment.get(record); if (!apartment) return; const id = `occupancy-rent-${apartment.id}-${record.date}`; if (transactionIds.has(id)) return; transactionIds.add(id); transactions.push({ id, apartmentId: apartment.id, Unit: record.unit, Description: transactionDate(record.date) <= new Date() ? 'Rent received' : 'Rent expected', Amount: record.amount, 'Order Date': record.date, Note: record.status }); });
+        return { ...current, apartments, transactions };
+      });
       setCloudSourceStatus((current) => ({ ...current, [source]: { state: 'ready', message: `${Math.round(text.length / 1024)} KB loaded` } }));
     } catch (error) {
       setCloudSourceStatus((current) => ({ ...current, [source]: { state: 'error', message: error.message } }));
